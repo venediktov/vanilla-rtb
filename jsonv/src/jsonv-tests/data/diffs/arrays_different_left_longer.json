@@ -1,0 +1,11 @@
+{
+    "input": {
+        "left":  [1, 2, 3, 4, 5, 6, 7],
+        "right": [1, 1, 2, 3, 5]
+    },
+    "result": {
+        "same": [1, null, null, null, 5],
+        "left": [null, 2, 3, 4, null, 6, 7],
+        "right": [null, 1, 2, 3, null]
+    }
+}

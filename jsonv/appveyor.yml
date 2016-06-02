@@ -1,0 +1,17 @@
+version: 1.1.{build}
+os: Visual Studio 2015
+platform:
+  - Win32
+  - x64
+configuration:
+  - Debug
+  - Release
+install:
+  - cmd: msbuild /version
+clone_folder: C:\projects\json-voorhees
+before_build:
+  - cmd: cd C:\projects\json-voorhees\msvc\vs2015
+  - cmd: nuget restore
+build:
+  project: C:\projects\json-voorhees\msvc\vs2015\JsonVoorhees.sln
+test_script:

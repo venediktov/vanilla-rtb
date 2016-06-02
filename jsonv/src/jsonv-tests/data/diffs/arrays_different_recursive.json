@@ -1,0 +1,11 @@
+{
+    "input": {
+        "left":  [[1, 1], [2, 2], [3, 3], [4,  4]],
+        "right": [[1, 1], [2, 4], [3, 9], [4, 16]]
+    },
+    "result": {
+        "same":  [[1, 1], [2, null], [3, null], [4,  null]],
+        "left":  [null,   [null, 2], [null, 3], [null,  4]],
+        "right": [null,   [null, 4], [null, 9], [null, 16]]
+    }
+}

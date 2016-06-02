@@ -1,0 +1,40 @@
+# Maintainer: Travis Gockel <travis@gockelhut.com>
+# mkaurball
+pkgname=json-voorhees
+pkgver=0.3.1
+pkgrel=1
+epoch=
+pkgdesc="A modern JSON parsing library for C++"
+arch=('x86_64')
+url="https://github.com/tgockel/json-voorhees"
+license=('Apache')
+groups=()
+depends=()
+makedepends=('gcc>=4.9' 'boost>=1.52')
+checkdepends=('boost-libs>=1.48')
+optdepends=()
+provides=()
+conflicts=()
+replaces=()
+backup=()
+options=()
+install=
+changelog=
+source=("https://github.com/tgockel/${pkgname}/archive/v${pkgver}.tar.gz")
+noextract=()
+md5sums=('9a62a2d558406b9ac8f01407b30e1a04') # makepkg -g 
+
+build() {
+	cd "${srcdir}/${pkgname}-${pkgver}"
+	make
+}
+
+check() {
+	cd "${srcdir}/${pkgname}-${pkgver}"
+	make test
+}
+
+package() {
+	cd "${srcdir}/${pkgname}-${pkgver}"
+	make INSTALL_DIR="${pkgdir}/" install
+}

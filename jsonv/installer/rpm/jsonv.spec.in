@@ -1,0 +1,66 @@
+Buildroot: @CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM/@CPACK_PACKAGE_FILE_NAME@
+Summary:        Killer JSON for C++
+Name:           @CPACK_PACKAGE_NAME@
+Version:        @CPACK_PACKAGE_VERSION@
+Release:        @CPACK_PACKAGE_RELEASE@
+License:        Apache 2.0
+Group:          Development/Tools
+Prefix:         @CPACK_PACKAGING_INSTALL_PREFIX@
+Requires:       cmake >= 2.8, boost-devel >= 1.52, gcc-c++ >= 4.9
+ 
+%define _rpmdir @CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM
+%define _rpmfilename @CPACK_PACKAGE_FILE_NAME@.rpm
+%define _unpackaged_files_terminate_build 0
+%define _topdir @CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM
+ 
+%description
+JSON Voorhees is a JSON library written for the C++ programmer who wants to be
+productive when working with JSON in the modern world. What does that mean?
+There are a ton of JSON libraries floating around touting how they are
+"modern" C++ and so on. But who really cares? JSON Voorhees puts the focus more
+on the resulting C++ than any "modern" feature set. This means the library does
+not skip on string encoding details like having full support for UTF-8.
+Are there "modern" features? Sure, but this library is not meant to be a gallery
+of them – a good API should get out of your way and let you work. It is hosted
+on GitHub and sports an Apache License, so use it anywhere you need.
+
+Features include (but are not necessarily limited to):
+
+ - Simple
+   - A value should not feel terribly different from a C++ Standard Library
+     container
+   - Write valid JSON with operator<<
+   - Simple JSON parsing with parse
+   - Reasonable error messages when parsing fails
+   - Full support for Unicode-filled JSON (encoded in UTF-8 in C++)
+ - Efficient
+   - Minimal overhead to store values (a value is 16 bytes on a 64-bit platform)
+   - No-throw move semantics wherever possible
+ - Easy
+   - Convert a value into a C++ type using extract<T>
+   - Encode a C++ type into a value using to_json
+ - Safe
+   - In the best case, illegal code should fail to compile
+   - An illegal action should throw an exception
+   - Almost all utility functions have a strong exception guarantee.
+ - Stable
+   - Worry less about upgrading – the API and ABI will not change out from under
+     you
+ - Documented
+   - Consumable by human beings
+   - Answers questions you might actually ask
+
+%prep
+mv $RPM_BUILD_ROOT @CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM/tmpBBroot
+ 
+%install
+if [ -e $RPM_BUILD_ROOT ];
+then
+  rm -Rf $RPM_BUILD_ROOT
+fi
+mv "@CMAKE_CURRENT_BINARY_DIR@/_CPack_Packages/Linux/RPM/tmpBBroot" $RPM_BUILD_ROOT
+ 
+%files
+%defattr(-,root,root,-)
+@LIBRARY_INSTALL_DIR@/libjsonv*
+@INCLUDE_INSTALL_DIR@/jsonv

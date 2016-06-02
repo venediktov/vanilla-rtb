@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\jsonv-tests\algorithm_compare_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\algorithm_map_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\array_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\char_convert_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\coerce_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\demangle_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\detail\token_patterns_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\encode_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\filesystem_util.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\functional_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\json_checker.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\kind_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\main.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\object_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\parse_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\path_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\serialization_builder_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\serialization_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\string_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\test.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\tokenizer_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\unicode_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\util_diff_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\util_merge_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\util_validate_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\value_tests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\src\jsonv-tests\filesystem_util.hpp" />
+    <ClInclude Include="..\..\..\src\jsonv-tests\test.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different_left_longer.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different_recursive.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different_right_longer.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_same.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\different_kinds.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\integer_same.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\numbers_mixed_same.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\objects_different_keys.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\objects_different_recursive.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\objects_different_values.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\objects_same.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\diffs\string_same.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\generated.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail10.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail11.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail12.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail14.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail15.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail16.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail17.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail19.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail2.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail20.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail21.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail22.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail23.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail24.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail26.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail28.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail29.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail3.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail30.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail31.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail32.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail33.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail5.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail6.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail7.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\fail8.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-1.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-13.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-18.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-25.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-27.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-4.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass-but-fail-strict-9.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass1.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass2.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\json_checker\pass3.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\array_appends.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\booleans.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\boolean_integer.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\decimal_add.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\nulls.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\numbers_add.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\numbers_coerce.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\numbers_mixed.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\object_keyshare.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\object_mix_extra.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\object_simple.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\strings_append.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\strings_append_coerce.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\merges\type_mixing.json" />
+    <None Include="..\..\..\src\jsonv-tests\data\paths.json" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\jsonv\jsonv.vcxproj">
+      <Project>{51ac737d-c2cd-4625-983f-df0dbe8c30c5}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{07E981AF-1A6B-46FB-BC8C-895809D93558}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>jsonvtests</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;JSONV_SO=0;JSONV_TEST_DATA_DIR="src/jsonv-tests/data";_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;JSONV_SO=0;JSONV_TEST_DATA_DIR="src/jsonv-tests/data";_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;JSONV_SO=0;JSONV_TEST_DATA_DIR="src/jsonv-tests/data";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;JSONV_SO=0;JSONV_TEST_DATA_DIR="src/jsonv-tests/data";NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\include;$(ProjectDir)..\..\..\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\boost.1.60.0.0\build\native\boost.targets" Condition="Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\boost.1.60.0.0\build\native\boost.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\boost.1.60.0.0\build\native\boost.targets'))" />
+  </Target>
+</Project>

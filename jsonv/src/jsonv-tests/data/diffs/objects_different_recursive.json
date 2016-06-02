@@ -1,0 +1,11 @@
+{
+    "input": {
+        "left":  { "a": null, "b": [1, 2, 3, 4], "c": { "something": {} }, "d": { "else": 4} },
+        "right": { "a": null, "b": [2, 4, 6, 8], "c": { "something": {} }, "d": { "else": 5} }
+    },
+    "result": {
+        "same":  { "a": null, "c": { "something": {} } },
+        "left":  { "b": [1, 2, 3, 4], "d": { "else": 4 } },
+        "right": { "b": [2, 4, 6, 8], "d": { "else": 5 } }
+    }
+}

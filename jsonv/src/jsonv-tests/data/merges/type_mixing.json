@@ -1,0 +1,6 @@
+{
+    "a": [ 1, 2, 3 ],
+    "b": "yo",
+    "expected": "FAILURE",
+    "recursive": [ 1, 2, 3, "yo" ]
+}

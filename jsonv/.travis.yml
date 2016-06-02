@@ -1,0 +1,59 @@
+language: cpp
+env:
+  matrix:
+    - CONF=Debug   COMPILER=g++-4.9     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0 PUBLISH_DOCS=0
+    - CONF=Debug   COMPILER=g++-4.9     COVERAGE=0 USE_BOOST_STRING_VIEW=1 USE_BOOST_REGEX=0 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=g++-4.9     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0 PUBLISH_DOCS=1
+    - CONF=Release COMPILER=g++-4.9     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=g++-4.9     COVERAGE=0 USE_BOOST_STRING_VIEW=1 USE_BOOST_REGEX=0 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=g++-4.9     COVERAGE=0 USE_BOOST_STRING_VIEW=1 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=g++-4.8     COVERAGE=1 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=g++-4.8     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=g++-4.8     COVERAGE=0 USE_BOOST_STRING_VIEW=1 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=clang++-3.9 COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=clang++-3.9 COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=clang++-3.9 COVERAGE=0 USE_BOOST_STRING_VIEW=1 USE_BOOST_REGEX=0 PUBLISH_DOCS=0
+    - CONF=Release COMPILER=clang++-3.9 COVERAGE=0 USE_BOOST_STRING_VIEW=1 USE_BOOST_REGEX=1 PUBLISH_DOCS=0
+before_install:
+  - "sudo apt-add-repository --yes ppa:ubuntu-toolchain-r/test"
+  - "sudo apt-add-repository --yes ppa:boost-latest/ppa"
+  - "sudo add-apt-repository --yes ppa:libreoffice/ppa"
+  - if [[ ${COMPILER} == *"clang"* ]]; then sudo sh -c 'echo "deb http://llvm.org/apt/precise/ llvm-toolchain-precise main" >> /etc/apt/sources.list'; fi
+  - sudo apt-get update
+  - if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-cache search clang; fi
+install:
+  - sudo apt-get install --yes --force-yes libboost1.55-all-dev cmake
+  - if [[ ${COMPILER} != *"clang"* ]]; then sudo apt-get install --yes --force-yes ${COMPILER}; fi
+  - if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-get install --yes --force-yes clang-3.9;   fi
+  - if [[ ${COVERAGE} -eq 1 ]];        then sudo pip install cpp-coveralls pyyaml;              fi
+script:
+  - ${COMPILER} --version
+  - cmake -DCMAKE_CXX_COMPILER=${COMPILER}
+          -DCMAKE_BUILD_TYPE=${CONF}
+          -DUSE_BOOST_REGEX=${USE_BOOST_REGEX}
+          -DUSE_BOOST_STRING_VIEW=${USE_BOOST_STRING_VIEW}
+          -DCOVERAGE=${COVERAGE}
+          -DJSONV_BUILD_TESTS=ON
+  - make VERBOSE=1
+  - ./jsonv-tests
+after_success:
+  - if [[ ${COVERAGE} == 1 ]]; then ./config/upload-coverage; fi
+  - GIT_CURRENT_HASH=$(git rev-parse HEAD)
+  - GIT_MASTER_HASH=$(git rev-parse master)
+  - GIT_REMOTE_NAME=$(git remote)
+  - GIT_REMOTE_FETCH_PATH=$(git remote --verbose | grep -P '^'${GIT_REMOTE_NAME}'.*\(fetch\)$' | awk '{print $2}')
+  - "GIT_EXPECTED_PATH=https://github.com/tgockel/json-voorhees.git"
+  - echo "GIT_CURRENT_HASH=${GIT_CURRENT_HASH} GIT_REMOTE_NAME=${GIT_REMOTE_NAME} GIT_REMOTE_FETCH_PATH=${GIT_REMOTE_FETCH_PATH}"
+  - if [[ ${PUBLISH_DOCS} == 0 ]]; then                             echo "Skipping documentation publishing due PUBLISH_DOCS=${PUBLISH_DOCS}";                                  exit 0; fi
+  - if [[ ${GIT_CURRENT_HASH} != ${GIT_MASTER_HASH} ]]; then        echo "Skipping documentation publishing due to non-master ${GIT_CURRENT_HASH} (master=${GIT_MASTER_HASH})"; exit 0; fi
+  - if [[ ${GIT_REMOTE_FETCH_PATH} != ${GIT_EXPECTED_PATH} ]]; then echo "Skipping documentation publishing due to non-mainline remote ${GIT_REMOTE_FETCH_PATH}";               exit 0; fi
+  - sudo apt-get install --yes doxygen graphviz
+  - openssl aes-256-cbc
+    -K $encrypted_da53dd2710a4_key
+    -iv $encrypted_da53dd2710a4_iv
+    -in  config/travisci_rsa.enc
+    -out config/travisci_rsa
+    -d
+  - chmod 0600 config/travisci_rsa
+  - cp config/travisci_rsa ~/.ssh/id_rsa
+  - ./config/publish-doxygen
