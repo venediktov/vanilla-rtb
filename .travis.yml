@@ -1,0 +1,21 @@
+language:
+    - cpp
+
+compiler:
+    - gcc
+
+before_install:
+    - sudo apt-get install -qq p7zip-full
+
+install:
+    - wget -O boost_1_57_0.7z http://sourceforge.net/projects/boost/files/boost/1.57.0/boost_1_57_0.7z/download
+    - 7z x boost_1_57_0.7z > /dev/null
+    - cd boost_1_57_0
+    - ./bootstrap.sh
+    - cp -R ../boost/* boost
+    - cp -R ../libs/* libs
+    - cd ..
+
+script:
+    - cd boost_1_57_0/libs/process/test
+    - ../../../b2
