@@ -7,7 +7,7 @@ Using modern C++11/14  features and latest BOOST libraries
 
 Structure ( work in progress ) :
 * [/](../../tree/master/) -- the root directory
-   * [boost-process/](../../tree/master/bost-process/) -- C++11 not in official boost stack
+   * [boost-process/](../../tree/master/boost-process/) -- C++11 not in official boost stack
    * [boost-dll/](../../tree/master/boost-dll/) -- C++11 not in official boost stack
    * [rtb/](../../tree/master/rtb/) -- C++11 framework and sandbox for testing platform solution 
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project 
