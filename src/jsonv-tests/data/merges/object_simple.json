@@ -1,0 +1,25 @@
+{
+    "a": {
+        "one": 1,
+        "three": 3,
+        "array": [ 4, 5, 6 ]
+    },
+    "b": {
+        "two": 2,
+        "object": { "a": 1 }
+    },
+    "expected": {
+        "one": 1,
+        "three": 3,
+        "array": [ 4, 5, 6 ],
+        "two": 2,
+        "object": { "a": 1 }
+    },
+    "recursive": {
+        "one": 1,
+        "three": 3,
+        "array": [ 4, 5, 6 ],
+        "two": 2,
+        "object": { "a": 1 }
+    }
+}

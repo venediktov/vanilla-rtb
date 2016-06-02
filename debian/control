@@ -1,0 +1,24 @@
+Source: libjsonv
+Priority: optional
+Maintainer: Remy Chibois <chybz@chybz.net>
+Build-Depends: debhelper (>= 9), cmake
+Standards-Version: 3.9.5
+Section: libs
+Homepage: https://github.com/tgockel/jsonv
+
+Package: libjsonv-dev
+Section: libdevel
+Architecture: any
+Depends: libjsonv1.0.0 (= ${binary:Version}), ${misc:Depends}
+Description: development files for jsonv
+ Yet another JSON library for C++.
+ This one touts new C++11 features for developer-friendliness,
+ an extremely high-speed parser and no dependencies beyond a compliant compiler.
+
+Package: libjsonv1.0.0
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Killer modern C++ library for interacting with JSON
+ Yet another JSON library for C++.
+ This one touts new C++11 features for developer-friendliness,
+ an extremely high-speed parser and no dependencies beyond a compliant compiler.

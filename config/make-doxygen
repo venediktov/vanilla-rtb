@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+mkdir -p build/doc
+doxygen config/Doxyfile

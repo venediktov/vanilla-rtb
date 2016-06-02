@@ -1,0 +1,11 @@
+{
+    "input": {
+        "left":  { "a": null, "b": true, "c": "see" },
+        "right": { "a": null, "b": true, "d": "see" }
+    },
+    "result": {
+        "same": { "a": null, "b": true },
+        "left": { "c": "see" },
+        "right": { "d": "see" }
+    }
+}

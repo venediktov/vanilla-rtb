@@ -1,0 +1,11 @@
+{
+    "input": {
+        "left": "same",
+        "right": "same"
+    },
+    "result": {
+        "same": "same",
+        "left": null,
+        "right": null
+    }
+}

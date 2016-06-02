@@ -1,0 +1,5 @@
+{
+    "a": true,
+    "b": false,
+    "expected": true
+}

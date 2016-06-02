@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+coveralls                                          \
+          --build-root .                           \
+          --exclude-pattern test                   \
+          --exclude-pattern bits                   \
+          --exclude-pattern boost                  \
+          --gcov-options '\-lp' --gcov 'gcov-4.8'

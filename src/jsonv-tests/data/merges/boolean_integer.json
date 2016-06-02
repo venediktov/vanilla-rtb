@@ -1,0 +1,6 @@
+{
+    "a": false,
+    "b": 1,
+    "expected": "FAILURE",
+    "recursive": true
+}
