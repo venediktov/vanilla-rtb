@@ -16,9 +16,8 @@ Structure ( work in progress ) :
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv ( under review )
 * [CMakeLists.txt] - cmake file
 
-The stack of vanilla-rtb depends on other C++11 projects and is referencing them via gh-subree
-
-To update to the latest version of boost-process , boost-dll and json-voorhees use the following commands \:
+>The stack of vanilla-rtb depends on other C++11 projects and is referencing them via gh-subree
+>To update to the latest version of boost-process , boost-dll and json-voorhees use the following commands \:
 
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash
 * git subtree pull --prefix boost-process git@github.com:BorisSchaeling/boost-process.git master --squash
