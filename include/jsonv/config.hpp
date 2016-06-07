@@ -129,32 +129,6 @@
         item(unsigned long long)
 #endif
 
-/** \def JSONV_STRING_VIEW_TYPE
- *  The type to use for \c jsonv::string_view. By default, this is \c jsonv::detail::string_view.
- *  
- *  \def JSONV_STRING_VIEW_INCLUDE
- *  The file to include to get the implementation for \c string_view. If you define \c JSONV_STRING_VIEW_TYPE, you must
- *  also define this.
- *  
- *  \def JSONV_STRING_VIEW_USE_STD
- *  Set this to 1 to use \c std::string_view as the backing type for \c jsonv::string_view.
- *  
- *  \def JSONV_STRING_VIEW_USE_BOOST
- *  Set this to 1 to use \c boost::string_ref as the backing type for \c jsonv::string_view.
-**/
-#ifndef JSONV_STRING_VIEW_TYPE
-#   if defined(JSONV_STRING_VIEW_USE_STD) && JSONV_STRING_VIEW_USE_STD
-#       define JSONV_STRING_VIEW_TYPE    std::string_view
-#       define JSONV_STRING_VIEW_INCLUDE <string_view>
-#   elif defined(JSONV_STRING_VIEW_USE_BOOST) && JSONV_STRING_VIEW_USE_BOOST
-#       define JSONV_STRING_VIEW_TYPE    boost::string_ref
-#       define JSONV_STRING_VIEW_INCLUDE <boost/utility/string_ref.hpp>
-#   else
-#       define JSONV_STRING_VIEW_TYPE    jsonv::detail::string_view
-#       define JSONV_STRING_VIEW_INCLUDE <jsonv/detail/string_view.hpp>
-#   endif
-#endif
-
 /** \def JSONV_REGEX_INCLUDE
  *  Controls the regular expression engine to use. By default, this will use the C++ Standard Library implementation.
  *  GCC versions below 4.8 will happy compile regular expressions, but will fail at runtime. If using GCC under 4.9, it
