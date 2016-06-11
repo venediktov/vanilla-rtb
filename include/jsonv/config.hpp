@@ -1,6 +1,6 @@
 /** \file jsonv/config.hpp
  *  
- *  Copyright (c) 2014 by Travis Gockel. All rights reserved.
+ *  Copyright (c) 2014-2016 by Travis Gockel. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the Apache License
  *  as published by the Apache Software Foundation, either version 2 of the License, or (at your option) any later
@@ -93,6 +93,17 @@
 #   define JSONV_LOCAL  JSONV_HIDDEN
 #endif
 
+/** \def JSONV_UNUSED
+ *  \brief Note that you know the variable is unused, but make the compiler stop complaining about it.
+**/
+#ifndef JSONV_UNUSED
+#   if defined(__GNUC__)
+#       define JSONV_UNUSED __attribute__((unused))
+#   else
+#       define JSONV_UNUSED
+#   endif
+#endif
+
 /** \def JSONV_NO_RETURN
  *  \brief Mark that a given function will never return control to the caller, either by exiting or throwing an
  *  exception.
@@ -127,32 +138,6 @@
         item(unsigned int)                     \
         item(unsigned long)                    \
         item(unsigned long long)
-#endif
-
-/** \def JSONV_REGEX_INCLUDE
- *  Controls the regular expression engine to use. By default, this will use the C++ Standard Library implementation.
- *  GCC versions below 4.8 will happy compile regular expressions, but will fail at runtime. If using GCC under 4.9, it
- *  is recommended that you set \c JSONV_REGEX_USE_BOOST to \c 1.
- *  
- *  \def JSONV_REGEX_NAMESPACE
- *  The regular expression namespace to use. By default, this is \c std.
- *  
- *  \def JSONV_REGEX_USE_BOOST
- *  Use Boost as the regular expression engine. Sets \c JSONV_REGEX_INCLUDE to \c <boost/regex.hpp> and
- *  \c JSONV_REGEX_NAMESPACE to \c boost.
-**/
-#ifndef JSONV_REGEX_INCLUDE
-#   if defined(JSONV_REGEX_USE_BOOST) && JSONV_REGEX_USE_BOOST
-#       define JSONV_REGEX_INCLUDE   <boost/regex.hpp>
-#       define JSONV_REGEX_NAMESPACE boost
-#   else
-#       define JSONV_REGEX_INCLUDE   <regex>
-#       define JSONV_REGEX_NAMESPACE std
-#   endif
-#elif !defined(JSONV_REGEX_NAMESPACE)
-#   error "JSONV_REGEX_NAMESPACE is unset, but JSONV_REGEX_INCLUDE is. You must set both."
-#elif defined(JSONV_REGEX_NAMESPACE)
-#   error "JSONV_REGEX_INCLUDE is unset, but JSONV_REGEX_NAMESPACE is. You must set both."
 #endif
 
 /** \def JSONV_COMPILER_SUPPORTS_TEMPLATE_TEMPLATES

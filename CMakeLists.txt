@@ -37,6 +37,17 @@ set(JSONV_VERSION "${JSONV_VERSION_MAJOR}.${JSONV_VERSION_MINOR}.${JSONV_VERSION
    )
 message(STATUS "JSONV version: ${JSONV_VERSION}")
 
+set(CXX_STANDARD_DEFAULT "c++14")
+if (CMAKE_COMPILER_IS_GNUCC)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+    set(CXX_STANDARD_DEFAULT "c++1y")
+  endif()
+endif()
+
+set(CXX_STANDARD ${CXX_STANDARD_DEFAULT}
+    CACHE STRING "The version of the language to use (only applies to GCC and Clang)."
+   )
+
 option(JSONV_BUILD_TESTS
        "Should the unit test library get built?"
        OFF
@@ -48,6 +59,10 @@ if (JSONV_BUILD_TESTS)
     list(APPEND REQUIRED_BOOST_LIBRARIES "filesystem" "system")
 endif()
 
+#######################
+# Regex Configuration #
+#######################
+
 option(USE_BOOST_REGEX
        "Controls the variable JSONV_REGEX_USE_BOOST (see C++ documentation)."
        OFF
@@ -56,6 +71,10 @@ if (USE_BOOST_REGEX)
     add_definitions("-DJSONV_REGEX_USE_BOOST=1")
     list(APPEND REQUIRED_BOOST_LIBRARIES "regex")
 endif(USE_BOOST_REGEX)
+
+#############################
+# String View Configuration #
+#############################
 
 option(USE_BOOST_STRING_VIEW
        "Controls the variable JSONV_STRING_VIEW_USE_BOOST (see C++ documentation)."
@@ -72,6 +91,38 @@ option(USE_STD_STRING_VIEW
 if (USE_STD_STRING_VIEW)
     add_definitions("-DJSONV_STRING_VIEW_USE_STD=1")
 endif(USE_STD_STRING_VIEW)
+
+##########################
+# Optional Configuration #
+##########################
+
+option(USE_STD_OPTIONAL
+       "Controls the variable JSONV_OPTIONAL_USE_STD (see C++ documentation)."
+       OFF
+      )
+if (USE_STD_OPTIONAL)
+    add_definitions("-DJSONV_OPTIONAL_USE_STD=1")
+endif()
+
+option(USE_STD_EXPERIMENTAL_OPTIONAL
+       "Controls the variable JSONV_OPTIONAL_USE_STD_EXPERIMENTAL (see C++ documentation)."
+       OFF
+      )
+if (USE_STD_EXPERIMENTAL_OPTIONAL)
+    add_definitions("-DJSONV_OPTIONAL_USE_STD_EXPERIMENTAL=1")
+endif()
+
+option(USE_BOOST_OPTIONAL
+       "Controls the variable JSONV_OPTIONAL_USE_BOOST (see C++ documentation)."
+       OFF
+      )
+if (USE_BOOST_OPTIONAL)
+    add_definitions("-DJSONV_OPTIONAL_USE_BOOST=1")
+endif()
+
+########################
+# Locale Configuration #
+########################
 
 if (CMAKE_COMPILER_IS_GNUCC)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.0")
@@ -121,7 +172,7 @@ option(BENCHMARK
 if(WIN32)
 else(WIN32)
     # Reasonable compilers...
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11 -pedantic -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=${CXX_STANDARD} -pedantic -Wall -Wextra")
     set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -ggdb")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ggdb")
 endif(WIN32)
