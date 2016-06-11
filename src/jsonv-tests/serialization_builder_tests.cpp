@@ -8,10 +8,13 @@
  *
  *  \author Travis Gockel (travis@gockelhut.com)
 **/
+
+
 #include "test.hpp"
 
 #include <jsonv/parse.hpp>
 #include <jsonv/serialization_builder.hpp>
+#include <jsonv/serialization_optional.hpp>
 
 #include <set>
 #include <sstream>
@@ -34,9 +37,11 @@ struct person
            std::string       l,
            int               a,
            std::set<long>    favorite_numbers = std::set<long>{},
-           std::vector<long> winning_numbers  = std::vector<long>{}
+           std::vector<long> winning_numbers  = std::vector<long>{},
+           optional<std::string>  m = nullopt
           ) :
             firstname(std::move(f)),
+            middle_name(m),
             lastname(std::move(l)),
             age(a),
             favorite_numbers(std::move(favorite_numbers)),
@@ -44,6 +49,7 @@ struct person
     { }
 
     std::string       firstname;
+    optional<std::string>  middle_name;
     std::string       lastname;
     int               age;
     std::set<long>    favorite_numbers;
@@ -51,13 +57,13 @@ struct person
 
     bool operator==(const person& other) const
     {
-        return std::tie(firstname,       lastname,       age,       favorite_numbers,       winning_numbers)
-            == std::tie(other.firstname, other.lastname, other.age, other.favorite_numbers, other.winning_numbers);
+        return std::tie(firstname,       middle_name,       lastname,       age,       favorite_numbers,       winning_numbers)
+            == std::tie(other.firstname, other.middle_name, other.lastname, other.age, other.favorite_numbers, other.winning_numbers);
     }
 
     friend std::ostream& operator<<(std::ostream& os, const person& p)
     {
-        return os << p.firstname << " " << p.lastname << " (" << p.age << ")";
+        return os << p.firstname << " " << (p.middle_name ? *p.middle_name+" " : "") << p.lastname << " (" << p.age << ")";
     }
 
     friend std::string to_string(const person& p)
@@ -75,17 +81,20 @@ TEST(serialization_builder_members)
     formats base = formats_builder()
                     .type<person>()
                         .member("firstname", &person::firstname)
+                        .member("middle_name", &person::middle_name)
                         .member("lastname",  &person::lastname)
                         .member("age",       &person::age)
+                        .register_container<optional<std::string>>()
                     .check_references(formats::defaults())
                 ;
     formats fmt = formats::compose({ base, formats::defaults() });
 
     person p("Bob", "Builder", 29);
     to_string(p);
-    value expected = object({ { "firstname", p.firstname },
-                              { "lastname",  p.lastname  },
-                              { "age",       p.age       }
+    value expected = object({ { "firstname",    p.firstname },
+                              { "middle_name",  jsonv::null },
+                              { "lastname",     p.lastname  },
+                              { "age",          p.age       }
                             }
                            );
     value encoded = to_json(p, fmt);
@@ -382,7 +391,11 @@ TEST(serialization_builder_enum_strings)
                                { ring::heart, "heart" },
                              }
                             )
+            #if JSONV_COMPILER_SUPPORTS_TEMPLATE_TEMPLATES
             .register_containers<ring, std::vector>()
+            #else
+            .register_container<std::vector<ring>>()
+            #endif
             .check_references(jsonv::formats::defaults());
     
     ensure(ring::fire  == jsonv::extract<ring>("fire",  formats));
@@ -418,7 +431,11 @@ TEST(serialization_builder_enum_strings_icase)
                                { ring::heart, "heart" },
                              }
                             )
+            #if JSONV_COMPILER_SUPPORTS_TEMPLATE_TEMPLATES
             .register_containers<ring, std::vector>()
+            #else
+            .register_container<std::vector<ring>>()
+            #endif
             .check_references(jsonv::formats::defaults());
     
     ensure(ring::fire  == jsonv::extract<ring>("fiRe",  formats));
@@ -456,7 +473,11 @@ TEST(serialization_builder_enum_strings_icase_multimapping)
                                { ring::heart, "useless" },
                              }
                             )
-            .register_containers<ring, std::vector>()
+             #if JSONV_COMPILER_SUPPORTS_TEMPLATE_TEMPLATES
+             .register_containers<ring, std::vector>()
+             #else
+             .register_container<std::vector<ring>>()
+             #endif
             .check_references(jsonv::formats::defaults());
     
     ensure(ring::fire  == jsonv::extract<ring>("fiRe",  formats));
