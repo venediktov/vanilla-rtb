@@ -9,35 +9,32 @@
  *  \author Travis Gockel (travis@gockelhut.com)
 **/
 #include <jsonv/detail/token_patterns.hpp>
+#include <jsonv/detail/regex.hpp>
 
 #include <algorithm>
 #include <cassert>
 #include <iterator>
-
-#include JSONV_REGEX_INCLUDE
 
 namespace jsonv
 {
 namespace detail
 {
 
-namespace regex_ns = JSONV_REGEX_NAMESPACE;
-
 class re_values
 {
 public:
-    static const regex_ns::regex& number()
+    static const regex::regex& number()
     {
         return instance().re_number;
     }
     
     /** Like \c number, but will successfully match an EOF-ed value. **/
-    static const regex_ns::regex& number_trunc()
+    static const regex::regex& number_trunc()
     {
         return instance().re_number_trunc;
     }
 
-    static const regex_ns::regex& simplestring()
+    static const regex::regex& simplestring()
     {
         return instance().re_simplestring;
     }
@@ -50,17 +47,17 @@ private:
     }
 
     re_values() :
-            syntax_options(regex_ns::regex_constants::ECMAScript | regex_ns::regex_constants::optimize),
+            syntax_options(regex::regex_constants::ECMAScript | regex::regex_constants::optimize),
             re_number(      R"(^-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+(\.[0-9]+)?)?)", syntax_options),
             re_number_trunc(R"(^-?[0-9]*(\.[0-9]*)?([eE][+-]?[0-9]*(\.[0-9]*)?)?)", syntax_options),
             re_simplestring(R"(^[a-zA-Z_$][a-zA-Z0-9_$]*)",                         syntax_options)
     { }
 
 private:
-    const regex_ns::regex_constants::syntax_option_type syntax_options;
-    const regex_ns::regex re_number;
-    const regex_ns::regex re_number_trunc;
-    const regex_ns::regex re_simplestring;
+    const regex::regex_constants::syntax_option_type syntax_options;
+    const regex::regex re_number;
+    const regex::regex re_number_trunc;
+    const regex::regex re_simplestring;
 };
 
 template <std::ptrdiff_t N>
@@ -96,12 +93,12 @@ static match_result match_null(const char* begin, const char* end, token_kind& k
 
 static match_result match_pattern(const char*            begin,
                                   const char*            end,
-                                  const regex_ns::regex& pattern,
+                                  const regex::regex&    pattern,
                                   std::size_t&           length
                                  )
 {
-    regex_ns::cmatch match;
-    if (regex_ns::regex_search(begin, end, match, pattern))
+    regex::cmatch match;
+    if (regex::regex_search(begin, end, match, pattern))
     {
         length = match.length(0);
         return begin + length == end ? match_result::complete_eof : match_result::complete;
@@ -116,8 +113,8 @@ static match_result match_pattern(const char*            begin,
 static match_result match_number(const char* begin, const char* end, token_kind& kind, std::size_t& length)
 {
     kind = token_kind::number;
-    regex_ns::cmatch match;
-    if (regex_ns::regex_search(begin, end, match, re_values::number()))
+    regex::cmatch match;
+    if (regex::regex_search(begin, end, match, re_values::number()))
     {
         length = match.length(0);
         if (begin + length == end)
@@ -137,7 +134,7 @@ static match_result match_number(const char* begin, const char* end, token_kind&
     else
     {
         length = 1;
-        return regex_ns::regex_search(begin, end, match, re_values::number_trunc())
+        return regex::regex_search(begin, end, match, re_values::number_trunc())
                ? match_result::incomplete_eof
                : match_result::unmatched;
     }
