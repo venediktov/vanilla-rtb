@@ -5,6 +5,8 @@ Using modern C++11/14  features and latest BOOST libraries
 
 [![Gitter Chat](http://img.shields.io/badge/chat-online-brightgreen.svg)](https://gitter.im/vanilla-rtb/Lobby)
 
+[![Join the chat at https://gitter.im/venediktov/vanilla-rtb](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dwyl/?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Structure ( work in progress ) :
 * [/](../../tree/master/) -- the root directory
    * [boost-process/](../../tree/master/boost-process/) -- C++11 not in official boost stack
