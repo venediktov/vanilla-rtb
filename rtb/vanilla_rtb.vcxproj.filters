@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\vvenedik\Source\Repos\vanilla-rtb\rtb\core\logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\vvenedik\Source\Repos\vanilla-rtb\rtb\core\openrtb.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\vvenedik\Source\Repos\vanilla-rtb\rtb\datacache\entity_cache.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\vvenedik\Source\Repos\vanilla-rtb\rtb\datacache\memory_types.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\vvenedik\Source\Repos\vanilla-rtb\rtb\DSL\generic_dsl.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\vvenedik\Source\Repos\vanilla-rtb\rtb\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{F7FC673B-3A3B-3DF0-AF59-6178C4BA74AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{BD95CBCF-1AFD-34A6-9940-DA95D6A1B1A7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

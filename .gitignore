@@ -87,3 +87,5 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 .pc
+/jsonv/ALL_BUILD.vcxproj
+*.suo
