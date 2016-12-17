@@ -3,9 +3,6 @@ Real Time Bidding (RTB) - Demand Side Platform framework
 
 Using modern C++11/14  features and latest BOOST libraries 
 
-[![Gitter Chat](http://img.shields.io/badge/chat-online-brightgreen.svg)](https://gitter.im/vanilla-rtb/Lobby)
-
-
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/vanilla-rtb/Lobby)
 
 Structure ( work in progress ) :
