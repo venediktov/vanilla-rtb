@@ -10,6 +10,7 @@ Structure ( work in progress ) :
 * [/](../../tree/master/) -- the root directory
    * [boost-process/](../../tree/master/boost-process/) -- C++11 not in official boost stack
    * [boost-dll/](../../tree/master/boost-dll/) -- C++11 not in official boost stack
+   * [CRUD/](../../tree/master/CRUD/) -- Restful web-service written in C++11 based on boost.ASIO and CRUD handlers
    * [rtb/](../../tree/master/rtb/) -- C++11 framework and sandbox for testing platform solution 
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project 
       * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast lookups and matching
