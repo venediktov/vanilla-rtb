@@ -24,4 +24,5 @@ Structure ( work in progress ) :
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash
 * git subtree pull --prefix boost-process git@github.com:BorisSchaeling/boost-process.git master --squash
 * git subtree pull --prefix boost-dll git@github.com:apolukhin/Boost.DLL.git master --squash
+* git subtree pull --prefix CRUD git@github.com:venediktov/CRUD.git  master --squash
 
