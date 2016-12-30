@@ -2,7 +2,7 @@
 *.swp
 *.orig
 *.kdev4
-build
+build*
 .kdev*
 *.kdev4
 packages/

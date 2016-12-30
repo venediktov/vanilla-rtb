@@ -1,7 +1,7 @@
 /** \file jsonv/serialization_builder.hpp
  *  DSL for building \c formats.
  *  
- *  Copyright (c) 2015 by Travis Gockel. All rights reserved.
+ *  Copyright (c) 2015-2016 by Travis Gockel. All rights reserved.
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the Apache License
  *  as published by the Apache Software Foundation, either version 2 of the License, or (at your option) any later
@@ -104,7 +104,7 @@ namespace jsonv
  *              .member("employees",  &company::employees)
  *              .member("candidates", &company::candidates)
  *          .register_containers<company, std::vector, std::list>()
- *          .check_references()
+ *          .check_references(jsonv::formats::defaults())
  *      ;
  *  \endcode
  * 
@@ -171,7 +171,7 @@ namespace jsonv
  *  This is evaluated \e immediately, so it is best to call this function as the very last step in the DSL.
  *  
  *  \code
- *    .check_references()
+ *    .check_references(jsonv::formats::defaults())
  *  \endcode
  *  
  *  \paragraph serialization_builder_dsl_ref_formats_level_reference_type reference_type
@@ -203,7 +203,18 @@ namespace jsonv
  *  \code
  *    .register_adapter(my_type::get_adapter())
  *  \endcode
- * 
+ *
+ *  \paragraph serialization_builder_dsl_ref_formats_level_register_optional register_optional
+ *
+ *   - <tt>register_optional&lt;TOptional&gt;()</tt>
+ *
+ *  Similar to \c register_adapter, but automatically create an <tt>optional_adapter&lt;TOptional&gt;</tt> to store.
+ *
+ *  \code
+ *    .register_optional<std::optional<int>>()
+ *    .register_optional<boost::optional<double>>()
+ *  \endcode
+ *
  *  \paragraph serialization_builder_dsl_ref_formats_level_register_container register_container
  *  
  *   - <tt>register_container&lt;TContainer&gt;()</tt>
@@ -231,6 +242,17 @@ namespace jsonv
  *  
  *  \note
  *  Not supported in MSVC 14 (CTP 5).
+ *
+ *  \paragraph serialization_builder_dsl_ref_formats_level_register_wrapper register_wrapper
+ *
+ *   - <tt>register_wrapper&lt;TWrapper&gt;()</tt>
+ *
+ *  Similar to \c register_adapter, but automatically create an <tt>wrapper_adapter&lt;TWrapper&gt;</tt> to store.
+ *
+ *  \code
+ *    .register_optional<std::optional<int>>()
+ *    .register_optional<boost::optional<double>>()
+ *  \endcode
  *  
  *  \paragraph serialization_builder_dsl_ref_formats_level_enum_type enum_type
  *  
@@ -327,6 +349,27 @@ namespace jsonv
  *  Call the given \a perform function during the \c extract operation, but before performing any extraction. This can
  *  be called multiple times -- all functions will be called in the order they are provided.
  *  
+ *  \paragraph serialization_builder_dsl_ref_type_level_default_on_null type_default_on_null
+ *  
+ *   - <tt>type_default_on_null()</tt>
+ *   - <tt>type_default_on_null(bool on)</tt>
+ *  
+ *  If the JSON value \c null is in the input, should this type take on some default?
+ *  This should be used with \ref serialization_builder_dsl_ref_type_level_type_default_value type_default_value.
+ *  
+ *  \paragraph serialization_builder_dsl_ref_type_level_type_default_value
+ *  
+ *   - <tt>type_default_value(T value)</tt>
+ *   - <tt>type_default_value(std::function&lt;T (const extraction_context& context)&gt;)</tt>
+ *  
+ *  What value should be used to create the default for this type?
+ *  
+ *  \code
+ *    .type<my_type>()
+ *        .type_default_on_null()
+ *        .type_default_value(my_type("default"))
+ *  \endcode
+ *  
  *  \paragraph serialization_builder_dsl_ref_type_level_on_extract_extra_keys on_extract_extra_keys
  *  
  *   - <tt>on_extract_extra_keys(std::function&lt;void (const extraction_context&   context,
@@ -362,6 +405,10 @@ namespace jsonv
  *  \paragraph serialization_builder_dsl_ref_type_narrowing_member member
  *  
  *   - <tt>member(std::string name, TMember T::*selector)</tt>
+ *   - <tt>member(std::string name, const TMember& (*access)(const T&), void (*mutate)(T&, TMember&&))</tt>
+ *   - <tt>member(std::string name, const TMember& (T::*access)() const, TMember& (T::*mutable_access)())</tt>
+ *   - <tt>member(std::string name, const TMember& (T::*access)() const, void (T::*mutate)(TMember))</tt>
+ *   - <tt>member(std::string name, const TMember& (T::*access)() const, void (T::*mutate)(TMember&&))</tt>
  *  
  *  Adds a member to the type we are currently building. By default, the member will be serialized with the key of the
  *  given \a name and the extractor will search for the given \a name. If you wish to change properties of this field,
@@ -371,6 +418,7 @@ namespace jsonv
  *    .type<my_type>()
  *        .member("x", &my_type::x)
  *        .member("y", &my_type::y)
+ *        .member("thing", &my_type::get_thing, &my_type::set_thing)
  *  \endcode
  *  
  *  
@@ -504,15 +552,21 @@ public:
     formats_builder& reference_type(std::type_index typ);
     formats_builder& reference_type(std::type_index type, std::type_index from);
     
-    formats_builder& check_references(formats other, const std::string& name = "");
-    
+    template <typename TOptional>
+    formats_builder& register_optional();
+
     template <typename TContainer>
     formats_builder& register_container();
-    
+
     #if JSONV_COMPILER_SUPPORTS_TEMPLATE_TEMPLATES
     template <typename T, template <class...> class... TTContainers>
     formats_builder& register_containers();
     #endif
+
+    template <typename TWrapper>
+    formats_builder& register_wrapper();
+
+    formats_builder& check_references(formats other, const std::string& name = "");
     
     operator formats() const;
     
@@ -528,8 +582,38 @@ public:
             owner(owner)
     { }
     
+    adapter_builder<T>& type_default_on_null(bool on = true);
+    
+    adapter_builder<T>& type_default_value(std::function<T (const extraction_context& ctx)> create);
+
+    adapter_builder<T>& type_default_value(const T& value);
+    
     template <typename TMember>
     member_adapter_builder<T, TMember> member(std::string name, TMember T::*selector);
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string                              name,
+                                              std::function<const TMember& (const T&)> access,
+                                              std::function<void (T&, TMember&&)>      mutate
+                                             );
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string    name,
+                                              const TMember& (T::*access)() const,
+                                              TMember&       (T::*mutable_access)()
+                                             );
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string name,
+                                              const TMember& (T::*access)() const,
+                                              void (T::*mutate)(TMember)
+                                             );
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string name,
+                                              const TMember& (T::*access)() const,
+                                              void (T::*mutate)(TMember&&)
+                                             );
     
     adapter_builder<T>& pre_extract(std::function<void (const extraction_context&, const value& from)> perform);
     
@@ -558,9 +642,21 @@ class member_adapter_impl :
         public member_adapter<T>
 {
 public:
-    explicit member_adapter_impl(std::string name, TMember T::*selector) :
+    using mutator_type  = std::function<void (T&, TMember&&)>;
+    using accessor_type = std::function<const TMember& (const T&)>;
+
+public:
+    explicit member_adapter_impl(std::string name, mutator_type mutator, accessor_type access) :
             _names({ std::move(name) }),
-            _selector(selector)
+            _set_value(std::move(mutator)),
+            _get_value(std::move(access))
+    { }
+
+    explicit member_adapter_impl(std::string name, TMember T::*selector) :
+            member_adapter_impl(std::move(name),
+                                [selector] (T& value, TMember&& x) { value.*selector = std::move(x); },
+                                [selector] (const T& value) -> const TMember& { return value.*selector; }
+                               )
     { }
     
     virtual void mutate(const extraction_context& context, const value& from, T& out) const override
@@ -583,15 +679,15 @@ public:
         }
         
         if (use_default)
-            (out.*_selector) = _default_value(context, from);
+            _set_value(out, _default_value(context, from));
         else
-            (out.*_selector) = context.extract_sub<TMember>(from, iter->first);
+            _set_value(out, context.extract_sub<TMember>(from, iter->first));
     }
     
     virtual void to_json(const serialization_context& context, const T& from, value& out) const override
     {
         if (should_encode(context, from))
-            out.insert({ _names.at(0), context.to_json(from.*_selector) });
+            out.insert({ _names.at(0), context.to_json(_get_value(from)) });
     }
     
     virtual bool has_extract_key(string_view key) const override
@@ -651,7 +747,7 @@ private:
     bool should_encode(const serialization_context& context, const T& from) const
     {
         if (_should_encode)
-            return _should_encode(context, from.*_selector);
+            return _should_encode(context, _get_value(from));
         else
             return true;
     }
@@ -662,7 +758,8 @@ private:
     
 private:
     std::vector<std::string>                                           _names;
-    TMember T::*                                                       _selector;
+    mutator_type                                                       _set_value;
+    accessor_type                                                      _get_value;
     std::function<bool (const serialization_context&, const TMember&)> _should_encode;
     std::function<TMember (const extraction_context&, const value&)>   _default_value;
     bool                                                               _default_on_null = false;
@@ -817,6 +914,23 @@ public:
             adapter_builder(owner, [] (const adapter_builder<T>&) { })
     { }
     
+    adapter_builder<T>& type_default_on_null(bool on = true)
+    {
+        _adapter->_default_on_null = on;
+        return *this;
+    }
+    
+    adapter_builder<T>& type_default_value(std::function<T (const extraction_context& ctx)> create)
+    {
+        _adapter->_create_default = std::move(create);
+        return *this;
+    }
+    
+    adapter_builder<T>& type_default_value(const T& value)
+    {
+        return type_default_value([value] (const extraction_context&) { return T(value); });
+    }
+    
     template <typename TMember>
     member_adapter_builder<T, TMember> member(std::string name, TMember T::*selector)
     {
@@ -827,6 +941,57 @@ public:
         member_adapter_builder<T, TMember> builder(formats_builder_dsl::owner, this, ptr.get());
         _adapter->_members.emplace_back(std::move(ptr));
         return builder;
+    }
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string                              name,
+                                              std::function<const TMember& (const T&)> access,
+                                              std::function<void (T&, TMember&&)>      mutate
+                                             )
+    {
+        std::unique_ptr<detail::member_adapter_impl<T, TMember>> ptr
+            (
+                new detail::member_adapter_impl<T, TMember>(std::move(name), std::move(mutate), std::move(access))
+            );
+        member_adapter_builder<T, TMember> builder(formats_builder_dsl::owner, this, ptr.get());
+        _adapter->_members.emplace_back(std::move(ptr));
+        return builder;
+    }
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string    name,
+                                              const TMember& (T::*access)() const,
+                                              TMember&       (T::*mutable_access)()
+                                             )
+    {
+        return member<TMember>(std::move(name),
+                               access,
+                               [mutable_access] (T& x, TMember&& val) { (x.*mutable_access)() = std::move(val); }
+                              );
+    }
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string name,
+                                              const TMember& (T::*access)() const,
+                                              void (T::*mutate)(TMember)
+                                             )
+    {
+        return member<TMember>(std::move(name),
+                               std::function<const TMember& (const T&)>(access),
+                               [mutate] (T& x, TMember val) { (x.*mutate)(std::move(val)); }
+                              );
+    }
+
+    template <typename TMember>
+    member_adapter_builder<T, TMember> member(std::string name,
+                                              const TMember& (T::*access)() const,
+                                              void (T::*mutate)(TMember&&)
+                                             )
+    {
+        return member<TMember>(std::move(name),
+                               std::function<const TMember& (const T&)>(access),
+                               std::function<void (T&, TMember&&)>(mutate)
+                              );
     }
     
     adapter_builder<T>& pre_extract(std::function<void (const extraction_context&, const value& from)> perform)
@@ -875,11 +1040,17 @@ private:
             public adapter_for<T>
     {
     public:
+        adapter_impl() :
+                _default_on_null(false)
+        { }
     
         virtual T create(const extraction_context& context, const value& from) const override
         {
             if (_pre_extract)
                 _pre_extract(context, from);
+            
+            if (_default_on_null && from.is_null())
+                return _create_default(context);
             
             T out;
             for (const auto& member : _members)
@@ -897,6 +1068,8 @@ private:
         
         std::deque<std::unique_ptr<detail::member_adapter<T>>>             _members;
         std::function<void (const extraction_context&, const value& from)> _pre_extract;
+        std::function<T (const extraction_context&)>                       _create_default;
+        bool                                                               _default_on_null;
     };
     
 private:
@@ -1048,11 +1221,30 @@ public:
         _formats.register_adapter(std::move(p));
         return *this;
     }
-    
+
+    template <typename TOptional>
+    formats_builder& register_optional()
+    {
+        reference_type(std::type_index(typeid(typename TOptional::value_type)), std::type_index(typeid(TOptional)));
+        std::unique_ptr<optional_adapter<TOptional>> p(new optional_adapter<TOptional>);
+        _formats.register_adapter(std::move(p));
+        return *this;
+    }
+
     template <typename TContainer>
     formats_builder& register_container()
     {
+        reference_type(std::type_index(typeid(typename TContainer::value_type)), std::type_index(typeid(TContainer)));
         std::unique_ptr<container_adapter<TContainer>> p(new container_adapter<TContainer>);
+        _formats.register_adapter(std::move(p));
+        return *this;
+    }
+
+    template <typename TWrapper>
+    formats_builder& register_wrapper()
+    {
+        reference_type(std::type_index(typeid(typename TWrapper::value_type)), std::type_index(typeid(TWrapper)));
+        std::unique_ptr<wrapper_adapter<TWrapper>> p(new wrapper_adapter<TWrapper>);
         _formats.register_adapter(std::move(p));
         return *this;
     }
@@ -1148,6 +1340,12 @@ formats_builder& formats_builder_dsl::extend(F&& f)
     return owner->extend(std::forward<F>(f));
 }
 
+template <typename TOptional>
+formats_builder& formats_builder_dsl::register_optional()
+{
+    return owner->register_optional<TOptional>();
+}
+
 template <typename TContainer>
 formats_builder& formats_builder_dsl::register_container()
 {
@@ -1162,11 +1360,79 @@ formats_builder& formats_builder_dsl::register_containers()
 }
 #endif
 
+template <typename TWrapper>
+formats_builder& formats_builder_dsl::register_wrapper()
+{
+    return owner->register_container<TWrapper>();
+}
+
+template <typename T>
+adapter_builder<T>& adapter_builder_dsl<T>::type_default_on_null(bool on)
+{
+    return owner->type_default_on_null(on);
+}
+
+template <typename T>
+adapter_builder<T>& adapter_builder_dsl<T>::type_default_value(std::function<T (const extraction_context& ctx)> create)
+{
+    return owner->type_default_value(std::move(create));
+}
+
+template <typename T>
+adapter_builder<T>& adapter_builder_dsl<T>::type_default_value(const T& value)
+{
+    return owner->type_default_value(value);
+}
+
 template <typename T>
 template <typename TMember>
 member_adapter_builder<T, TMember> adapter_builder_dsl<T>::member(std::string name, TMember T::*selector)
 {
     return owner->member(std::move(name), selector);
+}
+
+template <typename T>
+template <typename TMember>
+member_adapter_builder<T, TMember>
+adapter_builder_dsl<T>::member(std::string                              name,
+                               std::function<const TMember& (const T&)> access,
+                               std::function<void (T&, TMember&&)>      mutate
+                              )
+{
+    return owner->member(std::move(name), std::move(access), std::move(mutate));
+}
+
+template <typename T>
+template <typename TMember>
+member_adapter_builder<T, TMember>
+adapter_builder_dsl<T>::member(std::string    name,
+                               const TMember& (T::*access)() const,
+                               TMember&       (T::*mutable_access)()
+                              )
+{
+    return owner->member(std::move(name), access, mutable_access);
+}
+
+template <typename T>
+template <typename TMember>
+member_adapter_builder<T, TMember>
+adapter_builder_dsl<T>::member(std::string name,
+                               const TMember& (T::*access)() const,
+                               void (T::*mutate)(TMember)
+                              )
+{
+    return owner->member(std::move(name), access, mutate);
+}
+
+template <typename T>
+template <typename TMember>
+member_adapter_builder<T, TMember>
+adapter_builder_dsl<T>::member(std::string name,
+                               const TMember& (T::*access)() const,
+                               void (T::*mutate)(TMember&&)
+                              )
+{
+    return owner->member(std::move(name), access, mutate);
 }
 
 template <typename T>

@@ -22,7 +22,9 @@
     <ClCompile Include="..\..\..\src\jsonv-tests\algorithm_compare_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\algorithm_map_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\array_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\benchmark_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\char_convert_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\chrono_io.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\coerce_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\demangle_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\detail\token_patterns_tests.cpp" />
@@ -37,6 +39,7 @@
     <ClCompile Include="..\..\..\src\jsonv-tests\path_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\serialization_builder_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\serialization_tests.cpp" />
+    <ClCompile Include="..\..\..\src\jsonv-tests\stopwatch.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\string_tests.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\test.cpp" />
     <ClCompile Include="..\..\..\src\jsonv-tests\tokenizer_tests.cpp" />
@@ -47,10 +50,13 @@
     <ClCompile Include="..\..\..\src\jsonv-tests\value_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\src\jsonv-tests\chrono_io.hpp" />
     <ClInclude Include="..\..\..\src\jsonv-tests\filesystem_util.hpp" />
+    <ClInclude Include="..\..\..\src\jsonv-tests\stopwatch.hpp" />
     <ClInclude Include="..\..\..\src\jsonv-tests\test.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\src\jsonv-tests\data\canada.json" />
     <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different.json" />
     <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different_left_longer.json" />
     <None Include="..\..\..\src\jsonv-tests\data\diffs\arrays_different_recursive.json" />

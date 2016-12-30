@@ -48,12 +48,12 @@ struct person
             winning_numbers(std::move(winning_numbers))
     { }
 
-    std::string       firstname;
-    optional<std::string>  middle_name;
-    std::string       lastname;
-    int               age;
-    std::set<long>    favorite_numbers;
-    std::vector<long> winning_numbers;
+    std::string           firstname;
+    optional<std::string> middle_name;
+    std::string           lastname;
+    int                   age;
+    std::set<long>        favorite_numbers;
+    std::vector<long>     winning_numbers;
 
     bool operator==(const person& other) const
     {
@@ -84,7 +84,7 @@ TEST(serialization_builder_members)
                         .member("middle_name", &person::middle_name)
                         .member("lastname",  &person::lastname)
                         .member("age",       &person::age)
-                        .register_container<optional<std::string>>()
+                        .register_optional<optional<std::string>>()
                     .check_references(formats::defaults())
                 ;
     formats fmt = formats::compose({ base, formats::defaults() });
@@ -253,11 +253,7 @@ TEST(serialization_builder_encode_checks)
                 ;
     formats fmt = formats::compose({ base, formats::defaults() });
 
-#ifdef __APPLE__
-    person p("Bob", "Builder", 20, std::set<long>{}, { 1 });
-#else
-    person p("Bob", "Builder", 20, {}, { 1 });
-#endif
+    person p("Bob", "Builder", 20, std::set<long>(), { 1 });
     value expected = object({ { "firstname", p.firstname },
                               { "lastname",  p.lastname  },
                               { "winning_numbers", array({ 1 }) },
@@ -283,6 +279,15 @@ struct foo
   int         a;
   int         b;
   std::string c;
+  
+  static foo create_default()
+  {
+      foo out;
+      out.a = 0;
+      out.b = 1;
+      out.c = "default";
+      return out;
+  }
 };
 
 struct bar
@@ -358,6 +363,69 @@ TEST(serialization_builder_extra_unchecked_key_throws)
     {
         ensure_eq(path({"x"}), err.path());
     }
+}
+
+TEST(serialization_builder_type_based_default_value)
+{
+    jsonv::formats local_formats =
+        jsonv::formats_builder()
+            .type<foo>()
+                .member("a", &foo::a)
+                .member("b", &foo::b)
+                .member("c", &foo::c)
+                .type_default_on_null()
+                .type_default_value(foo::create_default())
+        ;
+    jsonv::formats format = jsonv::formats::compose({ jsonv::formats::defaults(), local_formats });
+    
+    auto f = jsonv::extract<foo>(value(), format);
+    auto e = foo::create_default();
+    ensure_eq(e.a, f.a);
+    ensure_eq(e.b, f.b);
+    ensure_eq(e.c, f.c);
+}
+
+class wrapped_things
+{
+public:
+    wrapped_things() = default;
+
+    wrapped_things(int x, int y) :
+            _x(x),
+            _y(y)
+    { }
+
+    const int& x() const { return _x; }
+    int&       x()       { return _x; }
+
+    const int& y() const  { return _y; }
+    void       y(int&& val) { _y = val; }
+
+    friend bool operator==(const wrapped_things& a, const wrapped_things& b)
+    {
+        return a.x() == b.x()
+            && a.y() == b.y();
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const wrapped_things& val)
+    {
+        return os << '(' << val.x() << ", " << val.y() << ')';
+    }
+
+private:
+    int _x;
+    int _y;
+};
+
+TEST(serialization_builder_access_mutate)
+{
+    jsonv::formats local_formats =
+        jsonv::formats_builder()
+            .type<wrapped_things>()
+                .member("x", &wrapped_things::x, &wrapped_things::x)
+                .member("y", &wrapped_things::y, &wrapped_things::y)
+        ;
+    jsonv::formats format = jsonv::formats::compose({ jsonv::formats::defaults(), local_formats });
 }
 
 }

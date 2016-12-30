@@ -12,15 +12,27 @@
 #define __JSONV_CONFIG_HPP_INCLUDED__
 
 /** \def JSONV_USER_CONFIG
- *  \brief A user-defined configuration file to be included before all other JsonVoorhees content.
+ *  \brief A user-defined configuration file to be included before all other JSON Voorhees content.
 **/
 #ifdef JSONV_USER_CONFIG
 #   include JSONV_USER_CONFIG
 #endif
 
 #define JSONV_VERSION_MAJOR 1
-#define JSONV_VERSION_MINOR 1
-#define JSONV_VERSION_PATCH 2
+#define JSONV_VERSION_MINOR 2
+#define JSONV_VERSION_PATCH 0
+
+/** \def JSONV_DEBUG
+ *  \brief Was JSON Voorhees compiled in debug mode?
+ *  This value must be the same between when the SO was built and when you are compiling. In general, this is not useful
+ *  outside of library maintainers.
+ *
+ *  \warning
+ *  Keep in mind this value is \e always defined. Use `#if JSONV_DEBUG`, \e not `#ifdef JSONV_DEBUG`.
+**/
+#ifndef JSONV_DEBUG
+#   define JSONV_DEBUG 0
+#endif
 
 /** \def JSONV_SO
  *  \brief Are you using shared objects (DLLs in Windows)?
