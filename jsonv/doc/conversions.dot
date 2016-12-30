@@ -9,12 +9,12 @@ digraph jsonv {
   class   [label="C++ class"]
   dsl     [label="C++ DSL"]
   
-  value   -> str     [label="to_string"]
+  value   -> str     [label="to_string", URL="\ref jsonv::to_string(jsonv::value)"]
   value   -> ostream [label="operator<<"]
-  str     -> value   [label="parse"]
-  istream -> value   [label="parse"]
+  str     -> value   [label="parse", URL="\ref jsonv::parse"]
+  istream -> value   [label="parse", URL="\ref jsonv::parse"]
   value   -> value   [label="map, merge, diff, ..."]
-  value   -> class   [label="extract"]
-  class   -> value   [label="to_json"]
+  value   -> class   [label="extract", URL="\ref jsonv::extract"]
+  class   -> value   [label="to_json", URL="\ref jsonv::to_json"]
   dsl     -> value   [label="value, object, array"]
 }

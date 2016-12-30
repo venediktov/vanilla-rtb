@@ -530,27 +530,17 @@ public:
     template <typename T>
     T extract(const value& from) const
     {
-        try
-        {
-            typename std::aligned_storage<sizeof(T), alignof(T)>::type place[sizeof(T)];
-            T* ptr = reinterpret_cast<T*>(place);
-            formats().extract(typeid(T), from, static_cast<void*>(ptr), *this);
-            auto destroy = detail::on_scope_exit([ptr] { ptr->~T(); });
-            return std::move(*ptr);
-        }
-        catch (const extraction_error&)
-        {
-            throw;
-        }
-        catch (const std::exception& ex)
-        {
-            throw extraction_error(*this, ex.what());
-        }
-        catch (...)
-        {
-            throw extraction_error(*this, "");
-        }
+        typename std::aligned_storage<sizeof(T), alignof(T)>::type place[1];
+        T* ptr = reinterpret_cast<T*>(place);
+        extract(typeid(T), from, static_cast<void*>(ptr));
+        auto destroy = detail::on_scope_exit([ptr] { ptr->~T(); });
+        return std::move(*ptr);
     }
+    
+    void extract(const std::type_info&     type,
+                 const value&              from,
+                 void*                     into
+                ) const;
     
     /** Attempt to extract a \c T from <tt>from.at_path(subpath)</tt> using the \c formats associated with this context.
      *  
@@ -561,25 +551,14 @@ public:
     template <typename T>
     T extract_sub(const value& from, jsonv::path subpath) const
     {
-        extraction_context sub(*this);
-        sub._path += subpath;
-        try
-        {
-            return sub.extract<T>(from.at_path(subpath));
-        }
-        catch (const extraction_error&)
-        {
-            throw;
-        }
-        catch (const std::exception& ex)
-        {
-            throw extraction_error(sub, ex.what());
-        }
-        catch (...)
-        {
-            throw extraction_error(sub, "");
-        }
+        typename std::aligned_storage<sizeof(T), alignof(T)>::type place[1];
+        T* ptr = reinterpret_cast<T*>(place);
+        extract_sub(typeid(T), from, std::move(subpath), static_cast<void*>(ptr));
+        auto destroy = detail::on_scope_exit([ptr] { ptr->~T(); });
+        return std::move(*ptr);
     }
+    
+    void extract_sub(const std::type_info& type, const value& from, jsonv::path subpath, void* into) const;
     
     /** Attempt to extract a \c T from <tt>from.at_path({elem})</tt> using the \c formats associated with this context.
      *  

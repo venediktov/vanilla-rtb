@@ -328,6 +328,39 @@ auto make_adapter(FExtract extract, FToJson to_json_)
             (std::move(extract), std::move(to_json_));
 }
 
+/** An adapter for optional-like types. This is for convenience of creating an \c adapter for things like
+ *  \c std::optional or \c boost::optional.
+ *
+ *  \tparam TOptional The optional container type. It must have a member type named \c value_type which holds the
+ *   actual type. It must default-construct to the "none" type and have a single-argument constructor which takes a
+ *   \c TOptional::value_type. It must support a boolean conversion operator for checking if the value is none and a
+ *   unary \c operator* for getting the underlying value. Both \c std::optional and \c boost::optional possess all of
+ *   these properties.
+**/
+template <typename TOptional>
+class optional_adapter :
+        public adapter_for<TOptional>
+{
+    using element_type = typename TOptional::value_type;
+
+protected:
+    virtual TOptional create(const extraction_context& context, const value& from) const override
+    {
+        if (from.is_null())
+            return TOptional();
+        else
+            return TOptional(context.extract<element_type>(from));
+    }
+
+    virtual value to_json(const serialization_context& context, const TOptional& from) const override
+    {
+        if (from)
+            return context.to_json(*from);
+        else
+            return value();
+    }
+};
+
 /** An adapter for container types. This is for convenience of creating an \c adapter for things like \c std::vector,
  *  \c std::set and such.
  *  
@@ -358,6 +391,29 @@ protected:
         for (const element_type& x : from)
             out.push_back(context.to_json(x));
         return out;
+    }
+};
+
+/** An adapter for "wrapper" types.
+ *
+ *  \tparam TWrapper A wrapper type with a member \c value_type which represents the underlying wrapped type. This must
+ *   be explicitly convertible to and from the \c value_type.
+**/
+template <typename TWrapper>
+class wrapper_adapter :
+        public adapter_for<TWrapper>
+{
+    using element_type = typename TWrapper::value_type;
+
+protected:
+    virtual TWrapper create(const extraction_context& context, const value& from) const override
+    {
+        return TWrapper(context.extract<element_type>(from));
+    }
+
+    virtual value to_json(const serialization_context& context, const TWrapper& from) const override
+    {
+        return context.to_json(element_type(from));
     }
 };
 
@@ -405,7 +461,7 @@ public:
      *                 is also okay to have the same JSON representation for multiple C++ values. In this case, the
      *                 \e first JSON representation provided for that value will be used in \c extract.
      *  
-     *  \example
+     *  \example "Serialization: Enum Adapter"
      *  \code
      *  enum_adapter<ring>("ring",
      *                     {
