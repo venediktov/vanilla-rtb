@@ -32,7 +32,13 @@
     <ClCompile Include="..\..\..\src\jsonv-tests\array_tests.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\jsonv-tests\benchmark_tests.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\jsonv-tests\char_convert_tests.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\jsonv-tests\chrono_io.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\jsonv-tests\coerce_tests.cpp">
@@ -71,6 +77,9 @@
     <ClCompile Include="..\..\..\src\jsonv-tests\serialization_tests.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\jsonv-tests\stopwatch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\src\jsonv-tests\string_tests.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -106,14 +115,23 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\src\jsonv-tests\chrono_io.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\src\jsonv-tests\filesystem_util.hpp">
-      <Filter>src</Filter>
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\jsonv-tests\stopwatch.hpp">
+      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\jsonv-tests\test.hpp">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\src\jsonv-tests\data\canada.json">
+      <Filter>src\data</Filter>
+    </None>
     <None Include="..\..\..\src\jsonv-tests\data\generated.json">
       <Filter>src\data</Filter>
     </None>

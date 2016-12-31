@@ -573,6 +573,52 @@ extraction_context::extraction_context() :
 
 extraction_context::~extraction_context() noexcept = default;
 
+void extraction_context::extract(const std::type_info& type, const value& from, void* into) const
+{
+    try
+    {
+        formats().extract(type, from, into, *this);
+    }
+    catch (const extraction_error&)
+    {
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        throw extraction_error(*this, ex.what());
+    }
+    catch (...)
+    {
+        throw extraction_error(*this, "");
+    }
+}
+
+void extraction_context::extract_sub(const std::type_info& type,
+                                     const value&          from,
+                                     jsonv::path           subpath,
+                                     void*                 into
+                                    ) const
+{
+    extraction_context sub(*this);
+    sub._path += subpath;
+    try
+    {
+        return sub.extract(type, from.at_path(subpath), into);
+    }
+    catch (const extraction_error&)
+    {
+        throw;
+    }
+    catch (const std::exception& ex)
+    {
+        throw extraction_error(sub, ex.what());
+    }
+    catch (...)
+    {
+        throw extraction_error(sub, "");
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // serialization_context                                                                                              //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

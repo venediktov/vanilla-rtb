@@ -87,5 +87,13 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 .pc
-/jsonv/ALL_BUILD.vcxproj
+*.vcxproj
 *.suo
+*.vcxproj.filters
+*.opendb
+*.lastbuildstate
+*.tlog
+*.db
+*.sln
+*.lastbuildstate
+*.cache

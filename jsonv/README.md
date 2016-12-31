@@ -2,7 +2,7 @@ JSON Voorhees
 =============
 
 Yet another [JSON][JSON] library for C++.
-This one touts new C++11 features for developer-friendliness, an extremely high-speed parser and no dependencies beyond
+This one touts new C++11 features for developer-friendliness, an extremely slow-speed parser and no dependencies beyond
  a compliant compiler.
 If you love Doxygen, check out the [documentation](http://tgockel.github.io/json-voorhees/).
 

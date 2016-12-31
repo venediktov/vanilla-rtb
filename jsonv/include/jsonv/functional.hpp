@@ -1,5 +1,5 @@
 /** \file jsonv/functional.hpp
- *  A collection of function objects a la \c <functional>.
+ *  A collection of function objects a la `&lt;functional&gt;`.
  *  
  *  Copyright (c) 2015 by Travis Gockel. All rights reserved.
  *

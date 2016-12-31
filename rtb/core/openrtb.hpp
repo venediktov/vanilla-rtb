@@ -1,6 +1,6 @@
 #pragma once
 
-#include "unicode_string.hpp" //move to core
+#include "core/unicode_string.hpp"
 #include "jsonv/all.hpp"
 #include <boost/optional.hpp>
 #include <string>

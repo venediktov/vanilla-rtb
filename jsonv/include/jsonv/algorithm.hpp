@@ -1,5 +1,5 @@
 /** \file jsonv/algorithm.hpp
- *  A collection of algorithms a la \c <algorithm>.
+ *  A collection of algorithms a la `&lt;algorithm&gt;`.
  *  
  *  Copyright (c) 2014-2015 by Travis Gockel. All rights reserved.
  *
