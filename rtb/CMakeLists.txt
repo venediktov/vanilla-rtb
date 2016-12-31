@@ -62,3 +62,4 @@ if (Boost_LIBRARIES)
     target_link_libraries(vanilla_rtb PUBLIC ${Boost_LIBRARIES})
 endif()
 
+add_subdirectory(examples)
