@@ -126,23 +126,24 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
         return is_success;
     }
  
-    template<typename Serializable>
-    bool insert( const Serializable &data) {
+    template<typename Key, typename Serializable>
+    bool insert( Key && key, Serializable &&data) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
         bool is_success {false};
         try {
-            is_success = insert_data(data);
+            is_success = insert_data(std::forward<Key>(key), std::forward<Serializable>(data));
         } catch (const bad_alloc_exception_t &e) {
             LOG(debug) << boost::core::demangle(typeid(*this).name())
             << " data was not inserted , MEMORY AVAILABLE="
             <<  _segment_ptr->get_free_memory(); 
             grow_memory(MEMORY_SIZE);
-            is_success = insert_data(data);
+            is_success = insert_data(std::forward<Key>(key), std::forward<Serializable>(data));
         }
  
         return is_success;
     }
-   
+  
+/***************** 
     template<typename Serializable>
     bool insert( const std::vector<Serializable> &data) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
@@ -161,7 +162,8 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
         }
         return !n;
     }
-       
+*******************/
+ 
     template<typename Tag, typename Serializable, typename Arg>
     bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries, Arg && arg) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
@@ -233,11 +235,11 @@ private:
         attach() ; // reattach to newly created
     }
  
-    template<typename Serializable>
-    bool insert_data(const  Serializable &data) {
+    template<typename Key, typename Serializable>
+    bool insert_data(Key && key, Serializable &&data) {
         attach();
         Data_t item(_segment_ptr->get_segment_manager());
-        item.store(data);
+        item.store(std::forward<Key>(key), std::forward<Serializable>(data));
         return _container_ptr->insert(item).second;
     }
  
