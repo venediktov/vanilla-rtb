@@ -49,8 +49,8 @@ class exchange_handler {
 
 using restful_dispatcher_t  = http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
 
-http::server::server<restful_dispatcher_t> server_;
 restful_dispatcher_t handler_ ;
+http::server::server<restful_dispatcher_t> server_;
 unsigned int hardware_threads_;
 
 

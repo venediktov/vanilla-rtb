@@ -44,7 +44,6 @@ file(GLOB_RECURSE vanilla_rtb_hpps RELATIVE_PATH "." "*.hpp")
 if (WIN32)
     # DLLs in Windows appear to have not been fully thought through
     set(DEFAULT_LIBRARY_TYPE "STATIC")
-    add_definitions(-DBOOST_LOG_DYN_LINK)
 else()
     set(DEFAULT_LIBRARY_TYPE "SHARED")
 endif()
@@ -60,10 +59,10 @@ set_target_properties(vanilla_rtb
                      )
 
 
+add_definitions(-DBOOST_LOG_DYN_LINK)
+
 if (Boost_LIBRARIES)
     target_link_libraries(vanilla_rtb PUBLIC ${Boost_LIBRARIES})
 endif()
-
-add_subdirectory(examples)
 
 
