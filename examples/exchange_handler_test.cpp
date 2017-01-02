@@ -2,7 +2,9 @@
 #include "exchange/exchange_handler.hpp"
 #include "DSL/generic_dsl.hpp"
 
+extern void init_framework_logging(const std::string &) ;
 int main() {
+    init_framework_logging("/tmp/openrtb_handler_log");
     std::string host("0.0.0.0") ;
     std::string port("8081")  ;
     std::string root(".") ;

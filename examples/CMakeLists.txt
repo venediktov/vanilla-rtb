@@ -31,6 +31,8 @@ add_executable(
 target_link_libraries(
         exchange_handler_test
         crud_service
+        vanilla_rtb
+        jsonv
         ${Boost_LIBRARIES}
         pthread
         )

@@ -49,37 +49,37 @@ class exchange_handler {
 
 using restful_dispatcher_t  = http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
 
-restful_dispatcher_t handler_ ;
-http::server::server<restful_dispatcher_t> server_;
-unsigned int hardware_threads_;
+connection_endpoint ep;
+boost::regex expr;
+unsigned int hardware_threads;
 
-
+public:
     //make it non-copyable non-movable
     exchange_handler(const exchange_handler&) = delete;
     exchange_handler& operator=(const exchange_handler&) = delete;
     exchange_handler(exchange_handler&&) = delete;
     exchange_handler& operator=(exchange_handler&&) = delete;
 
-public:
     exchange_handler(const connection_endpoint &ep, const boost::regex &expr) : 
-       handler_{ep.root}, server_{ep.host,ep.port,handler_}, hardware_threads_{ std::max(1u, std::thread::hardware_concurrency()) }
-    {
-        handler_
-            .crud_match(expr)
-            .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch>  & match) {
-            LOG(debug) << "POST request=" << match[0] ;
-            LOG(debug) << "POST request_data=" << match.data ;
-            //TODO: implement passing match.data to auction
-
-        });
-
-    }
+        ep{ep}, expr{expr}, hardware_threads{ std::max(1u, std::thread::hardware_concurrency()) }
+    {}
 
     void run() {
+       restful_dispatcher_t handler{ep.root} ;
+       handler.crud_match(expr)
+              .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch>  & match) {
+                  LOG(debug) << "POST request=" << match[0] ;
+                  LOG(debug) << "POST request_data=" << match.data ;
+                  DSL parser;
+                  auto bid_request = parser.extract_request(match.data) ;
+                  //TODO: implement passing match.data to auction
+
+       });
+       http::server::server<restful_dispatcher_t> server{ep.host,ep.port,handler} ;
        std::vector<std::shared_ptr<std::thread>> threads;
-       for ( unsigned int i=0; i < std::thread::hardware_concurrency() ; ++i) {
-            threads.push_back( std::make_shared<std::thread>( [this] () {
-                server_.run() ;
+       for ( unsigned int i=0; i < hardware_threads ; ++i) {
+            threads.push_back( std::make_shared<std::thread>( [&] () {
+                server.run() ;
             }));
        }
 

@@ -30,6 +30,7 @@ namespace DSL {
                 .member("bidfloor", &Impression::bidfloor)
                 .type<Site>()
                 .member("id", &Site::id)
+                .type<Publisher>()
                 .type<BidRequest>()
                 .member("id", &BidRequest::id)
                 .member("imp", &BidRequest::imp)
