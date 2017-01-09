@@ -90,6 +90,21 @@ namespace openrtb {
         MRAID2 = 5      ///< IAB Mobile Rich Media Ad Interface Definitions V2
     };
 
+
+    enum class NoBidReason : int8_t {
+        UNSPECIFIED = -1,  ///< Not explicitly specified
+
+        UNKNOWN_ERROR = 0,
+        TECHNICAL_ERROR = 1,
+        INVALID_REQUEST = 2,
+        KNOWN_WEB_SPIDER = 3,
+        SUSPECTED_NON_HUMAN_TRAFFIC = 4,
+        CLOUD_DATACENTER_OR_PROXY_IP = 5,
+        UNSUPPORTED_DEVICE = 6,
+        BLOCKED_PUBLISHER_OR_SITE = 7,
+        UNMATCHED_USER = 8
+    };
+
     struct Banner {
         ~Banner() {}
 
@@ -197,4 +212,44 @@ namespace openrtb {
         jsonv::value ext;                   ///< Protocol extensions
         jsonv::value unparseable;           ///< Unparseable fields get put here
     };
+
+
+//OpenRTB 2.2 Response structures
+
+    struct Bid {
+        std::string id;                       ///< Bidder's bid ID to identify bid
+        std::string impid;                    ///< ID of the impression we're bidding on
+        double price{};                       ///< Price to bid
+        std::string adid;                     ///< Id of ad to be served if won
+        std::string nurl;                     //vanilla::unicode_string nurl;                  ///< Win notice/ad markup URL
+        std::string adm;                      //vanilla::unicode_string adm;                   ///< Ad markup
+        std::vector<std::string> adomain;     ///< Advertiser domains
+        std::string iurl;                     //vanilla::unicode_string iurl;                  ///< Image URL for content checking
+        std::string cid;                      ///< Campaign ID
+        std::string crid;                     ///< Creative ID
+        std::vector<CreativeAttribute> attr;  ///< Creative attributes
+        std::string dealid;                   ///< unique id for the deal associated with bid
+                                              ///< if its in bid request, required in bid response
+        int w{};                              ///< Width of ad
+        int h{};                              ///< Height of ad
+        jsonv::value ext;                     ///< Extended bid fields
+    };
+
+    struct SeatBid {
+        std::vector<Bid> bid;  ///< Array of bid objects  (relating to imps)
+        std::string seat;      ///< Seat on behalf of whom the bid is made
+        int group{};            ///< If true, imps must be won as a group
+        jsonv::value ext;     ///< Extension fields
+    };
+
+    struct BidResponse {
+        std::string id;
+        std::vector<SeatBid> seatbid;
+        std::string bidid;
+        std::string cur;
+        std::string customdata;
+        NoBidReason nbr; ///< reason for not bidding
+        jsonv::value ext; //Placeholder for bidder-specific extensions to OpenRTB
+    };
+
 }
