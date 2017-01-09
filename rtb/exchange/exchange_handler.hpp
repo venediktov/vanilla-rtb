@@ -22,6 +22,7 @@
 #include <string>
 #include <thread>
 #include <tuple>
+#include <functional>
 #include <boost/asio.hpp>
 #include <boost/log/trivial.hpp>
 #include "CRUD/service/server.hpp"
@@ -47,39 +48,61 @@ struct connection_endpoint {
 template<typename  DSL>
 class exchange_handler {
 
-using restful_dispatcher_t  = http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+using restful_dispatcher_type  = http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+using auction_request_type = decltype(DSL().extract_request(std::string()));
+using auction_response_type = typename DSL::serialized_type;
+using auction_handler_type = std::function<auction_response_type (const auction_request_type &,const std::chrono::milliseconds &)>; 
+using log_handler_type = std::function<void (const http::crud::crud_match<boost::cmatch> &)>;
+using self_type = exchange_handler<DSL> ;
 
-http::server::server<restful_dispatcher_t> server_;
-restful_dispatcher_t handler_ ;
-unsigned int hardware_threads_;
+connection_endpoint ep;
+boost::regex expr;
+unsigned int hardware_threads;
+DSL parser;
+auction_handler_type auction_handler;
+log_handler_type log_handler;
 
-
+public:
     //make it non-copyable non-movable
     exchange_handler(const exchange_handler&) = delete;
     exchange_handler& operator=(const exchange_handler&) = delete;
     exchange_handler(exchange_handler&&) = delete;
     exchange_handler& operator=(exchange_handler&&) = delete;
 
-public:
     exchange_handler(const connection_endpoint &ep, const boost::regex &expr) : 
-       handler_{ep.root}, server_{ep.host,ep.port,handler_}, hardware_threads_{ std::max(1u, std::thread::hardware_concurrency()) }
-    {
-        handler_
-            .crud_match(expr)
-            .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch>  & match) {
-            LOG(debug) << "POST request=" << match[0] ;
-            LOG(debug) << "POST request_data=" << match.data ;
-            //TODO: implement passing match.data to auction
+        ep{ep}, expr{expr}, hardware_threads{ std::max(1u, std::thread::hardware_concurrency()) }
+    {}
 
-        });
-
+    self_type & auction(const auction_handler_type &handler) {
+        auction_handler = handler;
+        return *this;
     }
 
+    self_type & logger(const log_handler_type &handler) {
+        log_handler = handler;
+        return *this;
+    }
+    
     void run() {
+       restful_dispatcher_type handler{ep.root} ;
+       handler.crud_match(expr)
+              .post([this](http::server::reply & r, const http::crud::crud_match<boost::cmatch>  & match) {
+                  if ( log_handler ) {
+                      log_handler(match);
+                  }
+                  auto bid_request = parser.extract_request(match.data) ;
+                  if ( auction_handler ) {
+                      std::chrono::milliseconds timeout{bid_request.tmax};
+                      auto auction_response = auction_handler(bid_request,timeout) ;
+                      auto wire_response = parser.create_response(auction_response) ;
+                      r << to_string(wire_response) << http::server::reply::flush("");
+                  }
+       });
+       http::server::server<restful_dispatcher_type> server{ep.host,ep.port,handler} ;
        std::vector<std::shared_ptr<std::thread>> threads;
-       for ( unsigned int i=0; i < std::thread::hardware_concurrency() ; ++i) {
-            threads.push_back( std::make_shared<std::thread>( [this] () {
-                server_.run() ;
+       for ( unsigned int i=0; i < hardware_threads ; ++i) {
+            threads.push_back( std::make_shared<std::thread>( [&server] () {
+                server.run() ;
             }));
        }
 

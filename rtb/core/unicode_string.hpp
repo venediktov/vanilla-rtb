@@ -45,7 +45,7 @@ namespace vanilla {
 
         unicode_string &operator=(const unicode_string &other)
         {
-            std::swap(unicode_string(other).data_, data_);
+            std::swap(const_cast<unicode_string &>(other).data_, data_);
             return *this;
         }
 

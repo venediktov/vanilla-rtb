@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 ## Configuring Boost
 set(REQUIRED_BOOST_LIBRARIES)
-list(APPEND REQUIRED_BOOST_LIBRARIES "log")
+list(APPEND REQUIRED_BOOST_LIBRARIES "log" "serialization" "system")
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost
              COMPONENTS "${REQUIRED_BOOST_LIBRARIES}"
@@ -30,7 +30,8 @@ endif()
 
 
 ## Configuring vanilla-rtb
-include_directories("${PROJECT_SOURCE_DIR}/core"
+include_directories("${PROJECT_SOURCE_DIR}"
+                    "${PROJECT_SOURCE_DIR}/core"
                     "${PROJECT_SOURCE_DIR}/datacache"
                     "${PROJECT_SOURCE_DIR}/DSL"
                     "${PROJECT_SOURCE_DIR}/exchange"
@@ -58,8 +59,10 @@ set_target_properties(vanilla_rtb
                      )
 
 
+add_definitions(-DBOOST_LOG_DYN_LINK)
+
 if (Boost_LIBRARIES)
     target_link_libraries(vanilla_rtb PUBLIC ${Boost_LIBRARIES})
 endif()
 
-add_subdirectory(examples)
+
