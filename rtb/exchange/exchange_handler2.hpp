@@ -21,6 +21,7 @@
 
 #include <string>
 #include <functional>
+#include <chrono>
 #include "CRUD/service/reply.hpp"
 #include "CRUD/handlers/crud_matcher.hpp"
 
@@ -33,8 +34,7 @@ class exchange_handler {
 using auction_request_type = decltype(DSL().extract_request(std::string()));
 using auction_response_type = typename DSL::serialized_type;
 using auction_handler_type = std::function<auction_response_type (const auction_request_type &,const std::chrono::milliseconds &)>; 
-template<typename Match>
-using log_handler_type = std::function<void (const http::crud::crud_match<Match> &)>;
+using log_handler_type = std::function<void (const std::string &)>;
 using self_type = exchange_handler<DSL> ;
 
 DSL parser;
@@ -44,13 +44,13 @@ log_handler_type log_handler;
 public:
     exchange_handler() : parser{}, auction_handler{}, log_handler{} 
     {}
+
     self_type & auction(const auction_handler_type &handler) {
         auction_handler = handler;
         return *this;
     }
 
-    template<typename Match>
-    self_type & logger(const log_handler_type<Match> &handler) {
+    self_type & logger(const log_handler_type &handler) {
         log_handler = handler;
         return *this;
     }
@@ -58,7 +58,7 @@ public:
     template<typename Match>
     handle_post(http::server::reply & r, const http::crud::crud_match<Match>  & match) {
         if ( log_handler ) {
-            log_handler(match);
+            log_handler(match.data);
         }
         auto bid_request = parser.extract_request(match.data) ;
         if ( auction_handler ) {
