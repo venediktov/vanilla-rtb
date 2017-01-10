@@ -1,28 +1,66 @@
 
-#include "exchange/exchange_handler.hpp"
+#include <boost/log/trivial.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include "exchange/exchange_handler2.hpp"
+#include "exchange/exchange_server.hpp"
+#include "CRUD/handlers/crud_dispatcher.hpp"
 #include "DSL/generic_dsl.hpp"
+
+#define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
 extern void init_framework_logging(const std::string &) ;
 
 int main() {
+    using namespace std::placeholders;
+    using namespace vanilla::exchange;
+    using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+
     init_framework_logging("/tmp/openrtb_handler_log");
-    std::string host("0.0.0.0") ;
-    std::string port("8081")  ;
-    std::string root(".") ;
-    boost::regex rgx("/openrtb_handler/(\\w+)/(\\d+)");
-    vanilla::exchange::connection_endpoint ep {std::make_tuple(host, port, root)} ;
-    vanilla::exchange::exchange_handler<DSL::GenericDSL> ehandler(ep, rgx);
-    ehandler
-    .logger([](const http::crud::crud_match<boost::cmatch> &match) {
-        LOG(debug) << "request=" << match[0] ;
-        LOG(debug) << "request_data=" << match.data ;
+
+    exchange_handler<DSL::GenericDSL> openrtb_handler;
+    openrtb_handler    
+    .logger([](const std::string &data) {
+        LOG(debug) << "request_data_v1=" << data ;
     })
     .auction([](const openrtb::BidRequest &request, const std::chrono::milliseconds &timeout) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
         return response;
     });
-    ehandler.run() ;
+    //you can put as many exchange handlers as unique URI
+    exchange_handler<DSL::GenericDSL> openrtb_handler_v2;
+    openrtb_handler_v2
+    .logger([](const std::string &data) {
+        LOG(debug) << "request_data_v2=" << data ;
+    })
+    .auction([](const openrtb::BidRequest &request, const std::chrono::milliseconds &timeout) {
+        //TODO: send to the auction synchronously with timeout or bid directly in this handler
+        openrtb::BidResponse response;
+        boost::uuids::uuid id = boost::uuids::random_generator()() ; 
+        response.bidid = boost::uuids::to_string(id);
+        return response;
+    });
+
+    std::string host("0.0.0.0") ;
+    std::string port("8081")  ;
+    std::string root(".") ;
+    connection_endpoint ep {std::make_tuple(host, port, root)} ;
+
+    //initialize and setup CRUD dispatchers
+    restful_dispatcher_t dispatcher(ep.root) ;
+    dispatcher.crud_match(boost::regex("/openrtb_handler/auction/(\\d+)"))
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                  openrtb_handler.handle_post(r,match);
+              });
+    dispatcher.crud_match(boost::regex("/openrtb_handler/(v2[.][2-4])/auction/(\\d+)"))
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                  openrtb_handler_v2.handle_post(r,match);
+              });
+
+    exchange_server<restful_dispatcher_t> server{ep,dispatcher} ;
+    server.run() ;
 }
 
 
