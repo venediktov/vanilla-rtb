@@ -22,6 +22,7 @@
 #include <string>
 #include <functional>
 #include <chrono>
+#include <future>
 #include "CRUD/service/reply.hpp"
 #include "CRUD/handlers/crud_matcher.hpp"
 
@@ -33,16 +34,18 @@ class exchange_handler {
 
 using auction_request_type = decltype(DSL().extract_request(std::string()));
 using auction_response_type = typename DSL::serialized_type;
-using auction_handler_type = std::function<auction_response_type (const auction_request_type &,const std::chrono::milliseconds &)>; 
+using auction_handler_type = std::function<auction_response_type (const auction_request_type &)>; 
 using log_handler_type = std::function<void (const std::string &)>;
 using self_type = exchange_handler<DSL> ;
 
 DSL parser;
 auction_handler_type auction_handler;
 log_handler_type log_handler;
+const std::chrono::milliseconds tmax;
 
 public:
-    exchange_handler() : parser{}, auction_handler{}, log_handler{} 
+    exchange_handler(const std::chrono::milliseconds &tmax) : 
+        parser{}, auction_handler{}, log_handler{}, tmax{tmax}
     {}
 
     self_type & auction(const auction_handler_type &handler) {
@@ -62,10 +65,17 @@ public:
         }
         auto bid_request = parser.extract_request(match.data) ;
         if ( auction_handler ) {
-            std::chrono::milliseconds timeout{bid_request.tmax};
-            auto auction_response = auction_handler(bid_request,timeout) ;
-            auto wire_response = parser.create_response(auction_response) ;
-            r << to_string(wire_response) << http::server::reply::flush("");
+            std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
+            auto future = std::async(std::launch::async, [&](){ 
+                auto auction_response = auction_handler(bid_request) ;
+                auto wire_response = parser.create_response(auction_response) ;
+                return wire_response;
+            });
+            if ( future.wait_for(timeout) == std::future_status::ready) {
+                r << to_string(future.get()) << http::server::reply::flush("");
+            } else {
+                r << http::server::reply::flush("");
+            }
         }
     }
     

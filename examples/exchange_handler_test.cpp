@@ -3,7 +3,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "exchange/exchange_handler2.hpp"
+#include "exchange/exchange_handler.hpp"
 #include "exchange/exchange_server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "DSL/generic_dsl.hpp"
@@ -15,27 +15,28 @@ extern void init_framework_logging(const std::string &) ;
 int main() {
     using namespace std::placeholders;
     using namespace vanilla::exchange;
+    using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
 
     init_framework_logging("/tmp/openrtb_handler_log");
 
-    exchange_handler<DSL::GenericDSL> openrtb_handler;
+    exchange_handler<DSL::GenericDSL> openrtb_handler(100ms);
     openrtb_handler    
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v1=" << data ;
     })
-    .auction([](const openrtb::BidRequest &request, const std::chrono::milliseconds &timeout) {
+    .auction([](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
         return response;
     });
     //you can put as many exchange handlers as unique URI
-    exchange_handler<DSL::GenericDSL> openrtb_handler_v2;
+    exchange_handler<DSL::GenericDSL> openrtb_handler_v2(80ms);
     openrtb_handler_v2
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v2=" << data ;
     })
-    .auction([](const openrtb::BidRequest &request, const std::chrono::milliseconds &timeout) {
+    .auction([](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
         boost::uuids::uuid id = boost::uuids::random_generator()() ; 
