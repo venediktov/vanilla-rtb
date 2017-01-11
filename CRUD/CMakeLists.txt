@@ -12,11 +12,12 @@ add_executable(
         my_service
         main.cpp
         )
+find_package (Threads)
 
 target_link_libraries(
         my_service
         crud_service
         ${Boost_LIBRARIES}
-        pthread
+        ${CMAKE_THREAD_LIBS_INIT}
         )
 

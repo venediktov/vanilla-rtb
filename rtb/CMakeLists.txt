@@ -49,7 +49,8 @@ else()
 endif()
 
 
-add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps} ${vanilla_rtb_hpps} )
+#add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps} ${vanilla_rtb_hpps} )
+add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps})
 
 set_target_properties(vanilla_rtb
                       PROPERTIES
