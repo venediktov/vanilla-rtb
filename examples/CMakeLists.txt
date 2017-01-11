@@ -28,13 +28,15 @@ add_executable(
         exchange_handler_test.cpp
         )
 
+find_package(Threads)
+
 target_link_libraries(
         exchange_handler_test
         crud_service
         vanilla_rtb
         jsonv
         ${Boost_LIBRARIES}
-        pthread
+        ${CMAKE_THREAD_LIBS_INIT}
         )
 
 
