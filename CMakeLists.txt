@@ -12,6 +12,7 @@ add_executable(
         my_service
         main.cpp
         )
+
 find_package (Threads)
 
 target_link_libraries(
