@@ -23,10 +23,23 @@ include_directories("${PROJECT_SOURCE_DIR}"
 
 add_definitions(-DBOOST_LOG_DYN_LINK)
 
+
+if (WIN32)
+    link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 add_executable(
         exchange_handler_test
         exchange_handler_test.cpp
         )
+
+if (WIN32)
+    target_compile_definitions(exchange_handler_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
+    target_compile_definitions(jsonv PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
+endif(WIN32)
+
+find_package (Threads)
+
 
 target_link_libraries(
         exchange_handler_test
@@ -34,7 +47,7 @@ target_link_libraries(
         vanilla_rtb
         jsonv
         ${Boost_LIBRARIES}
-        pthread
+         ${CMAKE_THREAD_LIBS_INIT}
         )
 
 

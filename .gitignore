@@ -97,3 +97,6 @@ install_manifest.txt
 *.sln
 *.lastbuildstate
 *.cache
+*.pdb
+*.user
+*.ilk
