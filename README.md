@@ -41,8 +41,9 @@ Structure ( work in progress ) :
 - [x] gmake VERBOSE=1
 
 ###Windows \:
-**same steps as above for linux , only difference is depending on your environment 
-  either Visual Studio or NMake project can be used**  
+*same steps as above for linux , only difference is depending on your environment 
+  either Visual Studio or NMake project can be used*
+  
 - [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
 - [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
 - [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
