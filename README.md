@@ -27,22 +27,24 @@ Structure ( work in progress ) :
 * git subtree pull --prefix CRUD git@github.com:venediktov/CRUD.git  master --squash
 
 
->To build vanilla-rtb use following commands for Linux or Windows in the root of vanilla-rtb
+###To build vanilla-rtb use following commands for Linux or Windows in the root of vanilla-rtb
 
->for Linux \:
-mkdir Release
-cd Release
-cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-gmake VERBOSE=1
+###Linux \:
+- [x] mkdir Release
+- [x] cd Release
+- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+- [x] gmake VERBOSE=1
+- [x] cd ..
+- [x] mkdir Debug
+- [x] cd Debug
+- [x] cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
+- [x] gmake VERBOSE=1
 
-mkdir Debug
-cd Debug
-cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
-
->for Windows \:
-same steps as above for linux , only difference is for Visual Studio project  
-cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
-cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
-cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
-cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
+###Windows \:
+**same steps as above for linux , only difference is depending on your environment 
+  either Visual Studio or NMake project can be used**  
+- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
+- [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
+- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
+- [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 
