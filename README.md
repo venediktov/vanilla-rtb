@@ -28,7 +28,7 @@ Structure ( work in progress ) :
 
 
 
-###*(&#x1F4D7;) To build vanilla-rtb use following commands for Linux or Windows in the root of vanilla-rtb*
+###*(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
 ###Linux \:
 - [x] mkdir Release
