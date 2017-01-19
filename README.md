@@ -27,7 +27,8 @@ Structure ( work in progress ) :
 * git subtree pull --prefix CRUD git@github.com:venediktov/CRUD.git  master --squash
 
 
-###To build vanilla-rtb use following commands for Linux or Windows in the root of vanilla-rtb
+
+###*(&#x1F4D7;) To build vanilla-rtb use following commands for Linux or Windows in the root of vanilla-rtb*
 
 ###Linux \:
 - [x] mkdir Release
