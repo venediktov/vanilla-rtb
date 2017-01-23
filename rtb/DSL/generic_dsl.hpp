@@ -8,6 +8,7 @@ namespace DSL {
     public:
         using deserialized_type = openrtb::BidRequest;
         using serialized_type = openrtb::BidResponse;
+        using parse_error_type = jsonv::parse_error;
 
         GenericDSL() {
         
