@@ -8,14 +8,18 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 // Modified by Vladimir Venediktov :
-// adding template parameter for connection_ptr type , minimum changes required to work with 
+// 1.) adding template parameter for connection_ptr type , minimum changes required to work with 
 // any handler, removing connection_manager.cpp from my project.
-//
+// 2.) adding multi-threading support spin_lock/std::mutex conditional compilation
  
 #ifndef HTTP_CONNECTION_MANAGER_HPP
 #define HTTP_CONNECTION_MANAGER_HPP
  
 #include <set>
+#include <mutex>
+#if defined(CRUD_SPIN_LOCK)
+#include "spin_lock.hpp"
+#endif
  
 namespace http {
 namespace server {
@@ -35,14 +39,20 @@ public:
   /// Add the specified connection to the manager and start it.
   void start(connection_ptr c)
   {
-    connections_.insert(c);
+    std::lock_guard<connection_lock_type> guard(lock_);
+    {
+        connections_.insert(c);
+    }
     c->start();
   }
  
   /// Stop the specified connection.
   void stop(connection_ptr c)
   {
-    connections_.erase(c);
+    std::lock_guard<connection_lock_type> guard(lock_);
+    {
+        connections_.erase(c);
+    }
     c->stop();
   }
  
@@ -51,12 +61,20 @@ public:
   {
     for (auto c: connections_)
       c->stop();
+    std::lock_guard<connection_lock_type> guard(lock_);
     connections_.clear();
   }
  
 private:
   /// The managed connections.
   std::set<connection_ptr> connections_;
+  /// adding multi-threading support
+#if defined(CRUD_SPIN_LOCK)
+  using connection_lock_type = spin_lock;
+#else
+  using connection_lock_type = std::mutex;
+#endif  
+  connection_lock_type lock_;
 };
  
 } // namespace server
