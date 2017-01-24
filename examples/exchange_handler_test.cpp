@@ -25,6 +25,9 @@ int main() {
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v1=" << data ;
     })
+    .error_logger([](const std::string &data) {
+        LOG(debug) << "request v1 error " << data ;
+    })
     .auction([](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
@@ -35,6 +38,9 @@ int main() {
     openrtb_handler_v2
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v2=" << data ;
+    })
+    .error_logger([](const std::string &data) {
+        LOG(debug) << "request v2 error " << data ;
     })
     .auction([](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler

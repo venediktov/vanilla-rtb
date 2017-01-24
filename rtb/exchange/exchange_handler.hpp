@@ -34,13 +34,16 @@ class exchange_handler {
 
 using auction_request_type = decltype(DSL().extract_request(std::string()));
 using auction_response_type = typename DSL::serialized_type;
+using parse_error_type = typename DSL::parse_error_type;
 using auction_handler_type = std::function<auction_response_type (const auction_request_type &)>; 
 using log_handler_type = std::function<void (const std::string &)>;
+using error_log_handler_type = std::function<void (const std::string &)>;
 using self_type = exchange_handler<DSL> ;
 
 DSL parser;
 auction_handler_type auction_handler;
 log_handler_type log_handler;
+error_log_handler_type error_log_handler;
 const std::chrono::milliseconds tmax;
 
 public:
@@ -57,13 +60,29 @@ public:
         log_handler = handler;
         return *this;
     }
-
+    
+    self_type & error_logger(const error_log_handler_type &handler) {
+        error_log_handler = handler;
+        return *this;
+    }
+    
     template<typename Match>
     void handle_post(http::server::reply & r, const http::crud::crud_match<Match>  & match) {
         if ( log_handler ) {
             log_handler(match.data);
         }
-        auto bid_request = parser.extract_request(match.data) ;
+        auction_request_type bid_request;
+        try {
+            bid_request = parser.extract_request(match.data) ;
+        } 
+        catch (const parse_error_type &err) {
+            if (error_log_handler) {
+                error_log_handler(to_string(err));
+            }
+            r << http::server::reply::flush("");
+            return;
+        }
+
         if ( auction_handler ) {
             std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
             auto future = std::async(std::launch::async, [&](){ 
