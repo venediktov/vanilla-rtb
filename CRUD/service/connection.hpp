@@ -77,7 +77,7 @@ private:
                 request_, buffer_.data(), buffer_.data() + bytes_transferred);
             auto itr = std::find_if( request_.headers.begin(), 
                                      request_.headers.end(), 
-                                     [](const header &h) { return h.name == "Content-Length" ; }
+                                     [](const header &h) { return h.name == "content-length" ; }
             ) ;
             if ( itr != request_.headers.end()) {
                 request_.data = std::string(data, boost::lexical_cast<long>(itr->value)) ;
