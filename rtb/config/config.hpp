@@ -17,11 +17,9 @@ namespace vanilla { namespace config {
     
     template <typename DATA>
     class config {    
-    public:
-        using self_type = config;
         using config_data_t = DATA;
         using add_options_type = std::function<void (config_data_t&, po::options_description&)>;
-        
+    public:    
         
         config(const add_options_type &add_options) {
             desc.add_options()
@@ -30,27 +28,36 @@ namespace vanilla { namespace config {
             ;
             add_options(config_data, desc);
         }
+        config(const config&) = delete;
         
-        bool parse(int argc, char *argv[]) {
+        void parse(int argc, char *argv[]) noexcept(false) {
             store(po::parse_command_line(argc, argv, desc), vm);
             notify(vm);
+            if (vm.count("help")) {
+                std::stringstream ss;
+                ss << desc << std::endl;
+                throw std::runtime_error(ss.str());
+            }
             std::ifstream file(config_name.c_str());
             if(!file) {
-                std::cout << "Failed to open config file " << config_name << "\n";
-                return false;
+                std::stringstream ss;
+                ss << "Failed to open config file " << config_name << std::endl;
+                throw std::runtime_error(ss.str());
             }
             store(po::parse_config_file(file, desc, true), vm);
             notify(vm);
-            if (vm.count("help")) {
-                std::cout << desc << "\n";
-                return false;
-            }
-            return true;
         }
         
         template <typename T = std::string>
-        auto &get(const char *needle) {
-            return vm[needle].as<T>();
+        auto &get(const char *needle) noexcept(false) {
+            try {
+                return vm[needle].as<T>();
+            }
+            catch(const boost::bad_any_cast &) {
+                std::stringstream ss;
+                ss << "Get error <" <<  typeid(T).name() << ">(" << needle << ")"  << std::endl;
+                throw std::runtime_error(ss.str());
+            }
         }
         const config_data_t& data() const {
             return config_data;

@@ -19,8 +19,8 @@ struct exchange_config_data {
     int handler_timeout_v1;
     int handler_timeout_v2;
     
-    exchange_config_data():
-        log_file_name{""}, handler_timeout_v1{0}, handler_timeout_v2{0}
+    exchange_config_data() :
+        log_file_name{}, handler_timeout_v1{}, handler_timeout_v2{}
     {}
 };
 int main(int argc, char *argv[]) {
@@ -40,11 +40,14 @@ int main(int argc, char *argv[]) {
             ("exchange.v2.timeout", boost::program_options::value<int>(&d.handler_timeout_v2), "exchange_handler_test v2 timeout")
         ;
     });
-    if(!config.parse(argc, argv)) {
+    try {
+        config.parse(argc, argv);
+    }
+    catch(std::exception const& e) {
+        LOG(error) << e.what();
         return 0;
     }
     LOG(debug) << config;
-    
     init_framework_logging(config.data().log_file_name);
     
     exchange_handler<DSL::GenericDSL> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
