@@ -32,8 +32,9 @@ add_library(crud_service
 	    request_handler.cpp
 	    request_parser.cpp
            )
+find_package (Threads)
 
 if (Boost_LIBRARIES)
-    target_link_libraries( crud_service ${Boost_LIBRARIES} pthread)
+    target_link_libraries( crud_service ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
