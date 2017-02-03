@@ -100,3 +100,5 @@ install_manifest.txt
 *.pdb
 *.user
 *.ilk
+*.exp
+*.pc

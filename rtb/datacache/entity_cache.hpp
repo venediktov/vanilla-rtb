@@ -34,9 +34,9 @@
 #include <memory>
  
 #include <boost/version.hpp>
-#if BOOST_VERSION > 105700
+#if BOOST_VERSION >= 105600
 #include <boost/core/demangle.hpp>
-#else
+#elif defined(__GNUC__)
 #include <cxxabi.h>
 namespace boost { namespace core {
 std::string demangle(const char* name) {
@@ -48,6 +48,8 @@ std::string demangle(const char* name) {
    return (status==0) ? res.get() : name ;
 } 
 }}
+#else 
+#error "Please upgrade version of Boost to 1.56 or higher" 
 #endif
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x)

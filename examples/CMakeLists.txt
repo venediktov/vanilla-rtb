@@ -21,7 +21,7 @@ include_directories("${PROJECT_SOURCE_DIR}"
                     "${PROJECT_SOURCE_DIR}/jsonv/include"
                    )
 
-add_definitions(-DBOOST_LOG_DYN_LINK)
+add_definitions(-DBOOST_LOG_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK)
 
 
 if (WIN32)
@@ -55,12 +55,15 @@ target_link_libraries(
         ${CMAKE_THREAD_LIBS_INIT}
         )
 
+if ( NOT WIN32)
+set(RT_LIB rt)
+endif(NOT WIN32)
 
 target_link_libraries(
         country_cache_test
         vanilla_rtb
         ${Boost_LIBRARIES}
         ${CMAKE_THREAD_LIBS_INIT}
-        rt
+        ${RT_LIB}
         )
 
