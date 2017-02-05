@@ -58,7 +58,7 @@ auto random_pick(Container && c) {
 }
 
 template<typename Keys, typename Cache>
-void populate_cache(std::vector<CityCountry> cities , Cache && cache) {
+void populate_cache(const std::vector<CityCountry> &cities , Cache && cache) {
     for ( auto &value : cities ) {
        if ( cache.insert(Keys{value.city, value.country}, value) ) {
          LOG(info) << "inserted{" << value.city << "," << value.country << "} OK!" ; 
