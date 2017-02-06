@@ -26,7 +26,7 @@ struct CityCountry {
     std::string city;
     std::string country;
     std::string record;
-    CityCountry(std::string city, std::string country) : city{city}, country{country} {}
+    CityCountry(std::string city, std::string country) : city{std::move(city)}, country{std::move(country)} {}
     CityCountry() : city{}, country{} {}
     template<typename T>
     friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<T> & t)  {
@@ -162,7 +162,8 @@ int main(int argc, char**argv) {
 
   for ( int i=0; i<iter_count; ++i) {
      auto pick = random_pick(cities);
-     auto sp = std::shared_ptr<std::stringstream>(new std::stringstream) ;
+     //auto sp = std::shared_ptr<std::stringstream>(new std::stringstream) ;
+     auto sp = std::make_shared<std::stringstream>();
      std::vector<std::shared_ptr<CityCountry>> retrieved_cached_cities;
      {
        perf_timer<std::stringstream> timer(sp) ;
