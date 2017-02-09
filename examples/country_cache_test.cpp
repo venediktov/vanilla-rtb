@@ -38,15 +38,15 @@ struct CityCountry {
         return os;
     }
     friend std::istream &operator>>(std::istream &is, CityCountry &l) {
-    if ( !std::getline(is, l.record) ){
-        return is;
-    }
-    std::vector<std::string> fields;
-    boost::split(fields, l.record, boost::is_any_of(","), boost::token_compress_on);
-    l.city = fields.at(0); 
-    l.country = fields.at(5);
-    return is;
-  }
+       if ( !std::getline(is, l.record) ){
+          return is;
+       }
+       std::vector<std::string> fields;
+       boost::split(fields, l.record, boost::is_any_of(","), boost::token_compress_on);
+       l.city = fields.at(0); 
+       l.country = fields.at(5);
+       return is;
+   }
 };
 
 template<typename Container>
@@ -58,7 +58,7 @@ auto random_pick(Container && c) {
 }
 
 template<typename Keys, typename Cache>
-void populate_cache(std::vector<CityCountry> cities , Cache && cache) {
+void populate_cache(const std::vector<CityCountry> &cities , Cache && cache) {
     for ( auto &value : cities ) {
        if ( cache.insert(Keys{value.city, value.country}, value) ) {
          LOG(info) << "inserted{" << value.city << "," << value.country << "} OK!" ; 
@@ -162,7 +162,6 @@ int main(int argc, char**argv) {
 
   for ( int i=0; i<iter_count; ++i) {
      auto pick = random_pick(cities);
-     //auto sp = std::shared_ptr<std::stringstream>(new std::stringstream) ;
      auto sp = std::make_shared<std::stringstream>();
      std::vector<std::shared_ptr<CityCountry>> retrieved_cached_cities;
      {
