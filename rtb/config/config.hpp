@@ -21,12 +21,13 @@ namespace vanilla { namespace config {
         using add_options_type = std::function<void (config_data_t&, po::options_description&)>;
     public:    
         
-        config(const add_options_type &add_options) {
+        config(const add_options_type &add_options):
+			add_options(add_options)
+		{
             desc.add_options()
                 ("help", "produce help")
                 ("config", po::value<std::string>(&config_name)->default_value(config_name_default), "config file name")
             ;
-            add_options(config_data, desc);
         }
         config(const config&) = delete;
         
@@ -38,6 +39,9 @@ namespace vanilla { namespace config {
                 ss << desc << std::endl;
                 throw std::runtime_error(ss.str());
             }
+
+            add_options(config_data, desc);
+
             std::ifstream file(config_name.c_str());
             if(!file) {
                 std::stringstream ss;
@@ -65,6 +69,7 @@ namespace vanilla { namespace config {
         template<typename DATAT>
         friend std::ostream& operator<<(std::ostream&, const config<DATAT>&);
     private:
+		const add_options_type add_options;
         static constexpr const char* config_name_default{"./etc/config.cfg"};
         std::string config_name;
         po::variables_map vm;
@@ -76,7 +81,13 @@ namespace vanilla { namespace config {
         for (auto &it : c.vm) {
             s << it.first.c_str() << " ";
             auto& value = it.second.value();
-            if (auto v = boost::any_cast<int>(&value)) {
+            if (auto v = boost::any_cast<unsigned short>(&value)) {
+                s << *v << std::endl;
+            }
+            else if (auto v = boost::any_cast<long>(&value)) {
+                s << *v << std::endl;
+            }
+            else if (auto v = boost::any_cast<int>(&value)) {
                 s << *v << std::endl;
             }
             else if (auto v = boost::any_cast<std::string>(&value)) {
