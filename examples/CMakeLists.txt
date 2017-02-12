@@ -38,6 +38,16 @@ add_executable(
         country_cache_test.cpp
         )
 
+add_executable(
+        mock_bidder_test
+        mock_bidder_test.cpp
+        )
+
+add_executable(
+        messaging_client_test
+        messaging_client_test.cpp
+        )
+
 if (WIN32)
     target_compile_definitions(exchange_handler_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
     target_compile_definitions(jsonv PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
@@ -66,4 +76,23 @@ target_link_libraries(
         ${CMAKE_THREAD_LIBS_INIT}
         ${RT_LIB}
         )
+
+target_link_libraries(
+        mock_bidder_test
+        vanilla_rtb
+        jsonv
+        ${Boost_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${RT_LIB}
+        )
+
+target_link_libraries(
+        messaging_client_test
+        vanilla_rtb
+        jsonv
+        ${Boost_LIBRARIES}
+        ${CMAKE_THREAD_LIBS_INIT}
+        ${RT_LIB}
+        )
+
 
