@@ -32,6 +32,26 @@
 namespace vanilla { namespace messaging {
 
     
+template<typename Serializable>
+std::string serialize( Serializable && data ) {
+    std::stringstream ss;
+    boost::archive::binary_oarchive oarch(ss);
+    oarch << std::forward<Serializable>(data) ;
+    return std::move(ss.str()) ;
+}
+
+
+template<typename Deserialized>
+Deserialized
+deserialize( const std::string & wire_data ) {
+    std::stringstream ss (wire_data);
+    boost::archive::binary_iarchive iarch(ss);
+    Deserialized value;
+    iarch >> value;
+    return value;
+}
+
+
 struct multicast {
     template<typename SocketType, typename IPAddress>
     void receiver_set_option(SocketType && socket, const unsigned short port, IPAddress && listen_address, IPAddress && multicast_address) {
@@ -80,11 +100,8 @@ public:
 
   template<typename Serializable>
   void send_async( Serializable && data, std::shared_ptr<boost::asio::ip::udp::endpoint> endpoint) {
-     std::stringstream ss;
-     boost::archive::binary_oarchive oarch(ss);
-     oarch << std::forward<Serializable>(data) ;
      auto data_p = std::make_shared<std::string>();
-     *data_p = std::move(ss.str()) ;
+     *data_p = std::move(serialize(std::forward<Serializable>(data)));
     
      receive_socket_.async_send_to(
         boost::asio::buffer(*data_p), *endpoint,
@@ -140,12 +157,9 @@ public:
 
   template<typename Serializable>
   void send_async( Serializable && data) {
-     std::stringstream ss;
-     boost::archive::binary_oarchive oarch(ss);
-     oarch << std::forward<Serializable>(data) ;
      auto data_p = std::make_shared<std::string>();
-     *data_p = std::move(ss.str()) ;
-    
+     *data_p = std::move(serialize(std::forward<Serializable>(data)));
+
      send_socket_.async_send_to(
         boost::asio::buffer(*data_p), endpoint_,
         [](const boost::system::error_code& error, std::size_t bytes_transferred) {
@@ -225,12 +239,12 @@ public:
         return *this;
     }
 
-    template<typename Handler>
+    template<typename T, typename Handler>
     self_type & process(Handler && handler) {
        if( consumer_ ) {
            //intercept a call from receive , get response from handler , send reponse back to from_endpoint
            consumer_->receive_async(data_, [this,&handler](auto from_endpoint, auto data) { //intercept a call
-               auto response = std::forward<Handler>(handler)(from_endpoint,data);
+               auto response = std::forward<Handler>(handler)(from_endpoint, std::move(deserialize<T>(data)));
                consumer_->send_async(response, from_endpoint);
            });
        }

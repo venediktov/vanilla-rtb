@@ -52,7 +52,7 @@ std::vector<std::string> responses;
 
 communicator<broadcast>()
 .outbound(port)
-.distribute(std::string("hello"))
+.distribute(openrtb::BidRequest())
 .collect(10ms, [&responses](const std::string serialized_data) {
     std::stringstream ss (serialized_data);
     boost::archive::binary_iarchive iarch(ss);

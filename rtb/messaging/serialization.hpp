@@ -1,10 +1,83 @@
 #pragma once
 
 #include <boost/serialization/vector.hpp>
+#include <boost/serialization/optional.hpp>
 
 //Non-Intrusive boost serialization implementation
 namespace boost {
 namespace serialization {
+
+
+/******* BidRequest *************************************************************/
+template<class Archive>
+void serialize(Archive & ar, openrtb::BidRequest & value, const unsigned int version)
+{
+
+ar & value.id;
+ar & value.imp;
+ar & value.site;
+ar & value.app;
+ar & value.device;
+ar & value.user;
+ar & value.at;
+ar & value.tmax;
+ar & value.wseat;
+ar & value.allimps;
+ar & value.cur;
+ar & value.bcat;
+ar & value.badv;
+ar & value.regs;
+//ar & value.ext;
+//ar & value.unparseable;
+
+}
+
+
+template<class Archive>
+void serialize(Archive & ar, openrtb::Impression & value, const unsigned int version)
+{
+
+}
+
+
+template<class Archive>
+void serialize(Archive & ar, openrtb::Site & value, const unsigned int version)
+{
+}
+
+
+template<class Archive>
+void serialize(Archive & ar, openrtb::App & value, const unsigned int version)
+{
+}
+
+
+
+template<class Archive>
+void serialize(Archive & ar, openrtb::Device & value, const unsigned int version)
+{
+}
+
+
+template<class Archive>
+void serialize(Archive & ar, openrtb::User & value, const unsigned int version)
+{
+}
+
+
+template<class Archive>
+void serialize(Archive & ar, vanilla::unicode_string & value, const unsigned int version)
+{    //ar & value;
+}
+
+template<class Archive>
+void serialize(Archive & ar, openrtb::Regulations & value, const unsigned int version)
+{
+}
+
+
+
+/******* BidResponse *************************************************************/
 
 template<class Archive>
 void serialize(Archive & ar, openrtb::BidResponse & value, const unsigned int version)

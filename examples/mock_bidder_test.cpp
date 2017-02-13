@@ -46,8 +46,8 @@ int main(int argc, char**argv) {
   LOG(info) << "Starting mock bidder pid=" << getpid();
 
   //std::string data is serialized and moved constructed
-  communicator<broadcast>().inbound(port).process([](auto endpoint, std::string data) { 
-      LOG(info) << "Received(Broadcast:" << *endpoint  << "):" << data;
+  communicator<broadcast>().inbound(port).process<openrtb::BidRequest>([](auto endpoint, openrtb::BidRequest data) {
+      LOG(info) << "Received(Broadcast:" << *endpoint  << "):" << data.id;
       return openrtb::BidResponse();
   }).dispatch();
 
