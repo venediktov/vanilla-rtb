@@ -108,8 +108,8 @@ namespace openrtb {
     struct Banner {
         ~Banner() {}
 
-        int w{};                     ///< Width of ad
-        int h{};                     ///< Height of ad
+        uint16_t w{};                     ///< Width of ad
+        uint16_t h{};                     ///< Height of ad
         boost::optional<int> wmax;                  ///< max width of ad (OpenRTB 2.3)
         boost::optional<int> hmax;                  ///< max height of ad (OpenRTB 2.3)
         boost::optional<int> wmin;                  ///< min width of ad (OpenRTB 2.3)
@@ -161,10 +161,23 @@ namespace openrtb {
     struct Site : Context, SiteImpl   {
         std::string id;
     };
-    
+    struct Geo {
+        int type;
+        std::string city;
+        std::string country;
+        std::string region;
+        
+        Geo() :
+            type{}, city{}, country{}, region{}
+        {}
+    };
     struct App {};
     struct Device {};
-    struct User {};
+    struct User {
+        std::string id;
+        std::string buyeruid;
+        boost::optional<Geo> geo;
+    };
 
     struct Regulations {};
     struct Native {

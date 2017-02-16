@@ -60,7 +60,8 @@ namespace {
  
 namespace datacache {
    
-template<typename Memory, template <class> class Container>
+
+template<typename Memory, template <class> class Container, size_t MEMORY_SIZE = 67108864 >
 class entity_cache
 {
 public:
@@ -258,8 +259,6 @@ private:
     std::string _store_name ;
     std::string _cache_name ;
     boost::interprocess::named_upgradable_mutex _named_mutex;
-    static const size_t MEMORY_SIZE = 67108864 ; //64M
- 
 };
  
 }

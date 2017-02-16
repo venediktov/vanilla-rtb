@@ -32,18 +32,29 @@ namespace DSL {
                 .member("id", &Impression::id)
                 .member("banner", &Impression::banner)
                 .member("bidfloor", &Impression::bidfloor)
+                .member("bidfloorcur", &Impression::bidfloorcur)
+                .type<User>()
+                    .member("id", &User::id)
+                    .member("buyeruid", &User::buyeruid)
+                    .member("geo", &User::geo)
+                .type<Geo>()
+                    .member("city", &Geo::city)
+                    .member("country", &Geo::country)
                 .type<Site>()
                 .member("id", &Site::id)
                 .type<Publisher>()
                 .type<BidRequest>()
                 .member("id", &BidRequest::id)
                 .member("imp", &BidRequest::imp)
+                .member("user", &BidRequest::user)
                 .member("site", &BidRequest::site)
                 .encode_if([](const jsonv::serialization_context&, const boost::optional<Site>& x) {return bool(x);})
                 .register_container<std::vector<Impression>>()
                 .register_optional<boost::optional<Banner>>()
                 .register_optional<boost::optional<Site>>()
                 .register_optional<boost::optional<Publisher>>()
+                .register_optional<boost::optional<User>>()
+                .register_optional<boost::optional<Geo>>()
                 .register_container<std::vector<std::string>>()
                 .register_container<std::vector<int>>()
                 .check_references(formats::defaults())
@@ -134,3 +145,6 @@ namespace DSL {
         formats response_fmt_;
     };
 }
+/*
+
+ */
