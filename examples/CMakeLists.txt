@@ -38,11 +38,6 @@ add_executable(
         country_cache_test.cpp
         )
 
-add_executable(
-        bidder_test
-        bidder_test.cpp
-        )
-
 if (WIN32)
     target_compile_definitions(exchange_handler_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
     target_compile_definitions(jsonv PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
@@ -72,11 +67,5 @@ target_link_libraries(
         ${RT_LIB}
         )
 
-target_link_libraries(
-        bidder_test
-        crud_service
-        vanilla_rtb
-        jsonv
-        ${Boost_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT}
-        )
+add_subdirectory(bidder)
+

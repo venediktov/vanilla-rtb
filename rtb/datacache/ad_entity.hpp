@@ -29,32 +29,37 @@ namespace ipc { namespace data {
         using base_type   = base_entity<Alloc>; 
       
         //for tagging in multi_index_container
-        struct ad_id_tag {}; // search on ad_id
+        
+        struct size_tag {}; // search on width-height
+        struct width_tag {}; // search on width
+        struct height_tag {}; // search on height
         
        
         ad_entity( const Alloc & a ) :
-            base_entity<Alloc>(a),
-            ad_id(a)
+            base_entity<Alloc>(a)
         {} //ctor END
        
-        char_string ad_id;
+        uint16_t width;
+        uint16_t height;
+        
+        
  
         template<typename Key, typename Serializable>
         void store(Key && key, Serializable  && data)  {
             base_type::store(std::forward<Serializable>(data)) ;
             //Store keys
-            const std::string &key_ad_id     = key.template get<ad_id_tag>() ;
             
-            ad_id = char_string(key_ad_id.data(), key_ad_id.size(), base_type::allocator);
-            
+            width = key.template get<width_tag>();
+            height = key.template get<height_tag>();  
         }
         template<typename Serializable>
         static std::size_t size(const Serializable && data) {
             std::stringstream ss;
             boost::archive::binary_oarchive oarch(ss);
             oarch << std::forward<Serializable>(data) ;
-            return base_type::size(std::forward<Serializable>(data)) +
-                   sizeof(data.ad_id) +
+            return base_type::size(std::forward<Serializable>(data)) +                
+                   sizeof(data.width) +
+                   sizeof(data.height) +                
                    ss.str().size() ;
         }
         template<typename Serializable>
@@ -63,8 +68,9 @@ namespace ipc { namespace data {
         }
         //needed for ability to update after matching by calling index.modify(itr,entry)
         void operator()(ad_entity &entry) const {
-            base_entity<Alloc>::operator()(static_cast<base_type &>(entry));
-            entry.ad_id=ad_id;
+            base_entity<Alloc>::operator()(static_cast<base_type &>(entry));            
+            entry.width=width;
+            entry.height=height;
         }
     };
    
@@ -75,9 +81,13 @@ using ad_container =
 boost::multi_index_container<
     ad_entity<Alloc>,
     boost::multi_index::indexed_by<
-        boost::multi_index::ordered_unique<
-            boost::multi_index::tag<typename ad_entity<Alloc>::ad_id_tag>,
-            BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,typename ad_entity<Alloc>::char_string,ad_id)
+        boost::multi_index::ordered_non_unique<
+            boost::multi_index::tag<typename ad_entity<Alloc>::size_tag>,
+            boost::multi_index::composite_key<
+                ad_entity<Alloc>,
+                BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint16_t,width),
+                BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint16_t,height)
+            >
         >
     >,
     boost::interprocess::allocator<ad_entity<Alloc>,typename Alloc::segment_manager>
