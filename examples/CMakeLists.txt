@@ -39,7 +39,6 @@ add_executable(
         )
 
 add_executable(
-
         mock_bidder_test
         mock_bidder_test.cpp
         )
@@ -95,4 +94,6 @@ target_link_libraries(
         ${CMAKE_THREAD_LIBS_INIT}
         ${RT_LIB}
         )
+
+add_subdirectory(bidder)
 
