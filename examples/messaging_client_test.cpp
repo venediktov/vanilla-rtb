@@ -19,6 +19,11 @@ namespace po = boost::program_options;
 using namespace vanilla::messaging;
 using namespace std::literals;
 
+std::ostream& operator<< (std::ostream &os, const openrtb::BidResponse &bid) {
+    os << to_string(DSL::GenericDSL().create_response(bid)) ;
+    return os;
+}
+
 int main(int argc, char**argv) {
 
   init_framework_logging("/tmp/openrtb_messaging_test_log");
@@ -48,22 +53,18 @@ int main(int argc, char**argv) {
 
 
 //This code below can be placed in  exchange_handler_test.cpp inside auction handler
-std::vector<std::string> responses;
+std::vector<openrtb::BidResponse> responses;
 
 communicator<broadcast>()
 .outbound(port)
 .distribute(openrtb::BidRequest())
-.collect(10ms, [&responses](const std::string serialized_data) {
-    std::stringstream ss (serialized_data);
-    boost::archive::binary_iarchive iarch(ss);
-    openrtb::BidResponse bid;
-    iarch >> bid;
-    auto resp =  to_string(DSL::GenericDSL().create_response(bid)) ;
-    LOG(info) << "Received back:" << resp;
-    responses.emplace_back(resp.data(),resp.size());
+.collect<openrtb::BidResponse>(10ms, [&responses](openrtb::BidResponse bid) { //move ctored by collect() 
+    responses.push_back(bid);
+    //auto resp =  to_string(DSL::GenericDSL().create_response(bid)) ;
+    LOG(info) << "Received back:";
 });
 
-std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<std::string>(std::cout, "\n"));
+//std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<openrtb::BidResponse>(std::cout, "\n"));
 
 }
 

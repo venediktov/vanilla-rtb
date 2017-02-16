@@ -7,8 +7,10 @@
 #include "exchange/exchange_handler.hpp"
 #include "exchange/exchange_server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
-#include "DSL/generic_dsl.hpp"
+#include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/config/config.hpp"
+#include "rtb/messaging/serialization.hpp"
+#include "rtb/messaging/communicator.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
@@ -23,6 +25,9 @@ struct exchange_config_data {
         log_file_name{}, handler_timeout_v1{}, handler_timeout_v2{}
     {}
 };
+
+using namespace vanilla::messaging;
+
 int main(int argc, char *argv[]) {
     using namespace std::placeholders;
     using namespace vanilla::exchange;
@@ -63,6 +68,7 @@ int main(int argc, char *argv[]) {
         openrtb::BidResponse response;
         return response;
     });
+
     //you can put as many exchange handlers as unique URI
     exchange_handler<DSL::GenericDSL> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_v2
@@ -78,6 +84,26 @@ int main(int argc, char *argv[]) {
         boost::uuids::uuid id = boost::uuids::random_generator()() ; 
         response.bidid = boost::uuids::to_string(id);
         return response;
+    });
+
+    // or you can broadcast to your farm of multiple bidders on multiple remote machines
+    exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
+    openrtb_handler_distributor
+    .logger([](const std::string &data) {
+        LOG(debug) << "request_data for distribution=" << data ;
+    })
+    .error_logger([](const std::string &data) {
+        LOG(debug) << "request for distribution error " << data ;
+    })
+    .auction([](const openrtb::BidRequest &request) {
+        std::vector<openrtb::BidResponse> responses;
+        communicator<broadcast>()
+        .outbound(5000)
+        .distribute(openrtb::BidRequest())
+        .collect<openrtb::BidResponse>(10ms, [&responses](openrtb::BidResponse bid) { //move ctored by collect()
+            responses.push_back(bid);
+        });
+        return responses.empty() ? openrtb::BidResponse() : responses[0];
     });
 
     connection_endpoint ep {std::make_tuple(config.get("exchange.host"), config.get("exchange.port"), config.get("exchange.root"))};

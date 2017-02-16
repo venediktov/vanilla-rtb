@@ -243,7 +243,7 @@ public:
     self_type & process(Handler && handler) {
        if( consumer_ ) {
            //intercept a call from receive , get response from handler , send reponse back to from_endpoint
-           consumer_->receive_async(data_, [this,&handler](auto from_endpoint, auto data) { //intercept a call
+           consumer_->receive_async(data_, [this,&handler](auto from_endpoint, auto data) { //intercept a call for deserialization
                auto response = std::forward<Handler>(handler)(from_endpoint, std::move(deserialize<T>(data)));
                consumer_->send_async(response, from_endpoint);
            });
@@ -251,17 +251,19 @@ public:
        return *this;
     }
 
-    template<typename Duration, typename Handler>
+    template<typename T, typename Duration, typename Handler>
     void collect(Duration && timeout, Handler && handler) {
        if( !distributor_ ) {
            return;
        }
-       distributor_->receive_async(data_, std::forward<Handler>(handler));
+       distributor_->receive_async(data_, [this,&handler](auto data) { //intercept a call for deserialization
+           std::forward<Handler>(handler)(std::move(deserialize<T>(data)));
+       });
        timer_.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
        timer_.async_wait( [this](const boost::system::error_code& error) {
            io_service_.stop();
        });
-       //TODO: need optimized return before timer if all data is collected from all responders
+       //TODO: can be  optimized return before timer if all data is collected from all responders
        io_service_.run();
     }
 
