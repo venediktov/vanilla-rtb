@@ -162,7 +162,7 @@ int main(int argc, char**argv) {
 
   for ( int i=0; i<iter_count; ++i) {
      auto pick = random_pick(cities);
-     auto sp = std::make_shared<std::stringstream>() ;
+     auto sp = std::make_shared<std::stringstream>();
      std::vector<std::shared_ptr<CityCountry>> retrieved_cached_cities;
      {
        perf_timer<std::stringstream> timer(sp) ;

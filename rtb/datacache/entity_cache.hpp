@@ -60,7 +60,11 @@ namespace {
  
 namespace datacache {
    
+<<<<<<< HEAD
 template<typename Memory, template <class> class Container, size_t MEMORY_SIZE = 67108864 >
+=======
+template<typename Memory, template <class> class Container, MEMORY_SIZE = 67108864 >
+>>>>>>> 2476beb546e6d1474b1144363a1c5caa9393212c
 class entity_cache
 {
 public:
