@@ -69,10 +69,11 @@ class AdDataEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::ad_container> ; 
         using Keys = vanilla::tagged_tuple<
             typename ipc::data::ad_entity<Alloc>::width_tag,    uint16_t, 
-            typename ipc::data::ad_entity<Alloc>::height_tag,   uint16_t
+            typename ipc::data::ad_entity<Alloc>::height_tag,   uint16_t,
+            typename ipc::data::ad_entity<Alloc>::ad_id_tag,    std::string
         >;
         using DataVect = std::vector<std::shared_ptr <Ad> >;
-        using SizeTag = typename ipc::data::ad_entity<Alloc>::size_tag;
+        using SizeTag = typename ipc::data::ad_entity<Alloc>::size_ad_id_tag;
     public:    
         AdDataEntity(const BidderConfig &config):
             config{config}, cache(config.data().ads_ipc_name)
@@ -86,7 +87,7 @@ class AdDataEntity {
             cache.clear();
             
             std::for_each(std::istream_iterator<Ad>(in), std::istream_iterator<Ad>(), [&](const Ad &ad){
-                cache.insert(Keys{ad.width, ad.height}, ad);
+                cache.insert(Keys{ad.width, ad.height, ad.ad_id}, ad);
             });            
         }
         template <typename ...Args>

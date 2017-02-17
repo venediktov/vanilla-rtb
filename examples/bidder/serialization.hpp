@@ -21,7 +21,7 @@ namespace boost { namespace serialization {
         ar & value.record;
     }
     template<class Archive>
-    void serialize(Archive & ar, AdGeo & value, const unsigned int version) {
+    void serialize(Archive & ar, GeoAd & value, const unsigned int version) {
         ar & value.ad_id;
         ar & value.geo_id;
         ar & value.record;

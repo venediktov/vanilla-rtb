@@ -53,7 +53,7 @@ struct Geo {
 };
 
 template <typename Memory = typename mpclmi::ipc::Shared, 
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::ad_container>::char_allocator >
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::city_country_container>::char_allocator >
 class GeoDataEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::city_country_container> ; 
         using Keys = vanilla::tagged_tuple<

@@ -11,13 +11,15 @@
 #include "rtb/config/config.hpp"
 #include "core/tagged_tuple.hpp"
 #include "datacache/ad_entity.hpp"
-#include "datacache/ad_geo_entity.hpp"
+#include "datacache/geo_ad_entity.hpp"
 #include "datacache/city_country_entity.hpp"
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 #include <vector>
 #include <random>
@@ -52,8 +54,8 @@ int main(int argc, char *argv[]) {
             ("bidder.log", boost::program_options::value<std::string>(&d.log_file_name), "bidder_test log file name log")
             ("bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ads"), "ads_source file name")
             ("bidder.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("bidder.ad_geo_source", boost::program_options::value<std::string>(&d.ad_geo_source)->default_value("data/ad_geo"), "ad_geo_source file name")
-            ("bidder.ad_geo_ipc_name", boost::program_options::value<std::string>(&d.ad_geo_ipc_name)->default_value("vanilla-ad-geo-ipc"), "ad-geo ipc name")
+            ("bidder.geo_ad_source", boost::program_options::value<std::string>(&d.geo_ad_source)->default_value("data/ad_geo"), "geo_ad_source file name")
+            ("bidder.geo_ad_ipc_name", boost::program_options::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")
             ("bidder.geo_source", boost::program_options::value<std::string>(&d.geo_source)->default_value("data/geo"), "geo_source file name")
             ("bidder.geo_ipc_name", boost::program_options::value<std::string>(&d.geo_ipc_name)->default_value("vanilla-geo-ipc"), "geo ipc name")
             ("bidder.host", "bidder_test Host")
@@ -95,7 +97,9 @@ int main(int argc, char *argv[]) {
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.getAd(request, imp)) {
                     LOG(debug) << "Show ad " << ad;
-                    response.bidid = "1234"; // TODO some unique generator
+                    boost::uuids::uuid bidid = boost::uuids::random_generator()();
+           
+                    response.bidid = boost::uuids::to_string(bidid);
                     
                     if(request.cur.size()) {
                         response.cur = request.cur[0];
@@ -108,7 +112,8 @@ int main(int argc, char *argv[]) {
                     }
                         
                     openrtb::Bid bid;
-                    bid.id = "5678"; // TODO some unique generator
+                    bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
+                                                             // Is it the same as response.bidid
                     bid.impid = imp.id;
                     bid.price = ad->max_bid_micros/1000000.0; // Not micros?
                     bid.w = ad->width;

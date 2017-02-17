@@ -18,7 +18,7 @@ class Selector {
         Selector(const BidderConfig &config):
             config(config),
             ad_data_entity(config),
-            ad_geo_data_entity(config),
+            geo_ad_data_entity(config),
             geo_data_entity(config)
         {}
             
@@ -28,7 +28,7 @@ class Selector {
             {
                 perf_timer<std::stringstream> timer(sp);
                 ad_data_entity.load();
-                ad_geo_data_entity.load();
+                geo_ad_data_entity.load();
                 geo_data_entity.load();
 
                 // load others
@@ -45,8 +45,8 @@ class Selector {
                 LOG(debug) << "No geo";
                 return result;
             }
-            std::vector<std::shared_ptr <AdGeo> > retrieved_cached_ad_geo;
-            if(!getAdGeo(geo->geo_id, retrieved_cached_ad_geo)) {
+            std::vector<std::shared_ptr <GeoAd> > retrieved_cached_geo_ad;
+            if(!getGeoAd(geo->geo_id, retrieved_cached_geo_ad)) {
                 LOG(debug) << "No ads for geo " << geo->geo_id;
                 return result;
             }
@@ -55,18 +55,9 @@ class Selector {
             if(!this->ad_data_entity.retrieve(retrieved_cached_ads, imp.banner.get().w, imp.banner.get().h)) {
                 return result;
             }
-            // Sort both by ads id
-            std::sort(retrieved_cached_ad_geo.begin(), retrieved_cached_ad_geo.end(),
-                    [](const std::shared_ptr<AdGeo> &first, const std::shared_ptr<AdGeo> &second) -> bool {
-                        return first->ad_id < second->ad_id;
-            });
-            std::sort(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
-                    [](const std::shared_ptr<Ad> &first, const std::shared_ptr<Ad> &second) -> bool {
-                        return first->ad_id < second->ad_id;
-            });
             std::vector<std::shared_ptr <Ad> > intersection;
             std::set_intersection(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
-                      retrieved_cached_ad_geo.begin(), retrieved_cached_ad_geo.end(),
+                      retrieved_cached_geo_ad.begin(), retrieved_cached_geo_ad.end(),
                       std::back_inserter(intersection),
                       [](auto lhs, auto rhs) { return lhs->ad_id < rhs->ad_id; }
             );
@@ -83,9 +74,9 @@ class Selector {
             return result;
         }
         
-        bool getAdGeo(uint32_t geo_id, std::vector<std::shared_ptr <AdGeo> > &retrieved_cached_ad_geo) {
-            if (!this->ad_geo_data_entity.retrieve(retrieved_cached_ad_geo, geo_id)) {
-                LOG(debug) << "AdGeo retrieve failed " << geo_id;
+        bool getGeoAd(uint32_t geo_id, std::vector<std::shared_ptr <GeoAd> > &retrieved_cached_geo_ad) {
+            if (!this->geo_ad_data_entity.retrieve(retrieved_cached_geo_ad, geo_id)) {
+                LOG(debug) << "GeoAd retrieve failed " << geo_id;
                 return false;
             }
             return true;
@@ -118,7 +109,7 @@ class Selector {
     private:     
         const BidderConfig &config;
         AdDataEntity<> ad_data_entity;
-        AdGeoDataEntity<> ad_geo_data_entity;
+        GeoAdDataEntity<> geo_ad_data_entity;
         GeoDataEntity<> geo_data_entity;
 };
 }
