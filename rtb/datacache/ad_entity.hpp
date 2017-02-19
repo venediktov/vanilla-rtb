@@ -10,14 +10,12 @@
 
 #include "base_entity.hpp" 
 #include <string>
-#include <sstream>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/multi_index_container.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
-#include <boost/multi_index/composite_key.hpp>
-#include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
   
 namespace ipc { namespace data {
@@ -38,6 +36,8 @@ namespace ipc { namespace data {
        
         ad_entity( const Alloc & a ) :
             base_entity<Alloc>(a),
+            width{},
+            height{},
             ad_id(a)
         {} //ctor END
        

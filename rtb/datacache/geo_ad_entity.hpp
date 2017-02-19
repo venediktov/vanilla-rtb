@@ -5,8 +5,18 @@
  * Created on 15 февраля 2017 г., 1:05
  */
 
-#ifndef __IPC_DATA_AD_GEO_ENTITY_HPP__
-#define __IPC_DATA_AD_GEO_ENTITY_HPP__
+#ifndef __IPC_DATA_GEO_AD_ENTITY_HPP__
+#define __IPC_DATA_GEO_AD_ENTITY_HPP__
+
+#include "base_entity.hpp"
+#include <string>
+#include <cstdint>
+#include <boost/interprocess/containers/string.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/composite_key.hpp>
 
 namespace ipc { namespace data {
     
@@ -25,7 +35,8 @@ namespace ipc { namespace data {
        
         geo_ad_entity( const Alloc & a ) :
             base_entity<Alloc>(a),
-                ad_id(a)
+            geo_id{},
+            ad_id(a)
         {} //ctor END
         uint32_t geo_id;
         char_string ad_id;
@@ -71,7 +82,7 @@ using geo_ad_container =
 boost::multi_index_container<
     geo_ad_entity<Alloc>,
     boost::multi_index::indexed_by<
-        boost::multi_index::ordered_non_unique<
+        boost::multi_index::ordered_unique<
             boost::multi_index::tag<typename geo_ad_entity<Alloc>::geo_ad_tag>,
             boost::multi_index::composite_key<
                 geo_ad_entity<Alloc>,
@@ -87,5 +98,5 @@ boost::multi_index_container<
   
 }}
 
-#endif /* __IPC_DATA_AD_GEO_ENTITY_HPP__ */
+#endif /* __IPC_DATA_GEO_AD_ENTITY_HPP__ */
 

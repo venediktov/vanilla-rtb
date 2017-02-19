@@ -9,7 +9,7 @@
 #define SELECTOR_HPP
 
 #include "ad.hpp"
-#include "ad_geo.hpp"
+#include "geo_ad.hpp"
 #include "geo.hpp"
 
 namespace vanilla {
@@ -23,16 +23,13 @@ class Selector {
         {}
             
         void load() noexcept(false) {
-            LOG(debug) << "Load start..";
             auto sp = std::make_shared<std::stringstream>();
             {
-                perf_timer<std::stringstream> timer(sp);
+                perf_timer<std::stringstream> timer(sp, "selector load");
                 ad_data_entity.load();
                 geo_ad_data_entity.load();
                 geo_data_entity.load();
-
                 // load others
-                LOG(debug) << "Load End!";
             }
             LOG(info) << sp->str() ;
         }

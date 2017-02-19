@@ -5,8 +5,8 @@
  * Created on 16 февраля 2017 г., 21:19
  */
 
-#ifndef AD_GEO_HPP
-#define AD_GEO_HPP
+#ifndef GEO_AD_HPP
+#define GEO_AD_HPP
 
 #include "config.hpp"
 /* 
@@ -79,7 +79,14 @@ class GeoAdDataEntity {
         }
         
         bool retrieve(DataVect &vect, uint32_t geo_id) {
-            return cache.template retrieve<GeoAdTag>(vect, geo_id);
+            bool result = false;
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "geo_ad");
+                result = cache.template retrieve<GeoAdTag>(vect, geo_id);
+            }
+            LOG(debug) << sp->str();
+            return result;
         }
     private:
         const BidderConfig &config;
@@ -87,5 +94,5 @@ class GeoAdDataEntity {
 };
 
 
-#endif /* AD_GEO_HPP */
+#endif /* GEO_AD_HPP */
 

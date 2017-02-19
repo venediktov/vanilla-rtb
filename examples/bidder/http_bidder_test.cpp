@@ -93,36 +93,38 @@ int main(int argc, char *argv[]) {
         })
         .auction([&](const openrtb::BidRequest &request) {
             openrtb::BidResponse response;
-            LOG(info) << "imps " << request.imp.size();
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.getAd(request, imp)) {
-                    LOG(debug) << "Show ad " << ad;
-                    boost::uuids::uuid bidid = boost::uuids::random_generator()();
-           
-                    response.bidid = boost::uuids::to_string(bidid);
-                    
-                    if(request.cur.size()) {
-                        response.cur = request.cur[0];
-                    }
-                    else if(imp.bidfloorcur.length()) {
-                        response.cur = imp.bidfloorcur; // Just return back
-                    }
-                    if(response.seatbid.size() == 0) {
-                        response.seatbid.emplace_back(openrtb::SeatBid());
-                    }
+                    auto sp = std::make_shared<std::stringstream>();
+                    {
+                        perf_timer<std::stringstream> timer(sp, "fill response");
                         
-                    openrtb::Bid bid;
-                    bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
-                                                             // Is it the same as response.bidid
-                    bid.impid = imp.id;
-                    bid.price = ad->max_bid_micros/1000000.0; // Not micros?
-                    bid.w = ad->width;
-                    bid.h = ad->height;
-                    bid.adm = ad->code;
-                    bid.adid = ad->ad_id;
-                    
-                    response.seatbid.back().bid.emplace_back(std::move(bid));
-                    
+                        boost::uuids::uuid bidid = boost::uuids::random_generator()();
+                         response.bidid = boost::uuids::to_string(bidid);
+
+                        if (request.cur.size()) {
+                            response.cur = request.cur[0];
+                        } else if (imp.bidfloorcur.length()) {
+                            response.cur = imp.bidfloorcur; // Just return back
+                        }
+
+                        if (response.seatbid.size() == 0) {
+                            response.seatbid.emplace_back(openrtb::SeatBid());
+                        }
+
+                        openrtb::Bid bid;
+                        bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
+                        // Is it the same as response.bidid?
+                        bid.impid = imp.id;
+                        bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
+                        bid.w = ad->width;
+                        bid.h = ad->height;
+                        bid.adm = ad->code;
+                        bid.adid = ad->ad_id;
+
+                        response.seatbid.back().bid.emplace_back(std::move(bid));
+                    }
+                    LOG(debug) << sp->str();
                 }
             }
             

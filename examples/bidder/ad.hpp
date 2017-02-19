@@ -92,7 +92,14 @@ class AdDataEntity {
         }
         template <typename ...Args>
         bool retrieve(DataVect &vect, Args && ...args) {
-            return cache.retrieve<SizeTag>(vect, std::forward<Args>(args)...);
+            bool result = false;
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "ad");
+                result = cache.retrieve<SizeTag>(vect, std::forward<Args>(args)...);
+            }
+            LOG(debug) << sp->str();
+            return result;
         }
     private:
         const BidderConfig &config;

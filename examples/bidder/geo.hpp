@@ -87,7 +87,14 @@ class GeoDataEntity {
         }
 
         bool retrieve(DataVect &vect, const std::string &city, const std::string &country) {
-            return cache.template retrieve<CityCountryTag>(vect, cache.create_ipc_key(city), cache.create_ipc_key(country));
+            bool result = false;
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "geo");
+                result = cache.template retrieve<CityCountryTag>(vect, cache.create_ipc_key(city), cache.create_ipc_key(country));
+            }
+            LOG(debug) << sp->str();
+            return result;
         }
     private:
         const BidderConfig &config;
