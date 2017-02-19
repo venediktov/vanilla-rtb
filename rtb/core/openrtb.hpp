@@ -6,6 +6,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <cstdint>
 
 namespace openrtb {
 
@@ -108,8 +109,8 @@ namespace openrtb {
     struct Banner {
         ~Banner() {}
 
-        int w{};                     ///< Width of ad
-        int h{};                     ///< Height of ad
+        uint16_t w{};                     ///< Width of ad
+        uint16_t h{};                     ///< Height of ad
         boost::optional<int> wmax;                  ///< max width of ad (OpenRTB 2.3)
         boost::optional<int> hmax;                  ///< max height of ad (OpenRTB 2.3)
         boost::optional<int> wmin;                  ///< min width of ad (OpenRTB 2.3)
@@ -161,10 +162,61 @@ namespace openrtb {
     struct Site : Context, SiteImpl   {
         std::string id;
     };
-    
+    enum class GeoType : int8_t {
+        UNDEFINED = -1,  ///< Not explicitly specified
+
+        GPS = 1,        ///< GPS/Location Services
+        IP = 2,         ///< IP Address
+        USER = 3        ///< User provided (e.g., registration data)
+    };
+    struct Geo {
+        float lat{};                        ///< Latitude from -90.0 to +90.0, where negative is south.
+        float lon{};                        ///< Longitude from -180.0 to +180.0, where negative is west.
+        GeoType type{GeoType::UNDEFINED};   ///< Source of location data; recommended when passing lat/lon
+        int utcoffset{};                    ///< Local time as the number +/- of minutes from UTC.
+        std::string city;                   ///< City using United Nations Code for Trade & Transport
+                                            ///  Locations. See Appendix A for a link to the codes.
+        std::string country;                ///< Country code using ISO-3166-1-alpha-3
+        std::string region;                 ///< Region code using ISO-3166-2; 2-letter state code if USA.
+        std::string regionfips104;          ///< Region of a country using FIPS 10-4 notation. While OpenRTB
+                                            ///  supports this attribute, it has been withdrawn by NIST in 2008.
+        std::string metro;                  ///< Google metro code; similar to but not exactly Nielsen DMAs.
+                                            ///  See Appendix A for a link to the codes
+        std::string zip;                    ///< Zip or postal code
+        jsonv::value ext;                   ///< Placeholder for exchange-specific extensions to OpenRTB.
+        
+        
+    };
     struct App {};
     struct Device {};
-    struct User {};
+    
+    struct UserDataSegment {
+        std::string id;                         ///< ID of the data segment specific to the data provider.
+        std::string name;                       ///< Name of the data segment specific to the data provider.
+        std::string value;                      ///< String representation of the data segment value.
+        jsonv::value ext;                       ///< Placeholder for exchange-specific extensions to OpenRTB.
+    };
+    struct UserData {
+        std::string id;                         ///< Exchange-specific ID for the data provider
+        std::string name;                       ///< Exchange-specific name for the data provider
+        std::vector<UserDataSegment> segment;   ///< Array of Segment objects that contain the actual data values.
+        jsonv::value ext;           ///< Placeholder for exchange-specific extensions to OpenRTB.
+    };
+    struct User {
+        int yob{};                  ///< Year of birth as a 4-digit integer
+        std::string id;             ///< Exchange-specific ID for the user.
+        std::string buyeruid;       ///< Buyer-specific ID for the user as mapped by the exchange for the buyer
+        std::string gender;         ///< Gender, where “M” = male, “F” = female, “O” = known to be other (i.e., omitted is unknown).
+        std::string keywords;       ///< Comma separated list of keywords, interests, or intent
+        std::string customdata;     ///< Optional feature to pass bidder data that was set in the
+                                    ///  exchange’s cookie. The string must be in base85 cookie safe
+                                    ///  characters and be in any format. Proper JSON encoding must
+                                    ///  be used to include “escaped” quotation marks.
+        boost::optional<Geo> geo;
+        std::vector<UserData> data; ///< Additional user data
+        jsonv::value ext;           ///< Placeholder for exchange-specific extensions to OpenRTB.
+        
+    };
 
     struct Regulations {};
     struct Native {

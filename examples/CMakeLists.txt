@@ -95,4 +95,5 @@ target_link_libraries(
         ${RT_LIB}
         )
 
+add_subdirectory(bidder)
 
