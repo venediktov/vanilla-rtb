@@ -8,6 +8,8 @@
 #ifndef BIDDER_SERIALIZATION_HPP
 #define BIDDER_SERIALIZATION_HPP
 
+#include <boost/serialization/set.hpp>
+
 //Non-Intrusive boost serialization implementation
 namespace boost { namespace serialization {
     template<class Archive>
@@ -21,10 +23,9 @@ namespace boost { namespace serialization {
         ar & value.record;
     }
     template<class Archive>
-    void serialize(Archive & ar, GeoAd & value, const unsigned int version) {
-        ar & value.ad_id;
+    void serialize(Archive & ar, GeoAds & value, const unsigned int version) {
         ar & value.geo_id;
-        ar & value.record;
+        ar & value.ad_ids;
     }
     template<class Archive>
     void serialize(Archive & ar, Geo & value, const unsigned int version) {

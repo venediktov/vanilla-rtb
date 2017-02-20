@@ -79,7 +79,7 @@ _named_mutex(bip::open_or_create, (_cache_name + "_mutex").c_str()) {
 //TODO: add to ctor to switch between mmap and shm
 std::string data_base_dir = "/tmp/CACHE" ;
 _store_name =  Memory::convert_base_dir(data_base_dir) + _cache_name;
-_segment_ptr.reset(new segment_t(bip::open_or_create, _store_name.c_str(), MEMORY_SIZE) ) ;
+_segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), MEMORY_SIZE) ) ;
 _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_name.c_str() )
     (typename Container_t::ctor_args_list() , typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
  
@@ -89,41 +89,41 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
         _container_ptr->clear() ;
     }
    
-    template<typename Tag, typename Serializable, typename Arg>
-    bool update( const Serializable &data, Arg&& arg) {
+    template<typename Tag, typename Key, typename Serializable, typename Arg>
+    bool update( Key && key, Serializable && data, Arg&& arg) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
         bool is_success {false};
         auto &index = _container_ptr->template get<Tag>();
-        auto p = index.equal_range(std::forward<Arg>(arg));      
+        auto p = index.equal_range(std::forward<Arg>(arg));
         while ( p.first != p.second ) {
             try {
-              is_success |= update_data(data,index,p.first++);
+              is_success |= update_data(std::forward<Key>(key),std::forward<Serializable>(data),index,p.first++);
             } catch (const bad_alloc_exception_t &e) {
               LOG(debug) << boost::core::demangle(typeid(*this).name())
               << " data was not updated , MEMORY AVAILABLE="
               <<  _segment_ptr->get_free_memory() ;
               grow_memory(MEMORY_SIZE);
-              is_success |= update_data(data,index,p.first++);
+              is_success |= update_data(std::forward<Key>(key),std::forward<Serializable>(data),index,p.first++);
             }
         }
         return is_success;
     }
  
-    template<typename Tag, typename Serializable, typename ...Args>
-    bool update( const Serializable &data, Args&& ...args) {
+    template<typename Tag, typename Key, typename Serializable, typename ...Args>
+    bool update( Key && key, Serializable && data, Args&& ...args) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
         bool is_success {false};
         auto &index = _container_ptr->template get<Tag>();
         auto p = index.equal_range(boost::make_tuple(std::forward<Args>(args)...));
          while ( p.first != p.second ) {
             try {
-              is_success |= update_data(data,index,p.first++);
+              is_success |= update_data(std::forward<Key>(key),std::forward<Serializable>(data),index,p.first++);
             } catch (const bad_alloc_exception_t &e) {
               LOG(debug) << boost::core::demangle(typeid(*this).name())
               << " data was not updated , MEMORY AVAILABLE="
               <<  _segment_ptr->get_free_memory() ;
               grow_memory(MEMORY_SIZE);
-              is_success |= update_data(data,index,p.first++);
+              is_success |= update_data(std::forward<Key>(key),std::forward<Serializable>(data),index,p.first++);
             }
         }
         return is_success;
@@ -140,6 +140,7 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
             << " data was not inserted , MEMORY AVAILABLE="
             <<  _segment_ptr->get_free_memory(); 
             grow_memory(MEMORY_SIZE);
+            Memory::attach([this](){attach();});
             is_success = insert_data(std::forward<Key>(key), std::forward<Serializable>(data));
         }
  
@@ -226,31 +227,30 @@ private:
     _container_ptr = _segment_ptr->template find_or_construct<Container_t>(_cache_name.c_str())
         (typename Container_t::ctor_args_list(), typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
     }
- 
+
     void grow_memory(size_t size) const {
         try {
           _segment_ptr.reset() ;
-          segment_t::grow(_store_name.c_str(), size) ;
+          Memory::grow(_segment_ptr, _store_name.c_str(), size) ;
         } catch ( const  bad_alloc_exception_t &e ) {
             LOG(debug) << boost::core::demangle(typeid(*this).name())       
             << " failed to grow " << e.what() << ":free mem=" << _segment_ptr->get_free_memory() ;
         }
-        attach() ; // reattach to newly created
+        Memory::attach([this](){attach();}); // reattach to newly created
     }
  
     template<typename Key, typename Serializable>
     bool insert_data(Key && key, Serializable &&data) {
-        attach();
+        Memory::attach([this](){attach();});
         Data_t item(_segment_ptr->get_segment_manager());
         item.store(std::forward<Key>(key), std::forward<Serializable>(data));
         return _container_ptr->insert(item).second;
     }
  
-    template<typename Serializable, typename Index, typename Iterator>
-    bool update_data(const  Serializable &data, Index &index, Iterator itr) {
-        attach();
+    template<typename Key, typename Serializable, typename Index, typename Iterator>
+    bool update_data(Key && key, Serializable && data, Index &index, Iterator itr) {
         Data_t item(_segment_ptr->get_segment_manager());
-        item.store(data);
+        item.store(std::forward<Key>(key), std::forward<Serializable>(data));
         return index.modify(itr,item) ;
     }
  

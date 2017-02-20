@@ -54,6 +54,11 @@ struct Shared {
     static std::string convert_base_dir(const std::string &base_dir) {
         return "" ;
     }
+
+    template<typename Function>
+    static void attach( Function && f ) {
+       f() ;
+    }
 };  
 
 struct Mapped {
@@ -81,6 +86,11 @@ struct Mapped {
     static std::string convert_base_dir(const std::string &base_dir) {
         return base_dir + "/";
     }
+
+    template<typename Function>
+    static void attach( Function && f ) {
+       f() ;
+    }
 };
 
 struct Heap {
@@ -103,6 +113,9 @@ struct Heap {
     static std::string convert_base_dir(const std::string &base_dir) {
         return "" ;
     }
+
+    template<typename Function>
+    static void attach( Function && ) {}
 };
 
 }}

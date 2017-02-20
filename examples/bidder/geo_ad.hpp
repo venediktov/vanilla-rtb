@@ -50,16 +50,48 @@ struct GeoAd {
     }
 };
 
+//This struct gets stored in the cache
+struct GeoAds {
+    using collection_type = std::set<std::string> ;
+    using iterator = collection_type::iterator;
+    uint32_t geo_id;
+    mutable collection_type ad_ids;
+
+    GeoAds(const GeoAd &ad): 
+        geo_id{ad.geo_id} , ad_ids{ad.ad_id}
+    {}
+     
+    GeoAds():
+        geo_id{} , ad_ids{}
+    {}
+        
+    friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<GeoAds> &geo_ad_ptr)  {
+        os <<  *geo_ad_ptr;
+        return os;
+    }
+    friend std::ostream &operator<<(std::ostream & os, const  GeoAds & value)  {
+        os << value.geo_id
+        ;
+        return os;
+    } 
+    bool operator< (const GeoAds &gas) const {
+        return geo_id < gas.geo_id;
+    }
+    void operator+=(const GeoAd & geo_ad) const {
+        if ( geo_id == geo_ad.geo_id) {
+           ad_ids.insert(geo_ad.ad_id);
+        }
+    }
+};
+
 template <typename Memory = typename mpclmi::ipc::Shared, 
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::geo_ad_container>::char_allocator >
 class GeoAdDataEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::geo_ad_container> ; 
-        using Keys = vanilla::tagged_tuple<
-            typename ipc::data::geo_ad_entity<Alloc>::ad_id_tag,    std::string, 
+        using Keys = vanilla::tagged_tuple< 
             typename ipc::data::geo_ad_entity<Alloc>::geo_id_tag,   uint32_t
         >;
         using DataVect = std::vector<std::shared_ptr <GeoAd> >;
-        using GeoAdTag = typename ipc::data::geo_ad_entity<Alloc>::geo_ad_tag;
         using GeoTag = typename ipc::data::geo_ad_entity<Alloc>::geo_id_tag;
     public:    
         GeoAdDataEntity(const BidderConfig &config):
@@ -73,17 +105,38 @@ class GeoAdDataEntity {
             LOG(debug) << "File opened " << config.data().geo_ad_source;
             cache.clear();
             
-            std::for_each(std::istream_iterator<GeoAd>(in), std::istream_iterator<GeoAd>(), [&](const GeoAd &geo_ad){
-                cache.insert(Keys{geo_ad.ad_id, geo_ad.geo_id}, geo_ad);
-            });            
+            std::set<GeoAds> unique_geos;
+            std::for_each(std::istream_iterator<GeoAd>(in), std::istream_iterator<GeoAd>(), [&](const GeoAd &geo_ad) {
+                GeoAds geo_ads{geo_ad};
+                auto p = unique_geos.insert(geo_ads);
+                if ( !p.second ) {
+                    (*p.first) += geo_ad;
+                }
+            });
+            
+            std::for_each(std::begin(unique_geos), std::end(unique_geos), [this](const GeoAds &geo_ads){
+                if (!cache.insert(Keys{geo_ads.geo_id}, geo_ads) ) {
+                    LOG(debug) << "Failed to insert geo_ad=" << geo_ads;    
+                } else {
+                    LOG(debug) << "Insert geo_ad=" << geo_ads; 
+                }
+            });
         }
         
         bool retrieve(DataVect &vect, uint32_t geo_id) {
             bool result = false;
+            std::vector<std::shared_ptr<GeoAds>> geo_ads;
             auto sp = std::make_shared<std::stringstream>();
             {
-                perf_timer<std::stringstream> timer(sp, "geo_ad");
-                result = cache.template retrieve<GeoAdTag>(vect, geo_id);
+                perf_timer<std::stringstream> timer(sp, "geo_ads");
+                result = cache.template retrieve<GeoTag>(geo_ads, geo_id);
+                if(result) {
+                    auto geo_id = geo_ads[0]->geo_id;
+                    auto ads = geo_ads[0]->ad_ids;
+                    std::transform(std::begin(ads), std::end(ads), std::back_inserter(vect), [geo_id](const std::string &ad_id) {
+                        return std::make_shared<GeoAd>(std::move(ad_id),geo_id);
+                    });
+                }
             }
             LOG(debug) << sp->str();
             return result;
