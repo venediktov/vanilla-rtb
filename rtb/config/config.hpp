@@ -22,8 +22,8 @@ namespace vanilla { namespace config {
     public:    
         
         config(const add_options_type &add_options):
-			add_options(add_options)
-		{
+            add_options(add_options)
+        {
             desc.add_options()
                 ("help", "produce help")
                 ("config", po::value<std::string>(&config_name)->default_value(config_name_default), "config file name")
@@ -32,14 +32,16 @@ namespace vanilla { namespace config {
         config(const config&) = delete;
         
         void parse(int argc, char *argv[]) noexcept(false) {
-            store(po::parse_command_line(argc, argv, desc), vm);
-            notify(vm);
+            po::parsed_options parsed = po::command_line_parser(argc, argv).options(desc).allow_unregistered().run();      
+            store(parsed, vm);
+            notify(vm);            
+            
             if (vm.count("help")) {
                 std::stringstream ss;
                 ss << desc << std::endl;
                 throw std::runtime_error(ss.str());
             }
-
+            
             add_options(config_data, desc);
 
             std::ifstream file(config_name.c_str());
@@ -49,6 +51,8 @@ namespace vanilla { namespace config {
                 throw std::runtime_error(ss.str());
             }
             store(po::parse_config_file(file, desc, true), vm);
+            store(po::parse_command_line(argc, argv, desc), vm);
+            
             notify(vm);
         }
         
@@ -69,7 +73,7 @@ namespace vanilla { namespace config {
         template<typename DATAT>
         friend std::ostream& operator<<(std::ostream&, const config<DATAT>&);
     private:
-		const add_options_type add_options;
+	const add_options_type add_options;
         static constexpr const char* config_name_default{"./etc/config.cfg"};
         std::string config_name;
         po::variables_map vm;
