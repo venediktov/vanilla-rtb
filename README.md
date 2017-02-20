@@ -52,3 +52,12 @@ Structure ( work in progress ) :
 - [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
 - [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 
+
+###For faster builds invoking multiple make processes  , find number of cores on your system
+Linux command \: 
+* nproc
+
+4
+
+pass it to your make script like this
+gmake -j4
