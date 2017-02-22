@@ -30,7 +30,7 @@ namespace ipc { namespace data {
         struct geo_id_tag {}; // search on geo_id
         
         geo_ad_entity( const Alloc & a ) :
-            base_entity<Alloc>{a},
+            base_entity<Alloc>(a),
             geo_id{}
         {}
             
