@@ -27,7 +27,12 @@ class Selector {
             {
                 perf_timer<std::stringstream> timer(sp, "selector load");
                 ad_data_entity.load();
-                geo_ad_data_entity.load();
+                auto sp = std::make_shared<std::stringstream>();
+                {
+                   perf_timer<std::stringstream> timer(sp, "geo_ad load");
+                   geo_ad_data_entity.load();
+                }
+                LOG(info) << sp->str() ;
                 geo_data_entity.load();
                 // load others
             }
