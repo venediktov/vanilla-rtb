@@ -1,10 +1,10 @@
 language: cpp
 env:
   matrix:
-  - CONF=Debug   COMPILER=g++-5,2     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
-    USE_BOOST_OPTIONAL=0 PUBLISH_DOCS=0
-  - CONF=Release COMPILER=g++-5,2     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
-    USE_BOOST_OPTIONAL=0 PUBLISH_DOCS=1
+  - CONF=Debug   COMPILER=g++-5.2  USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
+    USE_BOOST_OPTIONAL=0
+  - CONF=Release COMPILER=g++-5.2  USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
+    USE_BOOST_OPTIONAL=0
 before_install:
 - sudo apt-add-repository --yes ppa:ubuntu-toolchain-r/test
 - sudo apt-add-repository --yes ppa:boost-latest/ppa
@@ -24,21 +24,3 @@ script:
   -DUSE_BOOST_STRING_VIEW=${USE_BOOST_STRING_VIEW} -DUSE_BOOST_OPTIONAL=${USE_BOOST_OPTIONAL}
   -DCOVERAGE=${COVERAGE} -DJSONV_BUILD_TESTS=ON
 - make VERBOSE=1
-after_success:
-- if [[ ${COVERAGE} == 1 ]]; then ./config/upload-coverage; fi
-- GIT_CURRENT_HASH=$(git rev-parse HEAD)
-- GIT_MASTER_HASH=$(git rev-parse master)
-- GIT_REMOTE_NAME=$(git remote)
-- GIT_REMOTE_FETCH_PATH=$(git remote --verbose | grep -P '^'${GIT_REMOTE_NAME}'.*\(fetch\)$'
-  | awk '{print $2}')
-- GIT_EXPECTED_PATH=https://github.com/venediktov/vanilla-rtb.git
-- echo "GIT_CURRENT_HASH=${GIT_CURRENT_HASH} GIT_REMOTE_NAME=${GIT_REMOTE_NAME} GIT_REMOTE_FETCH_PATH=${GIT_REMOTE_FETCH_PATH}"
-- if [[ ${PUBLISH_DOCS} == 0 ]]; then                             echo "Skipping documentation
-  publishing due PUBLISH_DOCS=${PUBLISH_DOCS}";                                  exit
-  0; fi
-- if [[ ${GIT_CURRENT_HASH} != ${GIT_MASTER_HASH} ]]; then        echo "Skipping documentation
-  publishing due to non-master ${GIT_CURRENT_HASH} (master=${GIT_MASTER_HASH})"; exit
-  0; fi
-- if [[ ${GIT_REMOTE_FETCH_PATH} != ${GIT_EXPECTED_PATH} ]]; then echo "Skipping documentation
-  publishing due to non-mainline remote ${GIT_REMOTE_FETCH_PATH}";               exit
-  0; fi
