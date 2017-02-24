@@ -2,7 +2,8 @@
 
 Real Time Bidding (RTB) - Demand Side Platform framework 
 
-Using modern C++11/14  features and latest BOOST libraries 
+Utilizing  modern C++11/14  features and latest BOOST libraries some critical path functionality 
+written in C and older, easy on the eye,  C++ .
 
 [our model diagram](../../wiki)
 
@@ -14,10 +15,14 @@ Structure ( work in progress ) :
    * [boost-dll/](../../tree/master/boost-dll/) -- C++11 not in official boost stack
    * [CRUD/](../../tree/master/CRUD/) -- Restful web-service written in C++11 based on boost.ASIO and CRUD handlers
    * [rtb/](../../tree/master/rtb/) -- C++11 framework and sandbox for testing platform solution 
-      * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project 
+      * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
+      * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
       * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast lookups and matching
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementations ( under review for more generic solution)
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv ( under review )
+    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
+      * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
+      * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
 * [CMakeLists.txt] - cmake file
 
 >The stack of vanilla-rtb depends on other C++11 projects and is referencing them via gh-subree.
