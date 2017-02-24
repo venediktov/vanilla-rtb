@@ -13,7 +13,8 @@ before_install:
 - sudo apt-get update
 - if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-cache search clang; fi
 install:
-- sudo apt-get install --yes --force-yes libboost1.58-all-dev cmake
+- sudo apt-get install --yes --force-yes libboost-all-dev cmake
+
 - if [[ ${COMPILER} != *"clang"* ]]; then sudo apt-get install --yes --force-yes ${COMPILER};
   fi
 - if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-get install --yes --force-yes clang-4.0;   fi
