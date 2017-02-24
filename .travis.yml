@@ -3,7 +3,6 @@ env:
   matrix:
   - CONF=Debug   COMPILER=g++-5,2     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
     USE_BOOST_OPTIONAL=0 PUBLISH_DOCS=0
-    USE_BOOST_OPTIONAL=0 PUBLISH_DOCS=0
   - CONF=Release COMPILER=g++-5,2     COVERAGE=0 USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
     USE_BOOST_OPTIONAL=0 PUBLISH_DOCS=1
 before_install:
@@ -14,7 +13,7 @@ before_install:
 - sudo apt-get update
 - if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-cache search clang; fi
 install:
-- sudo apt-get install --yes --force-yes libboost1.61-all-dev cmake
+- sudo apt-get install --yes --force-yes libboost1.58-all-dev cmake
 - if [[ ${COMPILER} != *"clang"* ]]; then sudo apt-get install --yes --force-yes ${COMPILER};
   fi
 - if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-get install --yes --force-yes clang-4.0;   fi
