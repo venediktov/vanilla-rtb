@@ -9,6 +9,10 @@
 #define GEO_AD_HPP
 
 #include "config.hpp"
+#include "rtb/common/split_string.hpp"
+#include <boost/utility/string_view.hpp>
+#include <boost/lexical_cast.hpp>
+
 /* 
  * Geo Targeting is implemented this way to test selection and reload on big amount of records
  */
@@ -16,7 +20,7 @@ struct GeoAd {
     std::string ad_id;
     uint32_t geo_id;
     std::string record;
-    
+   
     GeoAd(std::string ad_id, uint32_t geo_id) : 
         ad_id{std::move(ad_id)}, geo_id{geo_id}, record{}
     {}
@@ -38,14 +42,14 @@ struct GeoAd {
         if ( !std::getline(is, l.record) ){
             return is;
         }
-        std::vector<std::string> fields;
-        boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
+        std::vector<boost::string_view> fields;
+        vanilla::common::split_string(fields, l.record, "\t");
         if(fields.size() < 2) {
-            std::cout << "Not enought fields " << l.record << std::endl;
+            std::cout << "Not enought fields " << l.record << ", size=" << fields.size() << std::endl;
             return is;
         }
-        l.ad_id = fields.at(0); 
-        l.geo_id = atoi(fields.at(1).c_str());
+        l.ad_id.assign(fields.at(0).begin(), fields.at(0).size()); 
+        l.geo_id = boost::lexical_cast<int>(fields.at(1).begin(), fields.at(1).size());
         return is;
     }
 };
@@ -117,8 +121,6 @@ class GeoAdDataEntity {
             std::for_each(std::begin(unique_geos), std::end(unique_geos), [this](const GeoAds &geo_ads){
                 if (!cache.insert(Keys{geo_ads.geo_id}, geo_ads) ) {
                     LOG(debug) << "Failed to insert geo_ad=" << geo_ads;    
-                } else {
-                    LOG(debug) << "Insert geo_ad=" << geo_ads; 
                 }
             });
         }

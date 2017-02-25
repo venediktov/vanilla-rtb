@@ -76,6 +76,8 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
     
     vanilla::Selector selector(config);
+    boost::uuids::random_generator uuid_generator{};
+    
     try {
         selector.load();
     }
@@ -99,8 +101,8 @@ int main(int argc, char *argv[]) {
                     {
                         perf_timer<std::stringstream> timer(sp, "fill response");
                         
-                        boost::uuids::uuid bidid = boost::uuids::random_generator()();
-                         response.bidid = boost::uuids::to_string(bidid);
+                        boost::uuids::uuid bidid = uuid_generator();
+                        response.bidid = boost::uuids::to_string(bidid);
 
                         if (request.cur.size()) {
                             response.cur = request.cur[0];

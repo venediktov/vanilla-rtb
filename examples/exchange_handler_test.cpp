@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
     }
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
+    boost::uuids::random_generator uuid_generator{};
     
     exchange_handler<DSL::GenericDSL> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
@@ -78,10 +79,10 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v2 error " << data ;
     })
-    .auction([](const openrtb::BidRequest &request) {
+    .auction([&uuid_generator](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
-        boost::uuids::uuid id = boost::uuids::random_generator()() ; 
+        boost::uuids::uuid id = uuid_generator() ; 
         response.bidid = boost::uuids::to_string(id);
         return response;
     });

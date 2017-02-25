@@ -1,0 +1,27 @@
+language: cpp
+env:
+  matrix:
+  - CONF=Debug   COMPILER=g++-5.2  USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
+    USE_BOOST_OPTIONAL=0
+  - CONF=Release COMPILER=g++-5.2  USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
+    USE_BOOST_OPTIONAL=0
+before_install:
+- sudo apt-add-repository --yes ppa:ubuntu-toolchain-r/test
+- sudo apt-add-repository --yes ppa:boost-latest/ppa
+- if [[ ${COMPILER} == *"clang"* ]]; then sudo sh -c 'echo "deb http://llvm.org/apt/precise/
+  llvm-toolchain-precise main" >> /etc/apt/sources.list'; fi
+- sudo apt-get update
+- if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-cache search clang; fi
+install:
+- sudo apt-get install --yes --force-yes libboost-all-dev cmake
+
+- if [[ ${COMPILER} != *"clang"* ]]; then sudo apt-get install --yes --force-yes ${COMPILER};
+  fi
+- if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-get install --yes --force-yes clang-4.0;   fi
+- if [[ ${COVERAGE} -eq 1 ]];        then sudo pip install cpp-coveralls pyyaml;              fi
+script:
+- "${COMPILER} --version"
+- cmake -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${CONF} -DUSE_BOOST_REGEX=${USE_BOOST_REGEX}
+  -DUSE_BOOST_STRING_VIEW=${USE_BOOST_STRING_VIEW} -DUSE_BOOST_OPTIONAL=${USE_BOOST_OPTIONAL}
+  -DCOVERAGE=${COVERAGE} -DJSONV_BUILD_TESTS=ON
+- make VERBOSE=1
