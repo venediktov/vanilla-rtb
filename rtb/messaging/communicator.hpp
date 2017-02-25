@@ -105,7 +105,7 @@ public:
     
      receive_socket_.async_send_to(
         boost::asio::buffer(*data_p), *endpoint,
-        [](const boost::system::error_code& error, std::size_t bytes_transferred) {
+        [data_p](const boost::system::error_code& error, std::size_t bytes_transferred) {
      });
   }
 
@@ -162,7 +162,7 @@ public:
 
      send_socket_.async_send_to(
         boost::asio::buffer(*data_p), endpoint_,
-        [](const boost::system::error_code& error, std::size_t bytes_transferred) {
+        [data_p](const boost::system::error_code& error, std::size_t bytes_transferred) {
      });
   }
 

@@ -1,11 +1,14 @@
 
-#include <unistd.h>
+
 #include <boost/program_options.hpp>
 #include <boost/log/trivial.hpp>
 #include <boost/asio.hpp>
 #include "rtb/core/openrtb.hpp"
 #if !defined(WIN32)
+#include <unistd.h>
 #include "rtb/core/process.hpp"
+#else
+#include <process.h>
 #endif
 #include "rtb/messaging/communicator.hpp"
 #include "rtb/messaging/serialization.hpp"

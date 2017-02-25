@@ -50,6 +50,8 @@ add_executable(
 
 if (WIN32)
     target_compile_definitions(exchange_handler_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
+    target_compile_definitions(messaging_client_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
+    target_compile_definitions(mock_bidder_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1 _CRT_NONSTDC_NO_DEPRECATE )
     target_compile_definitions(jsonv PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
 endif(WIN32)
 
