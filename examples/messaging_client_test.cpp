@@ -19,9 +19,12 @@ namespace po = boost::program_options;
 using namespace vanilla::messaging;
 using namespace std::literals;
 
-std::ostream& operator<< (std::ostream &os, const openrtb::BidResponse &bid) {
-    os << to_string(DSL::GenericDSL().create_response(bid)) ;
-    return os;
+namespace openrtb {
+    class BidResponse;
+    std::ostream& operator<< (std::ostream &os, const BidResponse &bid) {
+        os << to_string(DSL::GenericDSL().create_response(bid));
+        return os;
+    }
 }
 
 int main(int argc, char**argv) {
@@ -61,10 +64,10 @@ communicator<broadcast>()
 .collect<openrtb::BidResponse>(10ms, [&responses](openrtb::BidResponse bid) { //move ctored by collect() 
     responses.push_back(bid);
     //auto resp =  to_string(DSL::GenericDSL().create_response(bid)) ;
-    LOG(info) << "Received back:";
+    LOG(info) << "Received back current size=" << responses.size();
 });
 
-//std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<openrtb::BidResponse>(std::cout, "\n"));
+std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<openrtb::BidResponse>(std::cout, "\n"));
 
 }
 
