@@ -96,7 +96,6 @@ int main(int argc, char *argv[]) {
         })
         .auction([&](const openrtb::BidRequest &request) {
             openrtb::BidResponse response;
-            return response;
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.getAd(request, imp)) {
                     auto sp = std::make_shared<std::stringstream>();
