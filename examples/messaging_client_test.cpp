@@ -7,6 +7,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/asio.hpp>
 #include "core/openrtb.hpp"
+#include "common/perf_timer.hpp"
 #include "messaging/serialization.hpp"
 #include "messaging/communicator.hpp"
 #include "DSL/generic_dsl.hpp"
@@ -31,13 +32,15 @@ int main(int argc, char**argv) {
 
   init_framework_logging("/tmp/openrtb_messaging_test_log");
 
-  std::string remote_address;
-  short port;
+  std::string remote_address{};
+  short port{};
+  unsigned int n_bid{};
   po::options_description desc;
         desc.add_options()
             ("help", "produce help message")
             ("remote_address",po::value<std::string>(&remote_address), "respond to remote address")
             ("port", po::value<short>(&port), "port")
+            ("n", po::value<unsigned int>(&n_bid)->required(), "number of bidders to wait-for")
         ;
 
   boost::program_options::variables_map vm;
@@ -57,16 +60,20 @@ int main(int argc, char**argv) {
 
 //This code below can be placed in  exchange_handler_test.cpp inside auction handler
 std::vector<openrtb::BidResponse> responses;
-
-communicator<broadcast>()
-.outbound(port)
-.distribute(openrtb::BidRequest())
-.collect<openrtb::BidResponse>(10ms, [&responses](openrtb::BidResponse bid) { //move ctored by collect() 
-    responses.push_back(bid);
-    //auto resp =  to_string(DSL::GenericDSL().create_response(bid)) ;
-    LOG(info) << "Received back current size=" << responses.size();
-});
-
+auto sp = std::make_shared<std::stringstream>();
+{
+    perf_timer<std::stringstream> timer(sp);
+    communicator<broadcast>()
+    .outbound(port)
+    .distribute(openrtb::BidRequest())
+    .collect<openrtb::BidResponse>(10ms, [&responses,n_bid](openrtb::BidResponse bid, auto done) {
+        responses.push_back(bid);
+        if (responses.size() == n_bid) {
+            done();
+        }
+    });
+}
+LOG(debug) << sp->str();
 std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<openrtb::BidResponse>(std::cout, "\n"));
 
 }
