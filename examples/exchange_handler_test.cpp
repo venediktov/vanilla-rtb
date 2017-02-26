@@ -27,6 +27,7 @@ struct exchange_config_data {
 };
 
 using namespace vanilla::messaging;
+namespace po = boost::program_options;
 
 int main(int argc, char *argv[]) {
     using namespace std::placeholders;
@@ -34,8 +35,9 @@ int main(int argc, char *argv[]) {
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
    
-    
-    vanilla::config::config<exchange_config_data> config([](exchange_config_data &d, boost::program_options::options_description &desc){
+    int n_bid{};
+    unsigned short port{};
+    vanilla::config::config<exchange_config_data> config([&](exchange_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
             ("exchange.log", boost::program_options::value<std::string>(&d.log_file_name), "exchange_handler_test log file name log")
             ("exchange.host", "exchange_handler_test Host")
@@ -43,6 +45,8 @@ int main(int argc, char *argv[]) {
             ("exchange.root", "exchange_handler_test Root")
             ("exchange.v1.timeout", boost::program_options::value<int>(&d.handler_timeout_v1), "exchange_handler_test v1 timeout")
             ("exchange.v2.timeout", boost::program_options::value<int>(&d.handler_timeout_v2), "exchange_handler_test v2 timeout")
+            ("mock-bidder.port", po::value<unsigned short>(&port)->default_value(5000), "udp port for broadcast")
+            ("mock-bidder.num_of_bidders", po::value<int>(&n_bid)->default_value(1), "number of bidders to wait for")
         ;
     });
     try {
@@ -91,18 +95,21 @@ int main(int argc, char *argv[]) {
     exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_distributor
     .logger([](const std::string &data) {
-        LOG(debug) << "request_data for distribution=" << data ;
+        //LOG(debug) << "request_data for distribution=" << data ;
     })
     .error_logger([](const std::string &data) {
         LOG(debug) << "request for distribution error " << data ;
     })
-    .auction([](const openrtb::BidRequest &request) {
+    .auction([n_bid,port](const openrtb::BidRequest &request) {
         std::vector<openrtb::BidResponse> responses;
         communicator<broadcast>()
-        .outbound(5000)
-        .distribute(openrtb::BidRequest())
-        .collect<openrtb::BidResponse>(10ms, [&responses](openrtb::BidResponse bid, auto done) { //move ctored by collect()
+        .outbound(port)
+        .distribute(request)
+        .collect<openrtb::BidResponse>(10ms, [&responses,&n_bid](openrtb::BidResponse bid, auto done) { //move ctored by collect()
             responses.push_back(bid);
+            if ( responses.size() == n_bid) {
+                done();
+            }
         });
         return responses.empty() ? openrtb::BidResponse() : responses[0];
     });
@@ -118,6 +125,10 @@ int main(int argc, char *argv[]) {
     dispatcher.crud_match(boost::regex("/openrtb_handler/(v2[.][2-4])/auction/(\\d+)"))
               .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
                   openrtb_handler_v2.handle_post(r,match);
+              });
+    dispatcher.crud_match(boost::regex("/openrtb_handler/mock-bidders/auction/(\\d+)"))
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                  openrtb_handler_distributor.handle_post(r,match);
               });
 
     exchange_server<restful_dispatcher_t> server{ep,dispatcher} ;
