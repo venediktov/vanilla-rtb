@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
         communicator<broadcast>()
         .outbound(port)
         .distribute(request)
-        .collect<openrtb::BidResponse>(10ms, [&responses,&n_bid](openrtb::BidResponse bid, auto done) { //move ctored by collect()
+        .collect<openrtb::BidResponse>(10ms, [&responses,n_bid](openrtb::BidResponse bid, auto done) { //move ctored by collect()
             responses.push_back(bid);
             if ( responses.size() == n_bid) {
                 done();
