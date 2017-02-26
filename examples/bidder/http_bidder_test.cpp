@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
             ("bidder.port", "bidder_est Port")
             ("bidder.root", "bidder_test Root")
             ("bidder.timeout", boost::program_options::value<int>(&d.timeout), "bidder_test timeout")
+            ("bidder.concurrency", boost::program_options::value<unsigned int>(&d.concurrency)->default_value(0), "bidder concurrency, if 0 is set std::thread::hardware_concurrency()")
         ;
     });
     
@@ -95,6 +96,7 @@ int main(int argc, char *argv[]) {
         })
         .auction([&](const openrtb::BidRequest &request) {
             openrtb::BidResponse response;
+            return response;
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.getAd(request, imp)) {
                     auto sp = std::make_shared<std::stringstream>();
@@ -143,8 +145,9 @@ int main(int argc, char *argv[]) {
                   bid_handler.handle_post(r,match);
               });
 
+    LOG(debug) << "concurrency " << config.data().concurrency;
     exchange_server<restful_dispatcher_t> server{ep,dispatcher} ;
-    server.run() ;
+    server.set_concurrency(config.data().concurrency).run() ;
 }
 
 

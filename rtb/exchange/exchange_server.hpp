@@ -54,9 +54,15 @@ public:
     exchange_server& operator=(exchange_server&&) = delete;
 
     exchange_server(const connection_endpoint &ep, const RestfulDispatcherT &dispatcher) : 
-        ep{ep}, dispatcher{dispatcher}, hardware_threads{ std::max(1u, std::thread::hardware_concurrency()) }
+        ep{ep}, dispatcher{dispatcher}, hardware_threads{std::max(1u, std::thread::hardware_concurrency()) }
     {}
 
+    exchange_server& set_concurrency(unsigned int concurrency) {
+        if(0 < concurrency) {
+            hardware_threads = concurrency;
+        }
+        return *this;
+    }
     void run() {
        http::server::server<RestfulDispatcherT> server{ep.host,ep.port,dispatcher} ;
        std::vector<std::shared_ptr<std::thread>> threads;
