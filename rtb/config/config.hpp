@@ -88,6 +88,9 @@ namespace vanilla { namespace config {
             if (auto v = boost::any_cast<unsigned short>(&value)) {
                 s << *v << std::endl;
             }
+            else if (auto v = boost::any_cast<short>(&value)) {
+                s << *v << std::endl;
+            }
             else if (auto v = boost::any_cast<long>(&value)) {
                 s << *v << std::endl;
             }
