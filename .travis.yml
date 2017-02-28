@@ -1,27 +1,127 @@
-language: cpp
-env:
-  matrix:
-  - CONF=Debug   COMPILER=g++-5.2  USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
-    USE_BOOST_OPTIONAL=0
-  - CONF=Release COMPILER=g++-5.2  USE_BOOST_STRING_VIEW=0 USE_BOOST_REGEX=0
-    USE_BOOST_OPTIONAL=0
-before_install:
-- sudo apt-add-repository --yes ppa:ubuntu-toolchain-r/test
-- sudo apt-add-repository --yes ppa:boost-latest/ppa
-- if [[ ${COMPILER} == *"clang"* ]]; then sudo sh -c 'echo "deb http://llvm.org/apt/precise/
-  llvm-toolchain-precise main" >> /etc/apt/sources.list'; fi
-- sudo apt-get update
-- if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-cache search clang; fi
-install:
-- sudo apt-get install --yes --force-yes libboost-all-dev cmake
 
-- if [[ ${COMPILER} != *"clang"* ]]; then sudo apt-get install --yes --force-yes ${COMPILER};
-  fi
-- if [[ ${COMPILER} == *"clang"* ]]; then sudo apt-get install --yes --force-yes clang-4.0;   fi
-- if [[ ${COVERAGE} -eq 1 ]];        then sudo pip install cpp-coveralls pyyaml;              fi
+language: cpp
+
+# sources  list: https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json,
+# packages list: https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
+          packages: [ 'g++-5', 'libstdc++-5-dev', 'cmake' ]
+      env: CMAKE_BUILD_TYPE=Debug BOOST_VERSION=1.60.0 BOOST_BUILD=true
+
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
+          packages: [ 'g++-5', 'libstdc++-5-dev', 'cmake' ]
+      env: CMAKE_BUILD_TYPE=Release BOOST_VERSION=1.60.0 BOOST_BUILD=true
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
+          packages: [ 'libstdc++-5-dev', 'cmake' ]
+      env: CMAKE_BUILD_TYPE=Debug BOOST_VERSION=1.60.0 BOOST_BUILD=true
+
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
+          packages: [ 'libstdc++-5-dev', 'cmake' ]
+      env: CMAKE_BUILD_TYPE=Release BOOST_VERSION=1.60.0 BOOST_BUILD=true
+
+# container-based builds
+sudo: false
+cache:
+  directories:
+  - $HOME/.ccache
+  #- $HOME/download
+  - ${TRAVIS_BUILD_DIR}/deps/boost-1.60.0
+
+install:
+  ############################################################################
+  # All the dependencies are installed in ${TRAVIS_BUILD_DIR}/deps/
+  ############################################################################
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+  - env
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5" BOOST_TOOLSET=gcc; fi
+  - if [ "$CXX" = "clang++" ]; then export BOOST_TOOLSET=clang; fi
+  - mkdir -p latest-gcc-symlinks
+  - ln -s /usr/bin/${CXX} latest-gcc-symlinks/g++
+  - ln -s /usr/bin/${CC} latest-gcc-symlinks/gcc
+  - export PATH=$PWD/latest-gcc-symlinks:$PATH
+  # Install newer boost compatible with gcc 5.
+  ############################################################################
+  # Install Boost headers
+  ############################################################################
+  - |
+    if [[ "${BOOST_VERSION}" != "" ]]; then
+      BOOST_DIR=${DEPS_DIR}/boost-${BOOST_VERSION}
+      if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
+        if [[ "${BOOST_VERSION}" == "trunk" ]]; then
+          BOOST_URL="http://github.com/boostorg/boost.git"
+          travis_retry git clone --depth 1 --recursive --quiet ${BOOST_URL} ${BOOST_DIR} || exit 1
+          (cd ${BOOST_DIR} && ./bootstrap.sh && ./b2 headers)
+        else
+          BOOST_URL="http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION//\./_}.tar.gz"
+          mkdir -p ${BOOST_DIR}
+          { travis_retry wget --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${BOOST_DIR}; } || exit 1
+        fi
+      fi
+      CMAKE_OPTIONS+=" -DBOOST_ROOT=${BOOST_DIR}"
+      export CMAKE_OPTIONS
+    fi
+
+  ############################################################################
+  # Install Boost.Build
+  ############################################################################
+  - |
+    if [[ "${BOOST_BUILD}" == "true" ]]; then
+      ##(cd ${BOOST_DIR}/tools/build && ./bootstrap.sh --with-toolset=${BOOST_TOOLSET} --with-libraries=program_options,system,filesystem,regex,serialization,log && ./b2 toolset=${BOOST_TOOLSET} install --prefix=${DEPS_DIR}/b2)
+      (echo "using gcc : : ccache $CXX : <cflags>-std=c11 <cxxflags>-std=c++11 ;" > ~/user-config.jam)
+      (echo "using clang : : ccache $CXX : <cflags>-std=c11 <cxxflags>-std=c++11 ;" >> ~/user-config.jam)
+      (cd ${BOOST_DIR} && ./bootstrap.sh --with-toolset=${BOOST_TOOLSET} --with-libraries=program_options,system,regex,serialization,log && ./b2 toolset=${BOOST_TOOLSET} install --prefix=${BOOST_DIR})
+      #export PATH=${DEPS_DIR}/b2/bin:${PATH}
+      export PATH=${BOOST_DIR}/bin:${PATH}
+    fi
+
+  ############################################################################
+  # Install a recent CMake
+  ############################################################################
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.2-Linux-x86_64.tar.gz"
+      mkdir  cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    else
+      brew install cmake
+      brew upgrade cmake
+    fi
+
+before_script:
+  - ccache -V && ccache --show-stats && ccache --zero-stats
+  #- 'echo "using gcc : : ccache $CXX : <cflags>-std=c11 <cxxflags>-std=c++11 ;" > ~/user-config.jam'
+  #- 'echo "using clang : : ccache $CXX : <cflags>-std=c11 <cxxflags>-std=c++11 ;" >> ~/user-config.jam'
+  #- cd "$BOOST_ROOT"; ./b2 toolset="$BOOST_TOOLSET" threading=multi --prefix="$BOOST_DIR" -d0 install
+
 script:
-- "${COMPILER} --version"
-- cmake -DCMAKE_CXX_COMPILER=${COMPILER} -DCMAKE_BUILD_TYPE=${CONF} -DUSE_BOOST_REGEX=${USE_BOOST_REGEX}
-  -DUSE_BOOST_STRING_VIEW=${USE_BOOST_STRING_VIEW} -DUSE_BOOST_OPTIONAL=${USE_BOOST_OPTIONAL}
-  -DCOVERAGE=${COVERAGE} -DJSONV_BUILD_TESTS=ON
-- make VERBOSE=1
+  - $CXX --version
+  - cmake --version
+  ############################################################################
+  # Go back to the root of the project and setup the build directory
+  ############################################################################
+  - cd ${TRAVIS_BUILD_DIR}
+  - (mkdir build-vanilla && cd build-vanilla && cmake .. ${CMAKE_OPTIONS})
+  - (cd build-vanilla && make -j4 VERBOSE=1)
+  - ccache --show-stats
+
+
