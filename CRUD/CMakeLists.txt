@@ -6,6 +6,11 @@ add_subdirectory(service)
 
 set(CMAKE_CXX_STANDARD 14)
 
+find_package(Boost
+             COMPONENTS "log" "system" "serialization" "program_options"
+             REQUIRED
+            )
+
 include_directories(${Boost_INCLUDE_DIRS} handlers service)
 
 add_executable(

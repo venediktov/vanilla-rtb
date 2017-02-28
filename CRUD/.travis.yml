@@ -1,0 +1,70 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-4.9']
+      env:
+        - COMPILER_CXX=g++-4.9
+        - COMPILER_CC=gcc-4.9
+        - CMAKE_VERSION="3.2.2"
+
+cache:
+  directories:
+  - $HOME/.ccache
+  - $HOME/download
+
+before-install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq
+
+install:
+  # install gcc-4.9 with c++11 support: https://github.com/travis-ci-tester/travis-test-gcc-cxx-11
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+  - sudo apt-get update
+  - sudo apt-get install g++-4.9
+  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 90
+  # https://github.com/travis-ci-tester/travis-test-clang-cxx-11
+  - sudo apt-get install libstdc++-4.9-dev
+  # Install newer boost compatible with gcc 4.9.
+  - env
+  - if [ "$CXX" = "g++" ]; then export CXX=$COMPILER_CXX CC=$COMPILER_CC BOOST_TOOLSET=gcc; fi
+  - export DOWNLOAD_ROOT="$HOME/download"; if [ ! -d "$DOWNLOAD_ROOT" ]; then mkdir -p "$DOWNLOAD_ROOT"; fi
+  - export BOOST_DOWNLOAD_URL="http://sourceforge.net/projects/boost/files/boost/1.58.0/boost_1_58_0.tar.bz2/download"
+  - export BOOST_ROOT="$TRAVIS_BUILD_DIR/../boost"
+  - export CMAKE_MODULE_PATH="$BOOST_ROOT"
+  - if [ ! -f "$DOWNLOAD_ROOT/boost.tar.bz2" ]; then wget --no-verbose --output-document="$DOWNLOAD_ROOT/boost.tar.bz2" "$BOOST_DOWNLOAD_URL"; fi
+  - if [ ! -d "$BOOST_ROOT" ]; then mkdir -p "$BOOST_ROOT" && tar jxf "$DOWNLOAD_ROOT/boost.tar.bz2" --strip-components=1 -C "$BOOST_ROOT"; fi
+  - if [ ! -f "$BOOST_ROOT/b2" ]; then cd "$BOOST_ROOT"; ./bootstrap.sh --with-toolset="$BOOST_TOOLSET" --with-libraries=program_options,system,thread,regex,system,filesystem,serialization,log; fi
+  - if [ -f "$BOOST_ROOT/b2" ]; then cd "$BOOST_ROOT"; ./b2 toolset="$BOOST_TOOLSET" threading=multi --prefix="$BOOST_ROOT" -d0 install; fi 
+  # install cmake
+  - wget "http://www.cmake.org/files/v3.2/cmake-${CMAKE_VERSION}.tar.gz"
+  - openssl sha1 "cmake-${CMAKE_VERSION}.tar.gz"
+  - tar xf "cmake-${CMAKE_VERSION}.tar.gz"
+  - cd "cmake-${CMAKE_VERSION}"
+  - ./bootstrap --prefix=$HOME
+  - make
+  - make install
+  - export PATH="$HOME/bin:${PATH}"
+  - cd ..
+  # verify installed versions
+  - which cmake
+  - cmake --version
+  - which g++
+  - g++ -v
+
+
+before-script:
+ - rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt
+ - cd Debug; rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt; cd ..
+ - cd Release; rm -rf CMakeFiles/ cmake_install.cmake CMakeCache.txt; cd ..
+
+script:
+- mkdir Debug && cd Debug && cmake -DBOOST_ROOT=$BOOST_ROOT -DCMAKE_INSTALL_PREFIX:PATH=~ -DCMAKE_BUILD_TYPE=Debug ..  && make CXX=$COMPILER_CXX -j3 VERBOSE=1 && cd ..
+- mkdir Release && cd Release && cmake  -DBOOST_ROOT=$BOOST_ROOT -DCMAKE_INSTALL_PREFIX:PATH=~  -DCMAKE_BUILD_TYPE=Release .. && make CXX=$COMPILER_CXX -j3 VERBOSE=1 && cd ..
+
