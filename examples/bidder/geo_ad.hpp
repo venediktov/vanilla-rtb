@@ -10,7 +10,14 @@
 
 #include "config.hpp"
 #include "rtb/common/split_string.hpp"
+#if BOOST_VERSION <= 106000
+#include <boost/utility/string_ref.hpp>
+namespace boost {
+    using string_view = string_ref;
+}
+#else
 #include <boost/utility/string_view.hpp>
+#endif
 #include <boost/lexical_cast.hpp>
 
 /* 
