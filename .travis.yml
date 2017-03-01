@@ -22,21 +22,21 @@ matrix:
           packages: [ 'g++-5', 'libstdc++-5-dev', 'cmake' ]
       env: CMAKE_BUILD_TYPE=Release BOOST_VERSION=1.60.0 BOOST_BUILD=true
 
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
-          packages: [ 'libstdc++-5-dev', 'cmake' ]
-      env: CMAKE_BUILD_TYPE=Debug BOOST_VERSION=1.60.0 BOOST_BUILD=true
-
-    - os: linux
-      compiler: clang
-      addons:
-        apt:
-          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
-          packages: [ 'libstdc++-5-dev', 'cmake' ]
-      env: CMAKE_BUILD_TYPE=Release BOOST_VERSION=1.60.0 BOOST_BUILD=true
+#    - os: linux
+#      compiler: clang
+#      addons:
+#        apt:
+#          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
+#          packages: [ 'libstdc++-5-dev', 'cmake' ]
+#      env: CMAKE_BUILD_TYPE=Debug BOOST_VERSION=1.60.0 BOOST_BUILD=true
+#
+#    - os: linux
+#      compiler: clang
+#      addons:
+#        apt:
+#          sources: [ 'ubuntu-toolchain-r-test', 'kalakris-cmake' ]
+#          packages: [ 'libstdc++-5-dev', 'cmake' ]
+#      env: CMAKE_BUILD_TYPE=Release BOOST_VERSION=1.60.0 BOOST_BUILD=true
 
 # container-based builds
 sudo: false
