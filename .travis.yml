@@ -52,12 +52,20 @@ install:
   ############################################################################
   - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
   - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
-  - env
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5" BOOST_TOOLSET=gcc; fi
-  - if [ "$CXX" = "clang++" ]; then export BOOST_TOOLSET=clang; fi
   - mkdir -p latest-gcc-symlinks
-  - ln -s /usr/bin/${CXX} latest-gcc-symlinks/g++
-  - ln -s /usr/bin/${CC} latest-gcc-symlinks/gcc
+  - env
+  - |
+   if [[ "$CXX" = "g++" ]]; then
+       export CXX="g++-5" CC="gcc-5" BOOST_TOOLSET=gcc; 
+       ln -s /usr/bin/${CXX} latest-gcc-symlinks/g++ 
+       ln -s /usr/bin/${CC} latest-gcc-symlinks/gcc
+   fi
+  - |
+   if [[ "$CXX" = "clang++" ]]; then
+       export BOOST_TOOLSET=clang;
+       ln -s /usr/bin/${CXX} latest-gcc-symlinks/clang++
+       ln -s /usr/bin/${CC} latest-gcc-symlinks/clang
+   fi
   - export PATH=$PWD/latest-gcc-symlinks:$PATH
   # Install newer boost compatible with gcc 5.
   ############################################################################
