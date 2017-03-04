@@ -5,7 +5,9 @@ Real Time Bidding (RTB) - Demand Side Platform framework
 Utilizing  modern C++11/14  features and latest BOOST libraries some critical path functionality 
 written in C and older, easy on the eye,  C++ .
 
-[our model diagram](../../wiki)
+[vanilla-rtb ecosystem](../../wiki)
+
+[Multi-bidder-model-with-communicator-for-Win-Loss-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-Loss-notifications)
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
