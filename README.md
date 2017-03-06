@@ -72,10 +72,10 @@ gmake -j4
 
 ###Running examples\:
 - [x] HTTP-Bidder
-* vanilla-rtb/examples/bidder$ ../../Release/examples/bidder/http_bidder_test --config etc/config.cfg
+  * vanilla-rtb/examples/bidder$ ../../Release/examples/bidder/http_bidder_test --config etc/config.cfg
 - [x] Cache loader
-* vanilla-rtb/examples$ ../Release/examples/loader/cache_loader_test --config etc/config.cfg
+  * vanilla-rtb/examples$ ../Release/examples/loader/cache_loader_test --config etc/config.cfg
 - [x] Exchange Handler with HTTP handler or Exchange Handler distributing to multi-bidders via communicator 
-* vanilla-rtb/examples$ ../Release/examples/exchange_handler_test --config etc/config.cfg
+  * vanilla-rtb/examples$ ../Release/examples/exchange_handler_test --config etc/config.cfg
 - [x] Mock-bidders starting multiple in one swoop,  currently configured as 5 bidders in config
-* vanilla-rtb/examples$ ../Release/examples/mock_bidder_test --config etc/config.cfg
+  * vanilla-rtb/examples$ ../Release/examples/mock_bidder_test --config etc/config.cfg
