@@ -40,7 +40,7 @@ extern void init_framework_logging(const std::string &) ;
 
 void run(short port, const BidderConfig &config) {
     using namespace vanilla::messaging;
-    ResponseBuilder response_builder(config);
+    vanilla::ResponseBuilder<BidderConfig> response_builder(config);
     communicator<broadcast>().inbound(port).process<openrtb::BidRequest>([&response_builder](auto endpoint, openrtb::BidRequest request) {
         return response_builder.build(request);
     }).dispatch();
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
     
     // TODO load should be made in datacache loader
-    vanilla::Selector selector(config);
+    vanilla::Selector<> selector(config);
     try {
         selector.load();
     }
