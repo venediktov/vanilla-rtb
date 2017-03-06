@@ -3,7 +3,7 @@
 Real Time Bidding (RTB) - Demand Side Platform framework 
 
 Utilizing  modern C++11/14  features and latest BOOST libraries some critical path functionality 
-written in C and older, easy on the eye,  C++ .
+written in C and older, easy on the eye C++ .
 
 [vanilla-rtb ecosystem](../../wiki)
 
