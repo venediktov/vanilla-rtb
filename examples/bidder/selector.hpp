@@ -8,14 +8,16 @@
 #ifndef SELECTOR_HPP
 #define SELECTOR_HPP
 
+#include "core/openrtb.hpp"
 #include "ad.hpp"
 #include "geo_ad.hpp"
 #include "geo.hpp"
 
 namespace vanilla {
+template<typename Config = BidderConfig>
 class Selector {
     public:
-        Selector(const BidderConfig &config):
+        Selector(const Config &config):
             config(config),
             ad_data_entity(config),
             geo_ad_data_entity(config),
@@ -109,10 +111,10 @@ class Selector {
             return true;
         }
     private:     
-        const BidderConfig &config;
-        AdDataEntity<> ad_data_entity;
-        GeoAdDataEntity<> geo_ad_data_entity;
-        GeoDataEntity<> geo_data_entity;
+        const Config &config;
+        AdDataEntity<Config> ad_data_entity;
+        GeoAdDataEntity<Config> geo_ad_data_entity;
+        GeoDataEntity<Config> geo_data_entity;
 };
 }
 

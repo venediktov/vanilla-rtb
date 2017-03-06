@@ -10,6 +10,7 @@
 
 #include "config.hpp"
 #include "rtb/common/split_string.hpp"
+#include "core/tagged_tuple.hpp"
 #if BOOST_VERSION <= 106000
 #include <boost/utility/string_ref.hpp>
 namespace boost {
@@ -95,7 +96,8 @@ struct GeoAds {
     }
 };
 
-template <typename Memory = typename mpclmi::ipc::Shared, 
+template <typename Config = BidderConfig,
+          typename Memory = typename mpclmi::ipc::Shared,
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::geo_ad_container>::char_allocator >
 class GeoAdDataEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::geo_ad_container> ; 
@@ -105,7 +107,7 @@ class GeoAdDataEntity {
         using DataVect = std::vector<std::shared_ptr <GeoAd> >;
         using GeoTag = typename ipc::data::geo_ad_entity<Alloc>::geo_id_tag;
     public:    
-        GeoAdDataEntity(const BidderConfig &config):
+        GeoAdDataEntity(const Config &config):
             config{config}, cache(config.data().geo_ad_ipc_name)
         {}
         void load() noexcept(false) {
@@ -151,7 +153,7 @@ class GeoAdDataEntity {
             return result;
         }
     private:
-        const BidderConfig &config;
+        const Config &config;
         Cache cache;
 };
 

@@ -1,3 +1,7 @@
+#ifndef __VANILLA_TAGGED_TUPPLE_HPP__
+#define __VANILLA_TAGGED_TUPPLE_HPP__
+
+
 #include <tuple>
 #include <iostream>
 
@@ -65,3 +69,5 @@ struct tagged_tuple: tagged_tuple_impl<extract<2, 0, Ts...>, extract<2, 1, Ts...
 };
 
 } //namespace
+
+#endif /*  __VANILLA_TAGGED_TUPPLE_HPP__ */

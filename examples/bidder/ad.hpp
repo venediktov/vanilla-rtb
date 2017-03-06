@@ -9,7 +9,13 @@
 #define BIDDER_AD_HPP
 
 #include <typeinfo>
-
+#include <string>
+#include <iostream>
+#include <cstdint>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include "core/tagged_tuple.hpp"
 #include "config.hpp"
 
 struct Ad {
@@ -63,7 +69,8 @@ struct Ad {
     }
 };
 
-template <typename Memory = typename mpclmi::ipc::Shared, 
+template <typename Config = BidderConfig,
+          typename Memory = typename mpclmi::ipc::Shared, 
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::ad_container>::char_allocator >
 class AdDataEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::ad_container> ; 
@@ -74,8 +81,8 @@ class AdDataEntity {
         >;
         using DataVect = std::vector<std::shared_ptr <Ad> >;
         using SizeTag = typename ipc::data::ad_entity<Alloc>::size_ad_id_tag;
-    public:    
-        AdDataEntity(const BidderConfig &config):
+    public:
+        AdDataEntity(const Config &config):
             config{config}, cache(config.data().ads_ipc_name)
         {}
         void load() noexcept(false) {
@@ -102,7 +109,7 @@ class AdDataEntity {
             return result;
         }
     private:
-        const BidderConfig &config;
+        const Config &config;
         Cache cache;
         
 };

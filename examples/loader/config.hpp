@@ -10,17 +10,7 @@ struct cache_loader_config_data {
     std::string geo_ad_source;
     std::string geo_ad_ipc_name;
     std::string geo_source;
-    std::string geo_ipc_name;
-    int timeout;
-	unsigned int concurrency;
-    
-    cache_loader_config_data() :
-        log_file_name{}, 
-        ads_source{}, ads_ipc_name{}, 
-        geo_ad_source{}, geo_ad_ipc_name{},
-        geo_source{}, geo_ipc_name{},
-        timeout{}, concurrency{}
-    {}
+    std::string geo_ipc_name;   
 };
 using CacheLoadConfig = vanilla::config::config<cache_loader_config_data>;
 

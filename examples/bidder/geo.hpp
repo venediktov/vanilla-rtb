@@ -8,6 +8,13 @@
 #ifndef BIDDER_GEO_HPP
 #define BIDDER_GEO_HPP
 
+#include <string>
+#include <cstdint>
+#include <iostream>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include "core/tagged_tuple.hpp"
 #include "config.hpp"
 
 struct Geo {
@@ -52,7 +59,8 @@ struct Geo {
     }
 };
 
-template <typename Memory = typename mpclmi::ipc::Shared, 
+template <typename Config = BidderConfig,
+          typename Memory = typename mpclmi::ipc::Shared, 
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::city_country_container>::char_allocator >
 class GeoDataEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::city_country_container> ; 
@@ -63,7 +71,7 @@ class GeoDataEntity {
         using DataVect = typename std::vector<std::shared_ptr <Geo> >;
         using CityCountryTag = typename ipc::data::city_country_entity<Alloc>::unique_city_country_tag;
     public:    
-        GeoDataEntity(const BidderConfig &config):
+        GeoDataEntity(const Config &config):
             config{config}, cache(config.data().geo_ipc_name)
         {}
         void load() noexcept(false) {
@@ -97,7 +105,7 @@ class GeoDataEntity {
             return result;
         }
     private:
-        const BidderConfig &config;
+        const Config &config;
         Cache cache;
         
 };

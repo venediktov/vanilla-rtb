@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
     
-    vanilla::Selector selector(config);
+    vanilla::Selector<> selector(config);
     boost::uuids::random_generator uuid_generator{};
     
     try {
