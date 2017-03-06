@@ -53,7 +53,6 @@ struct GeoAd {
         std::vector<boost::string_view> fields;
         vanilla::common::split_string(fields, l.record, "\t");
         if(fields.size() < 2) {
-            std::cout << "Not enought fields " << l.record << ", size=" << fields.size() << std::endl;
             return is;
         }
         l.ad_id.assign(fields.at(0).begin(), fields.at(0).size()); 

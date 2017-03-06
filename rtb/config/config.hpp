@@ -50,8 +50,9 @@ namespace vanilla { namespace config {
                 ss << "Failed to open config file " << config_name << std::endl;
                 throw std::runtime_error(ss.str());
             }
-            store(po::parse_config_file(file, desc, true), vm);
             store(po::parse_command_line(argc, argv, desc), vm);
+            store(po::parse_config_file(file, desc, true), vm);
+            
             
             notify(vm);
         }
@@ -86,6 +87,9 @@ namespace vanilla { namespace config {
             s << it.first.c_str() << " ";
             auto& value = it.second.value();
             if (auto v = boost::any_cast<unsigned short>(&value)) {
+                s << *v << std::endl;
+            }
+            else if (auto v = boost::any_cast<unsigned int>(&value)) {
                 s << *v << std::endl;
             }
             else if (auto v = boost::any_cast<short>(&value)) {

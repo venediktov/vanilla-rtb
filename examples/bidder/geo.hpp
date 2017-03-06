@@ -49,7 +49,6 @@ struct Geo {
         std::vector<std::string> fields;
         boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
         if(fields.size() < 3) {
-            std::cout << "Not enought fields " << l.record << std::endl;
             return is;
         }
         l.geo_id = atol(fields.at(0).c_str()); 
@@ -85,10 +84,10 @@ class GeoDataEntity {
             std::for_each(std::istream_iterator<Geo>(in), std::istream_iterator<Geo>(), [&](const Geo &geo){
                 using namespace boost::algorithm;
                 if(!cache.insert(Keys{to_lower_copy(geo.city), to_lower_copy(geo.country)}, geo)) {
-                    LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " failed!";
+                    //LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " failed!";
                 }
                 else {
-                    LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " done";
+                    //LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " done";
                 }
                 
             });            

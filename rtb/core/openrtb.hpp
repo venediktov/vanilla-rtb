@@ -126,8 +126,124 @@ namespace openrtb {
         jsonv::value ext;                 ///< Extensions go here, new in OpenRTB 2.3
     };
 
+    enum class Protocol: uint8_t {
+        UNKNOWN = 0,
+        VAST_1_0,
+        VAST_2_0,
+        VAST_3_0,
+        VAST_1_0_WRAPPER,
+        VAST_2_0_WRAPPER,
+        VAST_3_0_WRAPPER,
+        VAST_4_0,
+        VAST_4_0_WRAPPER,
+        DAAST_1_0,
+        DAAST_1_0_WRAPPER
+    };
+    
+    enum class VideoPlacement {
+        UNKNOWN = 0,
+        IN_STREAM, /// In-Stream
+                   /// Played before, during or after the streaming video content that the consumer has requested
+                   /// (e.g., Pre-roll, Mid-roll, Post-roll).
+                   /// OpenRTB API Specification Version 2.5 IAB Technology Lab
+                   ///www.iab.com/openrtb Page 48
+        IN_BANNER, /// In-Banner
+                   /// Exists within a web banner that leverages the banner space to deliver a video experience as
+                   /// opposed to another static or rich media format. The format relies on the existence of display
+                   /// ad inventory on the page for its delivery.
+        IN_ARTICLE,/// In-Article
+                   /// Loads and plays dynamically between paragraphs of editorial content; existing as a standalone
+                   /// branded message.
+        IN_FEED,   /// In-Feed - Found in content, social, or product feeds.
+        FLOATING   /// Interstitial/Slider/Floating
+                   /// Covers the entire or a portion of screen area, but is always on screen while displayed (i.e.
+                   /// cannot be scrolled out of view). Note that a full-screen interstitial (e.g., in mobile) can be
+                   /// distinguished from a floating/slider unit by the imp.instl field
+    };
+    
+    enum class VideoLinearity {
+        
+    };
+    
+    enum class PlaybackMethod: uint8_t {
+        UNKNOWN = 0,
+        ON_PAGE_SOUND_ON,       /// Initiates on Page Load with Sound On
+        ON_PAGE_SOUND_OFF,      /// Initiates on Page Load with Sound Off by Default
+        ON_CLICK_SOUND_ON,      /// Initiates on Click with Sound On
+        ON_MOVER_SOUND_ON,      /// Initiates on Mouse-Over with Sound On
+        ON_VIEWPORT_SOUND_ON,   /// Initiates on Entering Viewport with Sound On
+        ON_VIEWPORT_SOUND_OFF   /// Initiates on Entering Viewport with Sound Off by Default
+    };
+    
+    enum class PlaybackCessationModes: uint8_t{
+        UNKNOWN = 0,
+        COMPLEETION, // On Video Completion or when Terminated by User
+        VIEWPORT, // On Leaving Viewport or when Terminated by User
+        FLOATING // On Leaving Viewport Continues as a Floating/Slider Unit until Video Completion or when Terminated by User
+    };
+    
+    enum class DeliveryMethod {
+        UNKNOWN = 0,
+        STREAMING,
+        PROGRESSIVE,
+        DOWNLOAD
+    };
+    
+    enum class CompanionType {
+        UNKNOWN = 0,
+        STATIC, 
+        HTML, 
+        IFRAME
+    };
+    struct Video {
+        std::vector<MimeType> mimes;                    ///< Whitelist of content MIME types
+        uint32_t minduration{};                         /// Minimum video ad duration in seconds.
+        uint32_t maxduration{};                         /// Maximum video ad duration in seconds.
+        std::vector<Protocol> protocols;           /// Array of supported video protocols. 
+        Protocol protocol;                         /// Deprecated  in favor of protocols
+        uint16_t w{};                                   /// Width of the video player in device independent pixels (DIPS).
+        uint16_t h{};                                   /// Height of the video player in device independent pixels (DIPS).
+        uint32_t startdelay{};                          /// Indicates the start delay in seconds for pre-roll, mid-roll, or
+                                                        /// post-roll ad placements. 
+        VideoPlacement placement;                       /// Placement type for the impression. 
+        VideoLinearity linearity;                       /// Indicates if the impression must be linear, nonlinear, etc. If
+                                                        /// none specified, assume all are allowed. 
+        uint8_t skip{0};                                /// Indicates if the player will allow the video to be skipped,
+        uint32_t skipmin{};                             /// Videos of total duration greater than this number of seconds
+                                                        /// can be skippable; only applicable if the ad is skippable.
+        uint32_t skipafter{};                           /// Number of seconds a video must play before skipping is
+                                                        /// enabled; only applicable if the ad is skippable.
+        uint16_t sequence;                              /// If multiple ad impressions are offered in the same bid request,
+                                                        /// the sequence number will allow for the coordinated delivery
+                                                        /// of multiple creatives.
+        std::vector<CreativeAttribute> battr;           /// Blocked creative attributes.
 
-    struct Video {};
+        int maxextended{};                              /// Maximum extended ad duration if extension is allowed. If
+                                                        ///blank or 0, extension is not allowed. If -1, extension is
+                                                        /// allowed, and there is no time limit imposed. If greater than 0,
+                                                        /// then the value represents the number of seconds of extended
+                                                        /// play supported beyond the maxduration value.
+        uint32_t minbitrate{};                          /// Minimum bit rate in Kbps.
+        uint32_t maxbitrate{};                          /// Maximum bit rate in Kbps.
+        uint8_t boxingallowed{1};                       /// Indicates if letter-boxing of 4:3 content into a 16:9 window is
+                                                        /// allowed, where 0 = no, 1 = yes.
+        std::vector<PlaybackMethod> playbackmethod;     /// Playback methods that may be in use. If none are specified,
+                                                        /// any method may be used. Refer to List 5.10. Only one
+                                                        /// method is typically used in practice. As a result, this array may
+                                                        /// be converted to an integer in a future version of the
+                                                        /// specification. It is strongly advised to use only the first
+                                                        /// element of this array in preparation for this change.
+        PlaybackCessationModes playbackend;             /// The event that causes playback to end.
+        DeliveryMethod delivery;                         /// Supported delivery methods (e.g., streaming, progressive). If
+                                                        /// none specified, assume all are supported. 
+        AdPosition pos;                                 /// Ad position on screen. 
+        CompanionType companiontype;                    /// Supported VAST companion ad types.
+                                                        /// Recommended if companion Banner objects are included via
+                                                        /// the companionad array. If one of these banners will be
+                                                        /// rendered as an end-card, this can be specified using the vcm
+                                                        /// attribute with the particular banner
+        jsonv::value ext;                               /// Extensions go here, new in OpenRTB 2.3        
+    };
     struct PMP {};
     using ContentCategory = std::string; //struct ContentCategory {};
 
