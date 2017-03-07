@@ -97,7 +97,7 @@ install:
       ##(cd ${BOOST_DIR}/tools/build && ./bootstrap.sh --with-toolset=${BOOST_TOOLSET} --with-libraries=program_options,system,filesystem,regex,serialization,log && ./b2 toolset=${BOOST_TOOLSET} install --prefix=${DEPS_DIR}/b2)
       (echo "using gcc : : ccache $CXX : <cflags>-std=c11 <cxxflags>-std=c++11 ;" > ~/user-config.jam)
       (echo "using clang : : ccache $CXX : <cflags>-std=c11 <cxxflags>-std=c++11 ;" >> ~/user-config.jam)
-      (cd ${BOOST_DIR} && ./bootstrap.sh --with-toolset=${BOOST_TOOLSET} --with-libraries=program_options,system,regex,serialization,log && ./b2 toolset=${BOOST_TOOLSET} install --prefix=${BOOST_DIR})
+      (cd ${BOOST_DIR} && ./bootstrap.sh --with-toolset=${BOOST_TOOLSET} --with-libraries=program_options,system,regex,serialization,log,date_time && ./b2 toolset=${BOOST_TOOLSET} install --prefix=${BOOST_DIR})
       #export PATH=${DEPS_DIR}/b2/bin:${PATH}
       export PATH=${BOOST_DIR}/bin:${PATH}
     fi
