@@ -1,9 +1,11 @@
 # vanilla-rtb
 
-Real Time Bidding (RTB) - Demand Side Platform framework 
+Real Time Bidding (RTB) - Demand Side Platform framework
 
-Utilizing  modern C++11/14  features and latest BOOST libraries some critical path functionality 
-written in C and older, easy on the eye C++ .
+open-source library utilizing  modern C++11/14  features and latest Boost.
+
+What differs us from other open-source libraries: our stack is small, easy to adapt to and  completely decoupled.
+
 
 [vanilla-rtb ecosystem](../../wiki)
 
