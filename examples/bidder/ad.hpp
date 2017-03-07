@@ -56,7 +56,6 @@ struct Ad {
         std::vector<std::string> fields;
         boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
         if(fields.size() < 6) {
-            std::cout << "Not enought fields " << l.record << std::endl;
             return is;
         }
         l.ad_id = fields.at(0); 

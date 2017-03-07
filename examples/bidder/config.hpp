@@ -17,14 +17,17 @@ struct bidder_config_data {
     std::string geo_source;
     std::string geo_ipc_name;
     int timeout;
-	unsigned int concurrency;
+    unsigned int concurrency;
+    short port;
+    short num_of_bidders;
     
     bidder_config_data() :
         log_file_name{}, 
         ads_source{}, ads_ipc_name{}, 
         geo_ad_source{}, geo_ad_ipc_name{},
         geo_source{}, geo_ipc_name{},
-        timeout{}, concurrency{}
+        timeout{}, concurrency{},
+        port{}, num_of_bidders{}
     {}
 };
 using BidderConfig = vanilla::config::config<bidder_config_data>;

@@ -45,7 +45,7 @@ class Selector {
             std::shared_ptr <Ad> result;
             
             std::shared_ptr<Geo> geo;
-            if(!getGeo(req, geo)) {
+            if(!getGeo(req, geo) || !geo) {
                 LOG(debug) << "No geo";
                 return result;
             }
@@ -93,7 +93,7 @@ class Selector {
                 return true;
             }
             if (!req.user.get().geo) {
-                LOG(debug) << "No geo";
+                LOG(debug) << "No user geo";
                 return true;
             }
             
