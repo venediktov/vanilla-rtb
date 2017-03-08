@@ -30,8 +30,12 @@
 
 #include "rtb/messaging/communicator.hpp"
 #include "rtb/messaging/serialization.hpp"
+#if !defined(WIN32)
 #include <unistd.h>
 #include "rtb/core/process.hpp"
+#else
+#include <process.h>
+#endif
 #include "reponse_builder.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
@@ -94,6 +98,7 @@ int main(int argc, char *argv[]) {
     if(1 == config.data().num_of_bidders) {
         run(config.data().port, config);
     }
+#if !defined(WIN32)
     else {
         using OS::UNIX::Process;
         try {
@@ -112,6 +117,7 @@ int main(int argc, char *argv[]) {
             return (EXIT_FAILURE);
         }
     }
+#endif
     LOG(debug) << "exit";
     return (EXIT_SUCCESS);
 }

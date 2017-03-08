@@ -102,3 +102,6 @@ install_manifest.txt
 *.ilk
 *.exp
 *.pc
+*.ipch
+*.db-shm
+*.db-wal

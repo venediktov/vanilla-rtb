@@ -15,8 +15,10 @@ add_executable(
     multi_bidder.cpp
 )
 
-if (WIN32)
+if (WIN32) 
     target_compile_definitions(http_bidder_test PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
+    target_compile_definitions(multi_exchange_handler PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
+    target_compile_definitions(multi_bidder PRIVATE  JSON_SO=1 _LIB JSON_COMPILING=1)
     target_compile_definitions(jsonv PRIVATE JSON_SO=1 _LIB JSON_COMPILING=1)
 endif(WIN32)
 
