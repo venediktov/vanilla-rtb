@@ -37,7 +37,7 @@ namespace vanilla {
         }
     private:
 
-        inline void addCurrency(const openrtb::BidRequest& request, openrtb::BidResponse& response, auto& imp) {
+        inline void addCurrency(const openrtb::BidRequest& request, openrtb::BidResponse& response, const openrtb::Impression& imp) {
             if (request.cur.size()) {
                 response.cur = request.cur[0];
             } else if (imp.bidfloorcur.length()) {
@@ -45,7 +45,7 @@ namespace vanilla {
             }
         }
 
-        inline void addBid(const openrtb::BidRequest& request, openrtb::BidResponse& response, auto& imp, const std::shared_ptr<Ad> &ad) {
+        inline void addBid(const openrtb::BidRequest& request, openrtb::BidResponse& response, const openrtb::Impression& imp, const std::shared_ptr<Ad> &ad) {
             if (response.seatbid.size() == 0) {
                 response.seatbid.emplace_back(openrtb::SeatBid());
             }
@@ -62,7 +62,7 @@ namespace vanilla {
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
-        inline void buildImpResponse(const openrtb::BidRequest& request, openrtb::BidResponse& response, auto& imp) {
+        inline void buildImpResponse(const openrtb::BidRequest& request, openrtb::BidResponse& response, const openrtb::Impression& imp) {
             if (auto ad = selector.getAd(request, imp)) {
                 boost::uuids::uuid bidid = uuid_generator();
                 response.bidid = boost::uuids::to_string(bidid);
