@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 
 if(WIN32)
 else(WIN32)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -ggdb")
 endif(WIN32)
 
