@@ -52,40 +52,20 @@ int main(int argc, char *argv[]) {
     GeoDataEntity<CacheLoadConfig>    geo_cache(config);
     AdDataEntity<CacheLoadConfig>     ad_cache(config);
     
-    //initialize and setup CRUD dispatchers
+    std::map<std::string, std::function<void()>> caches = {
+        {"geo_ad" , [&geo_ad_cache](){geo_ad_cache.load();}},
+        {"geo"    , [&geo_cache]   (){geo_cache.load();}   },
+        {"ad"     , [&ad_cache]    (){ad_cache.load();}    },
+        {""       , [&selector]    (){selector.load();}    }
+    };
+    
+    //initialize and setup CRUD dispatcher
     restful_dispatcher_t dispatcher(config.get("cache-loader.root")) ;
-    dispatcher.crud_match(boost::regex("/cache_loader/"))
+    dispatcher.crud_match(boost::regex("/cache_loader/(\\w*)"))
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "received cache update event url=" << match[0];
               try {
-                  selector.load();
-              } catch (std::exception const& e) {
-                  LOG(error) << e.what();
-              }
-    });
-    dispatcher.crud_match(boost::regex("/cache_loader/geo_ad"))
-              .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "received cache update event url=" << match[0];
-              try {
-                  geo_ad_cache.load();
-              } catch (std::exception const& e) {
-                  LOG(error) << e.what();
-              }
-    });
-    dispatcher.crud_match(boost::regex("/cache_loader/geo"))
-              .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "received cache update event url=" << match[0];
-              try {
-                  geo_cache.load();
-              } catch (std::exception const& e) {
-                  LOG(error) << e.what();
-              }
-    });
-    dispatcher.crud_match(boost::regex("/cache_loader/ad"))
-              .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "received cache update event url=" << match[0];
-              try {
-                  ad_cache.load();
+                  caches[match[1]]();
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
