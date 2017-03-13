@@ -99,3 +99,4 @@ target_link_libraries(
 
 add_subdirectory(bidder)
 add_subdirectory(loader)
+add_subdirectory(campaign)
