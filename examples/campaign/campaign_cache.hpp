@@ -73,7 +73,7 @@ class CampaignCache {
         bool update(const CampaignBudget &budget, uint32_t campaign_id) {
             return cache.template update<CampaignTag>(Keys{ campaign_id }, budget, campaign_id);
         }
-        bool update(const CampaignBudget &budget, uint32_t old_campaign_id, uint32_t new_compaign_id) {
+        bool update(const CampaignBudget &budget, uint32_t old_campaign_id, uint32_t new_campaign_id) {
             return cache.template update<CampaignTag>(Keys{ new_campaign_id }, budget, old_campaign_id);
         }
         bool remove(uint32_t campaign_id) {
