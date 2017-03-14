@@ -207,7 +207,21 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
         });
         return !entries.empty();
     }
-  
+
+    template<typename Tag, typename ...Args>
+    void remove(Args&& ...args) {
+        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
+        auto p = _container_ptr->template get<Tag>().equal_range(boost::make_tuple(std::forward<Args>(args)...));
+        _container_ptr->erase(p.first, p.second);
+    }
+    
+    template<typename Tag, typename Arg>
+    void remove(Arg && arg) {
+        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
+        auto p = _container_ptr->template get<Tag>().equal_range(std::forward<Arg>(arg));
+        _container_ptr->erase(p.first, p.second);
+    }
+
    char_string create_ipc_key(const std::string &key)  const {
        try {
            char_string tmp(key.data(), key.size(), _segment_ptr->get_segment_manager()) ;
