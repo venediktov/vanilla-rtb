@@ -45,7 +45,10 @@ namespace http { namespace crud {
         void handle_request(const Request& request, Response& response, const Matched &what) {
              //dispatching to matching based on CRUD handler
             crud_match<Matched> match(what, request.data) ;
-            _handlers[request.method](response, match) ;
+            auto &handler = _handlers[request.method];
+            if (handler) {
+                handler(response, match);
+            }
         }
     private:
        Regex _expression;
