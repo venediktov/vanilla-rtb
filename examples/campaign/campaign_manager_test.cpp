@@ -3,11 +3,38 @@
  * Author: vladimir venediktov
  *
  * Created on March 12, 2017, 10:22 PM
+ * 
+ *  General idea is to map CRUD commands to functions
+ *  PUT  /v1/campaign/id/123
+ *  PUT  /v1/campaign/id/456
+ *  GET  /v1/campaign/id/ -> {[{id:123}, {id:456}]}
+ *  GET  /v1/campaign/id/123 -> {{id:123}}
+ *  POST /v1/campaign/id/123
+ *  DEL  /v1/campaign/id/123
+ *  
+ *  GET /v1/campaign/site/site-name
+ *  GET /v1/campaign/geo/geo-name
+ *  GET /v1/campaign/os/os-name
+ * 
+ *  possible to retrieve by unique key or composite key from the data store 
+ *  to achieve that \\d+ requires 1 or more digits , but \\d* means 0 or more , so can be empty 
+ *  
+ *  need to figure out in those mapping function keys and type of keys for all 
+ *  other type of campaign structures not only budget
+ *  for now just budget cache by campaign_id will be coded
+ * 
+ *  std::map<std::string, std::function<void(CampaignBudgets&,uint32_t)>> read_commands = {
+ *       {"id"   , [&cache](auto &data, auto id){cache.retrieve(data,id);}},
+ *       {"site" , [&cache](auto &data, auto site){cache.retrieve(data,site);}},
+ *       {"geo"  , [&cache](auto &data, auto geo){cache.retrieve(data,geo);}},
+ *       {"os"   , [&cache](auto &data, auto os){cache.retrieve(data,os);}}
+ *   };
  */
 
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include "CRUD/service/server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "DSL/campaign_dsl.hpp"
@@ -26,10 +53,10 @@ int main(int argc, char *argv[]) {
     using CampaignCacheType  = CampaignCache<CampaignManagerConfig>;
     using CampaignBudgets = typename CampaignCacheType::DataCollection;
     
-    std::string Create;
-    std::string Read;
-    std::string Update;
-    std::string Delete;
+//    std::string Create;
+//    std::string Read;
+//    std::string Update;
+//    std::string Delete;
  
     CampaignManagerConfig config([](campaign_manager_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -37,6 +64,7 @@ int main(int argc, char *argv[]) {
             ("campaign-manager.host", "campaign_manager_test Host")
             ("campaign-manager.port", "campaign_manager_test Port")
             ("campaign-manager.root", "campaign_manager_test Root")
+            ("campaign-manager.ipc_name", boost::program_options::value<std::string>(&d.ipc_name),"campaign_manager_test IPC name")
         ;
     });
     
@@ -50,61 +78,66 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
 
-    CampaignCacheType  campaign_manager_cache(config);
+    CampaignCacheType  cache(config);
  
     std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> create_commands = {
-        {"id" , [&campaign_manager_cache](auto cb, auto id){campaign_manager_cache.insert(cb,id);}}
+        {"id" , [&cache](auto cb, auto id){cache.insert(cb,id);}}
     };
     std::map<std::string, std::function<void(CampaignBudgets&,uint32_t)>> read_commands = {
-        {"id" , [&campaign_manager_cache](auto &data, auto id){campaign_manager_cache.retrieve(data,id);}}
+        {"id" , [&cache](auto &data, auto id){cache.retrieve(data,id);}},
+        {"" ,   [&cache](auto &data, auto id){cache.retrieve(data);}}
     };
     std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> update_commands = {
-        {"id" , [&campaign_manager_cache](auto cb, auto id){campaign_manager_cache.update(cb,id);}}
+        {"id" , [&cache](auto cb, auto id){cache.update(cb,id);}}
     };
     std::map<std::string, std::function<void(uint32_t)>> delete_commands = {
-        {"id" , [&campaign_manager_cache](auto id){campaign_manager_cache.remove(id);}}
+        {"id" , [&cache](auto id){cache.remove(id);}}
     };
     //initialize and setup CRUD dispatcher
     restful_dispatcher_t dispatcher(config.get("campaign-manager.root")) ;
-    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w*)/(\\d+)"))
+    dispatcher.crud_match(boost::regex("/campaign/(\\w+)/(\\d+)"))
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Create received cache update event url=" << match[0];
-              try {
-                  auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
-                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
-                  create_commands[match[1]](data, campaign_id);
-              } catch (std::exception const& e) {
-                  LOG(error) << e.what();
-              }
+                try {
+                    auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
+                    uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                    create_commands[match[1]](data, campaign_id);
+                } catch (std::exception const& e) {
+                    LOG(error) << e.what();
+                }
+              })
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                LOG(info) << "Update received event url=" << match[0];
+                try {
+                    auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
+                    uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                    update_commands[match[1]](data,campaign_id);
+                } catch (std::exception const& e) {
+                    LOG(error) << e.what();
+                }
+              })
+              .del([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                LOG(info) << "Delete received event url=" << match[0];
+                try {
+                    uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                    delete_commands[match[1]](campaign_id);
+                } catch (std::exception const& e) {
+                    LOG(error) << e.what();
+                }
     });
-    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w+)/(\\d+)"))
+    dispatcher.crud_match(boost::regex("/campaign/(\\w+)/(\\d*)"))
               .get([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Read received event url=" << match[0];
               try {
                   CampaignBudgets data;
-                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
-                  read_commands[match[1]](data,campaign_id);
-              } catch (std::exception const& e) {
-                  LOG(error) << e.what();
-              }
-    });
-    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w+)/(\\d+)"))
-              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "Update received event url=" << match[0];
-              try {
-                  auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
-                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
-                  update_commands[match[1]](data,campaign_id);
-              } catch (std::exception const& e) {
-                  LOG(error) << e.what();
-              }
-    });
-    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w+)/(\\d+)"))
-              .del([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "Delete received event url=" << match[0];
-              try {
-                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
-                  delete_commands[match[1]](campaign_id);
+                  boost::optional<uint32_t> campaign_id ;
+                  if ( match[2].length() ) {
+                      campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                      read_commands[match[1]](data,*campaign_id);
+                  } else {
+                      read_commands[""](data,0);
+                  }
+                  
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
@@ -114,5 +147,4 @@ int main(int argc, char *argv[]) {
     http::server::server<restful_dispatcher_t> server(host,port,dispatcher);
     server.run();
 }
-
 

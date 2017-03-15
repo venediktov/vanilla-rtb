@@ -19,7 +19,7 @@
 #include <iostream>
 
 struct CampaignBudget {
-    uint32_t campain_id;
+    uint32_t campaign_id;
     uint64_t day_budget_limit; //micro dollars
     uint64_t day_budget_spent; //micro dollars
     uint32_t day_show_limit;
@@ -31,7 +31,7 @@ struct CampaignBudget {
         return os;
     }
     friend std::ostream &operator<<(std::ostream & os, const  CampaignBudget & value)  {
-        os << value.campain_id       << "|" 
+        os << value.campaign_id       << "|" 
            << value.day_budget_limit << "|"
            << value.day_budget_spent << "|"
            << value.day_show_limit   << "|"
@@ -63,6 +63,16 @@ class CampaignCache {
             {
                 perf_timer<std::stringstream> timer(sp, "campaign_id");
                 result = cache.template retrieve<CampaignTag>(data, campaign_id);
+            }
+            LOG(debug) << sp->str();
+            return result;
+        }
+        bool retrieve(DataCollection &data) {
+            bool result = false;
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "all_compaign_ids");
+                result = cache.template retrieve(data);
             }
             LOG(debug) << sp->str();
             return result;

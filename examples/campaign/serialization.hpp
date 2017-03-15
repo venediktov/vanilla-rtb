@@ -13,7 +13,7 @@
 namespace boost { namespace serialization {
     template<class Archive>
     void serialize(Archive & ar, CampaignBudget & value, const unsigned int) {
-        ar & value.campain_id;
+        ar & value.campaign_id;
         ar & value.day_budget_limit;
         ar & value.day_budget_spent;
         ar & value.day_show_limit;

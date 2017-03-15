@@ -17,7 +17,7 @@ namespace DSL {
         CampaignDSL() {
             formats base_in = formats_builder()
                 .type<Campaign>()
-                .member("id", &Campaign::campain_id)
+                .member("id", &Campaign::campaign_id)
                 .member("budget", &Campaign::day_budget_limit)
                 .member("spent", &Campaign::day_budget_spent)
                 .member("cpm", &Campaign::day_show_limit)
