@@ -7,12 +7,13 @@
 
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
+#include <boost/lexical_cast.hpp>
 #include "CRUD/service/server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
-#include "rtb/config/config.hpp"
-#include "rtb/common/perf_timer.hpp"
+#include "DSL/campaign_dsl.hpp"
 #include "config.hpp"
 #include "campaign_cache.hpp"
+#include "serialization.hpp"
 
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
@@ -22,9 +23,13 @@ extern void init_framework_logging(const std::string &) ;
 
 int main(int argc, char *argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
-    std::string create_restful_prefix;
-    std::string update_restful_prefix;
-    std::string delete_restful_prefix;
+    using CampaignCacheType  = CampaignCache<CampaignManagerConfig>;
+    using CampaignBudgets = typename CampaignCacheType::DataCollection;
+    
+    std::string Create;
+    std::string Read;
+    std::string Update;
+    std::string Delete;
  
     CampaignManagerConfig config([](campaign_manager_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -45,25 +50,61 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
 
-//    vanilla::Selector<CacheLoadConfig> selector(config);
-    CampaignCache<CampaignManagerConfig>  campaign_manager_cache(config);
-//    GeoDataEntity<CacheLoadConfig>    geo_cache(config);
-//    AdDataEntity<CacheLoadConfig>     ad_cache(config);
-//    
-//    std::map<std::string, std::function<void()>> create_commands = {
-//        {"campaign" , [&geo_ad_cache](){geo_ad_cache.load();}},
-//        {"geo"    , [&geo_cache]   (){geo_cache.load();}   },
-//        {"ad"     , [&ad_cache]    (){ad_cache.load();}    },
-//        {""       , [&selector]    (){selector.load();}    }
-//    };
-    
+    CampaignCacheType  campaign_manager_cache(config);
+ 
+    std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> create_commands = {
+        {"id" , [&campaign_manager_cache](auto cb, auto id){campaign_manager_cache.insert(cb,id);}}
+    };
+    std::map<std::string, std::function<void(CampaignBudgets&,uint32_t)>> read_commands = {
+        {"id" , [&campaign_manager_cache](auto &data, auto id){campaign_manager_cache.retrieve(data,id);}}
+    };
+    std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> update_commands = {
+        {"id" , [&campaign_manager_cache](auto cb, auto id){campaign_manager_cache.update(cb,id);}}
+    };
+    std::map<std::string, std::function<void(uint32_t)>> delete_commands = {
+        {"id" , [&campaign_manager_cache](auto id){campaign_manager_cache.remove(id);}}
+    };
     //initialize and setup CRUD dispatcher
     restful_dispatcher_t dispatcher(config.get("campaign-manager.root")) ;
-    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w*)"))
+    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w*)/(\\d+)"))
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "received cache update event url=" << match[0];
+              LOG(info) << "Create received cache update event url=" << match[0];
               try {
-                  //create_commands[match[1]]();
+                  auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
+                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                  create_commands[match[1]](data, campaign_id);
+              } catch (std::exception const& e) {
+                  LOG(error) << e.what();
+              }
+    });
+    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w+)/(\\d+)"))
+              .get([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              LOG(info) << "Read received event url=" << match[0];
+              try {
+                  CampaignBudgets data;
+                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                  read_commands[match[1]](data,campaign_id);
+              } catch (std::exception const& e) {
+                  LOG(error) << e.what();
+              }
+    });
+    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w+)/(\\d+)"))
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              LOG(info) << "Update received event url=" << match[0];
+              try {
+                  auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
+                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                  update_commands[match[1]](data,campaign_id);
+              } catch (std::exception const& e) {
+                  LOG(error) << e.what();
+              }
+    });
+    dispatcher.crud_match(boost::regex("/campaign_manager/(\\w+)/(\\d+)"))
+              .del([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              LOG(info) << "Delete received event url=" << match[0];
+              try {
+                  uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
+                  delete_commands[match[1]](campaign_id);
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
