@@ -23,11 +23,13 @@ Structure ( work in progress ) :
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
       * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast lookups and matching
-      * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementations ( under review for more generic solution)
-      * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv ( under review )
+      * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
+      * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
     * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
+      * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
+      
 * [CMakeLists.txt] - cmake file
 
 >The stack of vanilla-rtb depends on other C++11 projects and is referencing them via gh-subree.
