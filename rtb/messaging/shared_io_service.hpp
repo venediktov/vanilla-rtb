@@ -30,9 +30,7 @@ struct shared_io_service {
         io_service_ptr->run();
     }
     void stop() {
-        if(io_service_ptr) {
-            io_service_ptr->stop();
-        }
+        io_service_ptr->stop();
     }
     operator boost::asio::io_service& () const {
         return *io_service_ptr;
