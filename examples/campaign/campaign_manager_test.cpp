@@ -1,27 +1,62 @@
 /* 
- * File:   campaign_cache.hpp
+ * File:   campaign_manager_test.cpp
  * Author: vladimir venediktov
  *
  * Created on March 12, 2017, 10:22 PM
  * 
  *  General idea is to map CRUD commands to functions
- *  PUT  /v1/campaign/id/123
- *  PUT  /v1/campaign/id/456
- *  GET  /v1/campaign/id/ -> {[{id:123}, {id:456}]}
- *  GET  /v1/campaign/id/123 -> {{id:123}}
- *  POST /v1/campaign/id/123
- *  DEL  /v1/campaign/id/123
- *  
- *  GET /v1/campaign/site/site-name
- *  GET /v1/campaign/geo/geo-name
- *  GET /v1/campaign/os/os-name
  * 
- *  possible to retrieve by unique key or composite key from the data store 
- *  to achieve that \\d+ requires 1 or more digits , but \\d* means 0 or more , so can be empty 
+ *  campaign_budget { campaign_id , campaign_budget }
+ *  PUT  /v1/campaign/budget/id/123
+ *  PUT  /v1/campaign/budget/id/456
+ *  GET  /v1/campaign/budget/ -> {[{id:123}, {id:456}]}
+ *  GET  /v1/campaign/budget/id/123 -> {{id:123}}
+ *  POST /v1/campaign/budget/id/123
+ *  DEL  /v1/campaign/budget/id/123
+ * 
+ *  cmapign_site { campaign_id , campaign_site} 
+ *  GET /v1/campaign/site/id/123 
+ *  GET /v1/campaign/site/name/some-name
+ *
+ *  campaign_geo  { campaign_id , campaign_city , campaign_country }
+ *  GET /v1/campaign/geo/id/123
+ *  GET /v1/campaign/geo/name/some-name
+ *  GET /v1/campaign/os/id/123
+ *  GET /v1/campaign/os/name/some-name
+ * 
+ *  GET /v1/campaign/123  ->  campaign :
+ *                            {
+ *                             "id" : "123"
+ *                              campaign_budget :
+ *                              {
+ *                                 "budget":1000000,
+ *                                 "cpc":300000,
+ *                                 "cpm":20000,
+ *                                 "id":123,
+ *                                 "spent":1000
+ *                              },
+ *                              site :
+ *                              {
+ *                                "id":"123", 
+ *                                "name" : null
+ *                              },
+ *                              os : {
+ *                                "id":123, 
+ *                                "name":null
+ *                              }
+ *                           }
+ *
+ *
+ *  GET /v1/campaign/budget/123 -> will return budget object associated with this compaign
+ * 
+ *  How it can be compactly achieved utilizing our CRUD regexes 
+ *  We know it's possible to retrieve data by unique key or composite key from the data store
+ *  to achieve that \\d+ requires 1 or more digits , but \\d* means 0 or more , so the regex group can be empty 
  *  
- *  need to figure out in those mapping function keys and type of keys for all 
+ *  then we need to figure out in those mapping function keys and type of keys for all 
  *  other type of campaign structures not only budget
- *  for now just budget cache by campaign_id will be coded
+ *  for now just budget cache by campaign_id will be coded but ideally it should be one single map
+ *  of CRUD handlers to cache functions
  * 
  *  std::map<std::string, std::function<void(CampaignBudgets&,uint32_t)>> read_commands = {
  *       {"id"   , [&cache](auto &data, auto id){cache.retrieve(data,id);}},
@@ -81,21 +116,21 @@ int main(int argc, char *argv[]) {
     CampaignCacheType  cache(config);
  
     std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> create_commands = {
-        {"id" , [&cache](auto cb, auto id){cache.insert(cb,id);}}
+        {"budget/id/" , [&cache](auto cb, auto id){cache.insert(cb,id);}}
     };
     std::map<std::string, std::function<void(CampaignBudgets&,uint32_t)>> read_commands = {
-        {"id" , [&cache](auto &data, auto id){cache.retrieve(data,id);}},
-        {"" ,   [&cache](auto &data, auto id){cache.retrieve(data);}}
+        {"budget/id/" , [&cache](auto &data, auto id){cache.retrieve(data,id);}},
+        {"budget" ,   [&cache](auto &data, auto id){cache.retrieve(data);}}
     };
     std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> update_commands = {
-        {"id" , [&cache](auto cb, auto id){cache.update(cb,id);}}
+        {"budget/id/" , [&cache](auto cb, auto id){cache.update(cb,id);}}
     };
     std::map<std::string, std::function<void(uint32_t)>> delete_commands = {
-        {"id" , [&cache](auto id){cache.remove(id);}}
+        {"budget/id/" , [&cache](auto id){cache.remove(id);}}
     };
     //initialize and setup CRUD dispatcher
     restful_dispatcher_t dispatcher(config.get("campaign-manager.root")) ;
-    dispatcher.crud_match(boost::regex("/campaign/(\\w+)/(\\d+)"))
+    dispatcher.crud_match(boost::regex("/campaign/([A-Za-z/]+)(\\d+)"))
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Create received cache update event url=" << match[0];
                 try {
@@ -125,19 +160,18 @@ int main(int argc, char *argv[]) {
                     LOG(error) << e.what();
                 }
     });
-    dispatcher.crud_match(boost::regex("/campaign/(\\w+)/(\\d*)"))
+    dispatcher.crud_match(boost::regex("/campaign/([A-Za-z/]+)(\\d*)"))
               .get([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Read received event url=" << match[0];
               try {
                   CampaignBudgets data;
-                  boost::optional<uint32_t> campaign_id ;
-                  if ( match[2].length() ) {
-                      campaign_id = boost::lexical_cast<uint32_t>(match[2]);
-                      read_commands[match[1]](data,*campaign_id);
-                  } else {
-                      read_commands[""](data,0);
+                  boost::optional<uint32_t> campaign_id;
+                  std::string key   = match[1];
+                  std::string value = match[2];
+                  if ( value.length() ) {
+                      campaign_id = boost::lexical_cast<uint32_t>(value);
                   }
-                  
+                  read_commands[key](data, campaign_id? *campaign_id : 0 );
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
