@@ -49,7 +49,9 @@ const std::chrono::milliseconds tmax;
 public:
     exchange_handler(const std::chrono::milliseconds &tmax) : 
         parser{}, auction_handler{}, log_handler{}, tmax{tmax}
-    {}
+    {
+        fprintf(stderr, "create exchange\n");
+    }
 
     self_type & auction(const auction_handler_type &handler) {
         auction_handler = handler;

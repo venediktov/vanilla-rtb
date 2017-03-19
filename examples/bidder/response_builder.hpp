@@ -12,6 +12,7 @@
 #include <iostream>
 #include "rtb/common/perf_timer.hpp"
 #include "selector.hpp"
+#include "user_info.hpp"
 
 namespace vanilla {
     template<typename Config = BidderConfig>
@@ -22,8 +23,9 @@ namespace vanilla {
         {
         }
 
-        openrtb::BidResponse build(const openrtb::BidRequest &request) {
+        openrtb::BidResponse build(const vanilla::VanillaRequest &vanilla_request) {
             openrtb::BidResponse response;
+            const openrtb::BidRequest request = vanilla_request.bid_request;
             auto sp = std::make_shared<std::stringstream>();
             {
                 perf_timer<std::stringstream> timer(sp, "fill response");

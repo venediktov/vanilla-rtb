@@ -205,10 +205,14 @@ template<typename ConnectionPolicy>
 class communicator {
     using consumer_type   = std::shared_ptr<receiver<ConnectionPolicy>>;
     using distributor_type = std::shared_ptr<sender<ConnectionPolicy>>;
+    using io_service_ptr_type = std::shared_ptr<boost::asio::io_service>;
 public:
     using self_type = communicator<ConnectionPolicy> ;
-    communicator() : io_service_{}, timer_{io_service_}
+    communicator() : io_service_ptr_{std::make_shared<boost::asio::io_service>()}, timer_{*io_service_ptr_}
     {}
+    communicator(io_service_ptr_type io_service_ptr) : io_service_ptr_{io_service_ptr}, timer_{*io_service_ptr_}
+    {}
+    
     communicator(communicator &&) = delete;
     communicator(communicator &) = delete;
     communicator &operator=(communicator &) = delete;
@@ -216,13 +220,13 @@ public:
 
     template<typename ...IPAddress>
     self_type & outbound(const unsigned short port, IPAddress && ...addresses) {
-        distributor_ = std::make_shared<sender<ConnectionPolicy>>(io_service_, port, std::forward<IPAddress>(addresses)...);
+        distributor_ = std::make_shared<sender<ConnectionPolicy>>(*io_service_ptr_, port, std::forward<IPAddress>(addresses)...);
         return *this;
     }
 
     template<typename ...IPAddress>
     self_type &  inbound(const unsigned short port, IPAddress && ...addresses) {
-        consumer_ = std::make_shared<receiver<ConnectionPolicy>>(io_service_, port, std::forward<IPAddress>(addresses)...);
+        consumer_ = std::make_shared<receiver<ConnectionPolicy>>(*io_service_ptr_, port, std::forward<IPAddress>(addresses)...);
         return *this;
     }
 
@@ -254,23 +258,23 @@ public:
        }
        distributor_->receive_async([this,&handler](auto data) { //intercept a call for deserialization
            std::forward<Handler>(handler)(std::move(deserialize<T>(data)), [this](){
-              io_service_.stop();
+              io_service_ptr_->stop();
            });
        });
        timer_.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
        timer_.async_wait( [this](const boost::system::error_code& error) {
-           io_service_.stop();
+           io_service_ptr_->stop();
        });
        //TODO: can be  optimized return before timer if all data is collected from all responders
-       io_service_.run();
+       io_service_ptr_->run();
     }
 
     void dispatch() {
-        io_service_.run();
+        io_service_ptr_->run();
     }
     
 private:
-    boost::asio::io_service     io_service_;
+    io_service_ptr_type io_service_ptr_;
     boost::asio::deadline_timer timer_;
     distributor_type distributor_;
     consumer_type   consumer_;

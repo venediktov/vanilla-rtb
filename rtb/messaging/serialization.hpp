@@ -2,6 +2,8 @@
 
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/optional.hpp>
+#include "rtb/core/openrtb.hpp"
+#include "rtb/core/bid_request.hpp"
 
 //Non-Intrusive boost serialization implementation
 namespace boost {
@@ -202,6 +204,11 @@ namespace boost {
             ar & value.h;
             //ar & value.ext //TODO: for this we need template <class Archive> load() and save() 
         }
-
+        
+        template<class Archive, typename UserInfo>
+        void serialize(Archive & ar, vanilla::BidRequest<UserInfo> & value, const unsigned int version) {
+            ar & value.bid_request;
+            ar & value.user_info;
+        }
     } // namespace serialization
 } // namespace boost

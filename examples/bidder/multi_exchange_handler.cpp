@@ -21,7 +21,12 @@
 #include <boost/memory_order.hpp>
 #include <boost/atomic/atomic.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include "user_info.hpp"
  
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/address.hpp>
+#include "redisclient/redisasyncclient.h"
+#include <redisclient/redissyncclient.h>
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
@@ -63,6 +68,140 @@ struct multi_exchange_status {
         return os;
     }
 };
+
+namespace vanilla {
+    class redis_client_wrapp {
+    public:
+        using connection_ok_handler_type = std::function<void(boost::asio::io_service&)>;
+        using connection_fail_handler_type = std::function<void(const std::string&, boost::asio::io_service&)>;
+        using get_handler_type = std::function<void(boost::asio::io_service&, const std::string&)>;
+    
+        redis_client_wrapp(boost::asio::io_service &io):
+            io{io}, client{io}
+        {}
+        void connect(const std::string &host, uint16_t port, const connection_ok_handler_type &connection_ok_handler, const connection_fail_handler_type &connection_fail_handler) {
+            client.connect(boost::asio::ip::address::from_string(host), port, [this, &connection_ok_handler, &connection_fail_handler](bool ok, const std::string &err) {
+                if(!ok) {
+                    connection_fail_handler(err, this->io);
+                }
+                else {
+                    connection_ok_handler(this->io);
+                }
+            });
+        }
+        void get(const std::string &key, std::string &data, const get_handler_type &get_handler) {
+            client.command("GET", {key}, [this, &data, &get_handler](const redisclient::RedisValue &redis_value) {
+                data = redis_value.toString();
+                get_handler(this->io, data);    
+            });
+        }
+        bool connected() const {
+            return client.isConnected();
+        }
+    private:
+        boost::asio::io_service &io;
+        redisclient::RedisAsyncClient client;
+    };
+    template <typename Wrapp>
+    class key_value_client {
+    public:
+        using self_type = key_value_client;
+        using response_handler_type = std::function<void(void)>;
+    
+        key_value_client():
+            client{io}
+        {}
+        
+        self_type &response(const response_handler_type &handler) {
+            response_handler = handler;
+            return *this;
+        }
+        
+        void request(const std::string &key, std::string &data) {
+            LOG(debug) << "Redis make GET request on " << key;
+            
+            client.get(key, data, [](boost::asio::io_service& io, const std::string& data){
+                LOG(debug) << "got value \"" << data << "\"";
+                io.stop();    
+            });
+            
+            io.reset();
+            io.run();
+            
+            response_handler();
+        }
+        
+        void connect(const std::string &host, uint16_t port) {
+            LOG(debug) << "Connection " << host << ":" << port;
+            client.connect(host, port, 
+                [](boost::asio::io_service& io) {
+                    LOG(debug) << "Connection done";
+                    io.stop(); 
+                },
+                [](const std::string& err, boost::asio::io_service& io) {
+                    LOG(error) << "Failed to connect redis (" << err << ")";
+                    io.stop(); 
+                }
+            );
+            io.run();
+        }
+        bool connected() const {
+            return client.connected();
+        }
+        
+        private:
+            boost::asio::io_service io;
+            Wrapp client;
+            response_handler_type response_handler;
+    };
+    
+    template <typename ClientWrapp>
+    class kv_connection_pool { 
+    public:
+        using kv_client_ptr = std::shared_ptr<key_value_client<ClientWrapp> >;
+        kv_connection_pool(uint16_t default_size, std::string host, uint16_t port):
+            host{std::move(host)}, port{port}
+        {
+            create_pool(default_size);
+        }
+        
+        kv_client_ptr get() {
+            std::lock_guard<std::mutex> lock(kv_mutex);
+            if(kv_clients.size()) {
+                kv_client_ptr result = kv_clients.front();
+                kv_clients.pop();
+                return result;
+            }
+            else {
+                return create();
+            }
+            
+        }
+        void push(const kv_client_ptr &ptr) {
+            std::lock_guard<std::mutex> lock(kv_mutex);
+            kv_clients.push(ptr);
+            
+            LOG(debug) << "Pool size " << kv_clients.size();
+        }
+    private:
+        kv_client_ptr create() {
+            kv_client_ptr result = std::make_shared<key_value_client<ClientWrapp> >();
+            return result;
+        }
+
+        void create_pool(uint16_t default_size) {
+            for (int i = 0; i < default_size; i++) {
+                kv_clients.push(create());
+            }
+        }
+        std::queue<kv_client_ptr> kv_clients;
+        std::mutex kv_mutex;
+        
+        std::string host; 
+        uint16_t port;
+    };
+}
+
 int main(int argc, char* argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using namespace vanilla::exchange;
@@ -91,6 +230,10 @@ int main(int argc, char* argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
     
+    // Redis client 
+   
+    vanilla::kv_connection_pool<vanilla::redis_client_wrapp> kv_pool(config.data().num_bidders, "127.0.0.1", 6379);
+    
     // status 
     multi_exchange_status status;
     
@@ -103,20 +246,49 @@ int main(int argc, char* argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request for distribution error " << data ;
     })
-    .auction([&config, &status](const openrtb::BidRequest &request) {
+    .auction([&config, &status/*, &redis, &ioService*/, &kv_pool](const openrtb::BidRequest &request) {
         using namespace vanilla::messaging;
         ++status.request_count;
         std::vector<openrtb::BidResponse> responses;
-        communicator<broadcast>()
-        .outbound(config.data().bidders_port)
-        .distribute(request)
-        .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&responses, &config, &status](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
-            responses.emplace_back(std::move(bid));
-            ++status.bidder_response_count;
-            if ( responses.size() == config.data().num_bidders) {
-                done();
-            }
-        });
+        
+        vanilla::VanillaRequest vanilla_request;
+        vanilla_request.bid_request = request; // optimize
+        
+        if(request.user) {
+            vanilla_request.user_info.user_id = request.user.get().buyeruid;
+        }
+        auto collect_bidders_responses_f = [&]() -> void {
+            communicator<broadcast>()
+            .outbound(config.data().bidders_port)
+            .distribute(vanilla_request)
+            .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&responses, &config, &status](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
+                responses.emplace_back(std::move(bid));
+                ++status.bidder_response_count;
+                if (responses.size() == config.data().num_bidders) {
+                    done();
+                }
+            });
+        };
+        
+        auto kv_client = kv_pool.get();
+        if(!kv_client->connected()) {
+            LOG(debug) << "kv not connected";
+            kv_client->connect("127.0.0.1", 6379);
+        }
+        bool is_matched_user = vanilla_request.user_info.user_id.length();
+        
+        if(!is_matched_user || !kv_client->connected()) { // it's not available at all
+            LOG(debug) << "Redis is not connected yeat";
+            collect_bidders_responses_f();
+        }
+        else {
+            kv_client->
+            response(collect_bidders_responses_f).
+            request(vanilla_request.user_info.user_id, vanilla_request.user_info.user_data);
+            
+            kv_pool.push(kv_client); // return it back
+        }
+        
         if(responses.empty()) {
            ++status.empty_response_count;
            return openrtb::BidResponse();
