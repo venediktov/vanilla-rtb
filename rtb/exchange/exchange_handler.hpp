@@ -23,6 +23,7 @@
 #include <functional>
 #include <chrono>
 #include <future>
+#include <condition_variable>
 #include "CRUD/service/reply.hpp"
 #include "CRUD/handlers/crud_matcher.hpp"
 
@@ -35,13 +36,15 @@ class exchange_handler {
 using auction_request_type = decltype(DSL().extract_request(std::string()));
 using auction_response_type = typename DSL::serialized_type;
 using parse_error_type = typename DSL::parse_error_type;
-using auction_handler_type = std::function<auction_response_type (const auction_request_type &)>; 
+using auction_handler_type = std::function<auction_response_type (const auction_request_type &)>;
+using auction_async_handler_type = std::function<void (const auction_request_type &, auction_response_type&, std::condition_variable&)>;
 using log_handler_type = std::function<void (const std::string &)>;
 using error_log_handler_type = std::function<void (const std::string &)>;
 using self_type = exchange_handler<DSL> ;
 
 DSL parser;
 auction_handler_type auction_handler;
+auction_async_handler_type auction_async_handler;
 log_handler_type log_handler;
 error_log_handler_type error_log_handler;
 const std::chrono::milliseconds tmax;
@@ -53,6 +56,11 @@ public:
 
     self_type & auction(const auction_handler_type &handler) {
         auction_handler = handler;
+        return *this;
+    }
+
+    self_type & auction_async(const auction_async_handler_type &handler) {
+        auction_async_handler = handler;
         return *this;
     }
 
@@ -94,6 +102,23 @@ public:
                 r << to_string(future.get()) << http::server::reply::flush("");
             } else {
                 r << http::server::reply::flush("");
+            }
+        }
+
+        if ( auction_async_handler ) {
+            std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
+            auction_response_type auction_response;
+            std::mutex mutex;
+            std::unique_lock<std::mutex> lock(mutex);
+            {
+                std::condition_variable cv;
+                auction_async_handler(bid_request,auction_response,cv);
+                if ( cv.wait_for(lock, timeout) == std::cv_status::no_timeout) {
+                    auto wire_response = parser.create_response(auction_response);
+                    r << to_string(wire_response) << http::server::reply::flush("");
+                } else {
+                    r << http::server::reply::flush("");
+                }
             }
         }
     }
