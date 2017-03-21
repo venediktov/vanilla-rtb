@@ -9,7 +9,7 @@ What differs us from other open-source libraries like RTBkit: our stack is small
 
 [vanilla-rtb ecosystem](../../wiki)
 
-[Multi-bidder-model-with-communicator-for-Win-Loss-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-Loss-notifications)
+[Multi-bidder-model-with-communicator-for-Win-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-notifications)
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
