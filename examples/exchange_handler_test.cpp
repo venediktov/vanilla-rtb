@@ -68,6 +68,11 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v1 error " << data ;
     })
+    .auction_async([](const auto &request, auto &response) {
+        //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
+        response = openrtb::BidResponse();
+        return;
+    })
     .auction([](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
