@@ -24,11 +24,14 @@
 #include <chrono>
 #include <future>
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
 #include "CRUD/service/reply.hpp"
 #include "CRUD/handlers/crud_matcher.hpp"
 
 namespace vanilla { namespace exchange {
 
+thread_local boost::asio::io_service io_service;
+thread_local boost::asio::deadline_timer timer{io_service};
 
 template<typename  DSL>
 class exchange_handler {
@@ -37,7 +40,7 @@ using auction_request_type = decltype(DSL().extract_request(std::string()));
 using auction_response_type = typename DSL::serialized_type;
 using parse_error_type = typename DSL::parse_error_type;
 using auction_handler_type = std::function<auction_response_type (const auction_request_type &)>;
-using auction_async_handler_type = std::function<void (const auction_request_type &, auction_response_type&)>;
+using auction_async_handler_type = auction_handler_type;
 using log_handler_type = std::function<void (const std::string &)>;
 using error_log_handler_type = std::function<void (const std::string &)>;
 using self_type = exchange_handler<DSL> ;
@@ -48,12 +51,10 @@ auction_async_handler_type auction_async_handler;
 log_handler_type log_handler;
 error_log_handler_type error_log_handler;
 const std::chrono::milliseconds tmax;
-boost::asio::io_service io_service;
-boost::asio::deadline_timer timer;
 
 public:
     exchange_handler(const std::chrono::milliseconds &tmax) : 
-        parser{}, auction_handler{}, log_handler{}, tmax{tmax}, io_service{}, timer{io_service}
+        parser{}, auction_handler{}, log_handler{}, tmax{tmax}
     {}
 
     self_type & auction(const auction_handler_type &handler) {
@@ -109,23 +110,23 @@ public:
 
         if ( auction_async_handler ) {
             std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
-            auction_response_type auction_response;
+            boost::optional<auction_response_type> auction_response;
             auto submit_async = [&]() {
-                auction_async_handler(bid_request,auction_response);
+                auction_response = auction_async_handler(bid_request);
             };
             io_service.post(submit_async);
             timer.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
-            timer.async_wait( [this,&r,&auction_response](const boost::system::error_code& error ) {
+            timer.async_wait( [](const boost::system::error_code& error ) {
                io_service.stop();
-               if ( timer.expires_at() <= boost::asio::deadline_timer::traits_type::now() ) {
-                  r << http::server::reply::flush("");
-               } else {
-                  auto wire_response = parser.create_response(auction_response);
-                  r << to_string(wire_response) << http::server::reply::flush("");
-               }
             });
-            io_service.run();
             io_service.reset();
+            io_service.run();
+            if ( auction_response ) {
+                auto wire_response = parser.create_response(*auction_response);
+                r << to_string(wire_response) << http::server::reply::flush("");
+            } else {
+                r << http::server::reply::flush("");
+            }
         }
     }
     
