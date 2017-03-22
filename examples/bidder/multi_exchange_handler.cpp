@@ -45,6 +45,7 @@ struct multi_exchange_handler_config_data {
         log_file_name{}, handler_timeout{}, num_bidders{}, bidders_port{}, bidders_response_timeout{}, concurrency{}
     {}
 };
+using multiexchange_config = vanilla::config::config<multi_exchange_handler_config_data>;
 
 struct multi_exchange_status {
     boost::posix_time::ptime start{boost::posix_time::microsec_clock::local_time()};
@@ -70,13 +71,13 @@ struct multi_exchange_status {
 };
 
 namespace vanilla {
-    class redis_client_wrapp {
+    class redis_client_wrapper {
     public:
         using connection_ok_handler_type = std::function<void(boost::asio::io_service&)>;
         using connection_fail_handler_type = std::function<void(const std::string&, boost::asio::io_service&)>;
         using get_handler_type = std::function<void(boost::asio::io_service&, const std::string&)>;
     
-        redis_client_wrapp(boost::asio::io_service &io):
+        redis_client_wrapper(boost::asio::io_service &io):
             io{io}, client{io}
         {}
         void connect(const std::string &host, uint16_t port, const connection_ok_handler_type &connection_ok_handler, const connection_fail_handler_type &connection_fail_handler) {
@@ -102,7 +103,7 @@ namespace vanilla {
         boost::asio::io_service &io;
         redisclient::RedisAsyncClient client;
     };
-    template <typename Wrapp>
+    template <typename Wrapper>
     class key_value_client {
     public:
         using self_type = key_value_client;
@@ -151,62 +152,99 @@ namespace vanilla {
         
         private:
             boost::asio::io_service io;
-            Wrapp client;
+            Wrapper client;
             response_handler_type response_handler;
     };
-    
-    template <typename ClientWrapp>
-    class kv_connection_pool { 
+
+    class multibidder_collector {
     public:
-        using kv_client_ptr = std::shared_ptr<key_value_client<ClientWrapp> >;
-        kv_connection_pool(uint16_t default_size, std::string host, uint16_t port):
-            host{std::move(host)}, port{port}
-        {
-            create_pool(default_size);
+        multibidder_collector(const multiexchange_config& config, multi_exchange_status &status) :
+            config{config}, status{status}
+        {}
+    
+        openrtb::BidResponse getResponse() {
+            updateStatus();
+            if(responses.empty()) {
+                return openrtb::BidResponse(); 
+            }
+            std::sort(responses.begin(), responses.end(), [](const openrtb::BidResponse &first, const openrtb::BidResponse & second) -> bool {
+                if (!first.seatbid.size() || !first.seatbid[0].bid.size()) {
+                    return false;
+                }
+                if (!second.seatbid.size() || !second.seatbid[0].bid.size()) {
+                    return true;
+                }
+                return first.seatbid[0].bid[0].price > second.seatbid[0].bid[0].price;
+            }); // sort by first imp bid?
+            return responses[0]; 
+        }
+        bool isDone() const {
+            return responses.size() == config.data().num_bidders;
         }
         
-        kv_client_ptr get() {
-            std::lock_guard<std::mutex> lock(kv_mutex);
-            if(kv_clients.size()) {
-                kv_client_ptr result = kv_clients.front();
-                kv_clients.pop();
-                return result;
-            }
-            else {
-                return create();
-            }
-            
-        }
-        void push(const kv_client_ptr &ptr) {
-            std::lock_guard<std::mutex> lock(kv_mutex);
-            kv_clients.push(ptr);
-            
-            LOG(debug) << "Pool size " << kv_clients.size();
+        void add(openrtb::BidResponse && bid) {
+            ++status.bidder_response_count;
+            responses.emplace_back(bid);
         }
     private:
-        kv_client_ptr create() {
-            kv_client_ptr result = std::make_shared<key_value_client<ClientWrapp> >();
-            return result;
-        }
-
-        void create_pool(uint16_t default_size) {
-            for (int i = 0; i < default_size; i++) {
-                kv_clients.push(create());
+        void updateStatus() {
+            if (responses.empty()) {
+                ++status.empty_response_count;
+            }
+            else if(responses.size() == config.data().num_bidders) {
+                 ++status.all_response_count;
+        
+            } else {
+                ++status.timeout_response_count;
             }
         }
-        std::queue<kv_client_ptr> kv_clients;
-        std::mutex kv_mutex;
-        
-        std::string host; 
-        uint16_t port;
+        const multiexchange_config &config;
+        multi_exchange_status &status;
+        std::vector<openrtb::BidResponse> responses;
     };
-}
+    
+    class multibidder_communicator {
+    public:
+        multibidder_communicator(const multiexchange_config& config) :
+            config{config}
+        {
+            communicator.outbound(config.data().bidders_port);
+        }
 
+        void process(const vanilla::VanillaRequest &vanilla_request, multibidder_collector &collector) {
+            communicator
+                .distribute(vanilla_request)
+                .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&collector](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
+                    collector.add(std::move(bid));
+                    if(collector.isDone()) {
+                        done();
+                    }
+                });
+        }
+    private:
+        vanilla::messaging::communicator<vanilla::messaging::broadcast> communicator;
+        const multiexchange_config &config;
+    };
+    
+    
+}
+/*
+auto collect_bidders_responses_f = [&]() -> void {
+            communicator
+            .distribute(vanilla_request)
+            .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&responses, &config, &status](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
+                responses.emplace_back(std::move(bid));
+                ++status.bidder_response_count;
+                if (responses.size() == config.data().num_bidders) {
+                    done();
+                }
+            });
+        };*/
 int main(int argc, char* argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using namespace vanilla::exchange;
     namespace po = boost::program_options;   
-    vanilla::config::config<multi_exchange_handler_config_data> config([&](multi_exchange_handler_config_data &d, po::options_description &desc){
+    multiexchange_config config([&](multi_exchange_handler_config_data &d, po::options_description &desc){
         desc.add_options()
             ("multi_exchange.log", po::value<std::string>(&d.log_file_name), "exchange_handler_test log file name log")
             ("multi_exchange.host", "multi_exchange_handler_test Host")
@@ -230,10 +268,6 @@ int main(int argc, char* argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
     
-    // Redis client 
-   
-    vanilla::kv_connection_pool<vanilla::redis_client_wrapp> kv_pool(config.data().num_bidders, "127.0.0.1", 6379);
-    
     // status 
     multi_exchange_status status;
     
@@ -246,10 +280,11 @@ int main(int argc, char* argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request for distribution error " << data ;
     })
-    .auction([&config, &status/*, &redis, &ioService*/, &kv_pool](const openrtb::BidRequest &request) {
+    //.auction([&config, &status/*, &redis, &ioService*/, &kv_pool](const openrtb::BidRequest &request) {
+    .auction_async([&config, &status](const openrtb::BidRequest &request) {
         using namespace vanilla::messaging;
         ++status.request_count;
-        std::vector<openrtb::BidResponse> responses;
+        
         
         vanilla::VanillaRequest vanilla_request;
         vanilla_request.bid_request = request; // optimize
@@ -257,58 +292,35 @@ int main(int argc, char* argv[]) {
         if(request.user) {
             vanilla_request.user_info.user_id = request.user.get().buyeruid;
         }
-        auto collect_bidders_responses_f = [&]() -> void {
-            communicator<broadcast>()
-            .outbound(config.data().bidders_port)
-            .distribute(vanilla_request)
-            .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&responses, &config, &status](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
-                responses.emplace_back(std::move(bid));
-                ++status.bidder_response_count;
-                if (responses.size() == config.data().num_bidders) {
-                    done();
-                }
-            });
-        };
+        thread_local vanilla::multibidder_communicator communicator(config);
+        vanilla::multibidder_collector collector(config, status);
         
-        auto kv_client = kv_pool.get();
-        if(!kv_client->connected()) {
+        using kv_type = vanilla::key_value_client<vanilla::redis_client_wrapper>;
+        thread_local kv_type kv_client;
+        
+        //auto kv_client = kv_pool.get();
+        if(!kv_client.connected()) {
             LOG(debug) << "kv not connected";
-            kv_client->connect("127.0.0.1", 6379);
+            kv_client.connect("127.0.0.1", 6379);
         }
         bool is_matched_user = vanilla_request.user_info.user_id.length();
         
-        if(!is_matched_user || !kv_client->connected()) { // it's not available at all
+        if(!is_matched_user || !kv_client.connected()) { // it's not available at all
             LOG(debug) << "Redis is not connected yeat";
-            collect_bidders_responses_f();
+            communicator.process(vanilla_request, collector);
         }
         else {
-            kv_client->
-            response(collect_bidders_responses_f).
-            request(vanilla_request.user_info.user_id, vanilla_request.user_info.user_data);
+            kv_client
+                .response([&vanilla_request, &collector](){
+                    communicator.process(vanilla_request, collector);
+                })
+                .request(vanilla_request.user_info.user_id, vanilla_request.user_info.user_data);
             
-            kv_pool.push(kv_client); // return it back
+            //kv_pool.push(kv_client); // return it back
         }
+        //return openrtb::BidResponse();
+        return collector.getResponse();
         
-        if(responses.empty()) {
-           ++status.empty_response_count;
-           return openrtb::BidResponse();
-        }
-
-        if (responses.size() == config.data().num_bidders) {
-            ++status.all_response_count;
-        } else {
-            ++status.timeout_response_count;
-        }
-        std::sort(responses.begin(), responses.end(), [](const openrtb::BidResponse &first, const openrtb::BidResponse &second) -> bool {
-            if(!first.seatbid.size() || !first.seatbid[0].bid.size()) {
-                return false;
-            }
-            if(!second.seatbid.size() || !second.seatbid[0].bid.size()) {
-                return true;
-            }
-            return first.seatbid[0].bid[0].price > second.seatbid[0].bid[0].price;
-        }); // sort by first imp bid?
-        return std::move(responses[0]); 
     });
     
     
