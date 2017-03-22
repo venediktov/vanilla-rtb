@@ -318,7 +318,6 @@ int main(int argc, char* argv[]) {
             
             //kv_pool.push(kv_client); // return it back
         }
-        //return openrtb::BidResponse();
         return collector.getResponse();
         
     });
