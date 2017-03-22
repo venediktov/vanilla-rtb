@@ -38,6 +38,7 @@ class exchange_handler {
 
 using auction_request_type = decltype(DSL().extract_request(std::string()));
 using auction_response_type = typename DSL::serialized_type;
+using wire_response_type = decltype(DSL().create_response(auction_response_type()));
 using parse_error_type = typename DSL::parse_error_type;
 using auction_handler_type = std::function<auction_response_type (const auction_request_type &)>;
 using auction_async_handler_type = auction_handler_type;
@@ -110,20 +111,23 @@ public:
 
         if ( auction_async_handler ) {
             std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
-            boost::optional<auction_response_type> auction_response;
+            boost::optional<wire_response_type> wire_response;
             auto submit_async = [&]() {
-                auction_response = auction_async_handler(bid_request);
+                auto auction_response = auction_async_handler(bid_request);
+                wire_response = parser.create_response(auction_response);
+                io_service.stop();
             };
             io_service.post(submit_async);
             timer.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
-            timer.async_wait( [](const boost::system::error_code& error ) {
-               io_service.stop();
+            timer.async_wait([](const boost::system::error_code& error) {
+                if (error != boost::asio::error::operation_aborted) {
+                    io_service.stop();
+                }
             });
             io_service.reset();
             io_service.run();
-            if ( auction_response ) {
-                auto wire_response = parser.create_response(*auction_response);
-                r << to_string(wire_response) << http::server::reply::flush("");
+            if ( wire_response && timer.expires_from_now().total_milliseconds() > 0 ) {
+                r << to_string(*wire_response) << http::server::reply::flush("");
             } else {
                 r << http::server::reply::flush("");
             }
