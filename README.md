@@ -4,8 +4,11 @@ Real Time Bidding (RTB) - Demand Side Platform framework
 
 open-source library utilizing  modern C++11/14  features and latest Boost.
 
-What makes us different from other open-source we have seen: our stack is faily small, 
-easy to integrate with [your DSP](https://github.com/vanilla-rtb/rapid-bidder) and  completely decoupled.
+What makes us different from other open-source RTB projects we have seen?
+
+Our stack is fairly small and 
+easy to integrate with [your cmake project](https://github.com/vanilla-rtb/rapid-bidder) 
+, completely decoupled by use of templates and has minimum dependency. 
 
 
 [vanilla-rtb ecosystem](../../wiki)
