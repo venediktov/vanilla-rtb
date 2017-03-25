@@ -19,8 +19,6 @@
 #include "rtb/messaging/communicator.hpp"
 #include "core/tagged_tuple.hpp"
 #include <boost/memory_order.hpp>
-#include <boost/atomic/atomic.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include "user_info.hpp"
  
 #include <boost/asio/io_service.hpp>
@@ -28,56 +26,21 @@
 #include "redisclient/redisasyncclient.h"
 #include <redisclient/redissyncclient.h>
 
+#include "multiexchange_config.hpp"
+#include "multiexchange_status.hpp"
+
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
 extern void init_framework_logging(const std::string &) ;
 
-struct multi_exchange_handler_config_data {
-    std::string log_file_name;
-    int handler_timeout;
-    int num_bidders;
-    int bidders_port;
-    int bidders_response_timeout;
-    int concurrency;
-    
-    
-    multi_exchange_handler_config_data() :
-        log_file_name{}, handler_timeout{}, num_bidders{}, bidders_port{}, bidders_response_timeout{}, concurrency{}
-    {}
-};
-using multiexchange_config = vanilla::config::config<multi_exchange_handler_config_data>;
-
-struct multi_exchange_status {
-    boost::posix_time::ptime start{boost::posix_time::microsec_clock::local_time()};
-    boost::atomic_uint64_t request_count{};
-    boost::atomic_uint64_t all_response_count{};
-    boost::atomic_uint64_t bidder_response_count{};
-    boost::atomic_uint64_t empty_response_count{};
-    boost::atomic_uint64_t timeout_response_count{};
-
-    friend std::ostream& operator<<(std::ostream &os, const multi_exchange_status &st) {
-        boost::posix_time::time_duration td = boost::posix_time::microsec_clock::local_time() - st.start;
-        os << "start: " << boost::posix_time::to_simple_string(st.start) << "<br/>" <<
-              "elapsed: " << boost::posix_time::to_simple_string(td) << "<br/>" <<
-              "<table border=0>" <<
-              "<tr><td>requests</td><td>" << st.request_count << "</td></tr>" <<
-              "<tr><td>all bidders responsed</td><td>" << st.all_response_count << "</td></tr>" << 
-              "<tr><td>bid responses</td><td>" << st.bidder_response_count << "</td></tr>" << 
-              "<tr><td>empty responses</td><td>" << st.empty_response_count << "</td></tr>" << 
-              "<tr><td>timeout responses</td><td>" << st.timeout_response_count << "</td></tr>" << 
-              "</table> ";
-        return os;
-    }
-};
-
 namespace vanilla {
-    class redis_client_wrapper {
+    class redis_client_adapter {
     public:
         using connection_ok_handler_type = std::function<void(boost::asio::io_service&)>;
         using connection_fail_handler_type = std::function<void(const std::string&, boost::asio::io_service&)>;
         using get_handler_type = std::function<void(boost::asio::io_service&, const std::string&)>;
     
-        redis_client_wrapper(boost::asio::io_service &io):
+        redis_client_adapter(boost::asio::io_service &io):
             io{io}, client{io}
         {}
         void connect(const std::string &host, uint16_t port, const connection_ok_handler_type &connection_ok_handler, const connection_fail_handler_type &connection_fail_handler) {
@@ -103,13 +66,14 @@ namespace vanilla {
         boost::asio::io_service &io;
         redisclient::RedisAsyncClient client;
     };
+    
     template <typename Wrapper>
-    class key_value_client {
+    class asio_key_value_client {
     public:
-        using self_type = key_value_client;
+        using self_type = asio_key_value_client;
         using response_handler_type = std::function<void(void)>;
     
-        key_value_client():
+        asio_key_value_client():
             client{io}
         {}
         
@@ -158,12 +122,29 @@ namespace vanilla {
 
     class multibidder_collector {
     public:
-        multibidder_collector(const multiexchange_config& config, multi_exchange_status &status) :
-            config{config}, status{status}
+        using response_handler_type = std::function<void(const multibidder_collector*)>;
+        using add_handler_type = std::function<void(const multibidder_collector*)>;
+        using self_type = multibidder_collector;
+        using responses_type = std::vector<openrtb::BidResponse>;
+                
+        multibidder_collector(int num_bidders) :
+            num_bidders{num_bidders}
         {}
-    
-        openrtb::BidResponse getResponse() {
-            updateStatus();
+        
+        self_type &on_response(const response_handler_type &response_handler_) {
+            response_handler = response_handler_;
+            return *this;
+        }    
+        self_type &on_add(const add_handler_type & add_handler_) {
+            add_handler = add_handler_;
+            return *this;
+        }    
+        
+        openrtb::BidResponse response() {
+            if(response_handler) {
+                response_handler(this);
+            }
+            
             if(responses.empty()) {
                 return openrtb::BidResponse(); 
             }
@@ -178,34 +159,38 @@ namespace vanilla {
             }); // sort by first imp bid?
             return responses[0]; 
         }
-        bool isDone() const {
-            return responses.size() == config.data().num_bidders;
+        
+        bool done() const {
+            return responses.size() == num_bidders;
         }
+        
         
         void add(openrtb::BidResponse && bid) {
-            ++status.bidder_response_count;
+            if(add_handler) {
+                add_handler(this);
+            }
+            //++status.bidder_response_count;
             responses.emplace_back(bid);
         }
-    private:
-        void updateStatus() {
-            if (responses.empty()) {
-                ++status.empty_response_count;
-            }
-            else if(responses.size() == config.data().num_bidders) {
-                 ++status.all_response_count;
         
-            } else {
-                ++status.timeout_response_count;
-            }
+        const responses_type &get_reponses() const {
+            return responses;
         }
-        const multiexchange_config &config;
-        multi_exchange_status &status;
-        std::vector<openrtb::BidResponse> responses;
+        
+        int get_num_bidders() const {
+            return num_bidders;
+        }
+    private:
+        int num_bidders;
+        
+        responses_type responses;
+        response_handler_type response_handler;
+        add_handler_type add_handler;
     };
     
     class multibidder_communicator {
     public:
-        multibidder_communicator(const multiexchange_config& config) :
+        multibidder_communicator(const vanilla::multiexchange::multiexchange_config& config) :
             config{config}
         {
             communicator.outbound(config.data().bidders_port);
@@ -216,35 +201,25 @@ namespace vanilla {
                 .distribute(vanilla_request)
                 .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&collector](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
                     collector.add(std::move(bid));
-                    if(collector.isDone()) {
+                    if(collector.done()) {
                         done();
                     }
                 });
         }
     private:
         vanilla::messaging::communicator<vanilla::messaging::broadcast> communicator;
-        const multiexchange_config &config;
+        const vanilla::multiexchange::multiexchange_config &config;
     };
     
     
 }
-/*
-auto collect_bidders_responses_f = [&]() -> void {
-            communicator
-            .distribute(vanilla_request)
-            .collect<openrtb::BidResponse>(std::chrono::milliseconds(config.data().bidders_response_timeout), [&responses, &config, &status](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
-                responses.emplace_back(std::move(bid));
-                ++status.bidder_response_count;
-                if (responses.size() == config.data().num_bidders) {
-                    done();
-                }
-            });
-        };*/
+
 int main(int argc, char* argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using namespace vanilla::exchange;
+    using namespace vanilla::multiexchange;
     namespace po = boost::program_options;   
-    multiexchange_config config([&](multi_exchange_handler_config_data &d, po::options_description &desc){
+    vanilla::multiexchange::multiexchange_config config([&](multi_exchange_handler_config_data &d, po::options_description &desc){
         desc.add_options()
             ("multi_exchange.log", po::value<std::string>(&d.log_file_name), "exchange_handler_test log file name log")
             ("multi_exchange.host", "multi_exchange_handler_test Host")
@@ -269,7 +244,7 @@ int main(int argc, char* argv[]) {
     init_framework_logging(config.data().log_file_name);
     
     // status 
-    multi_exchange_status status;
+    vanilla::multiexchange::multi_exchange_status status;
     
     // bid exchange handler
     vanilla::exchange::exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout));
@@ -293,9 +268,24 @@ int main(int argc, char* argv[]) {
             vanilla_request.user_info.user_id = request.user.get().buyeruid;
         }
         thread_local vanilla::multibidder_communicator communicator(config);
-        vanilla::multibidder_collector collector(config, status);
+        vanilla::multibidder_collector collector(config.data().num_bidders);
+        collector
+            .on_response([&status](const vanilla::multibidder_collector* collector) {
+                auto &r = collector->get_reponses();
+                if (r.empty()) {
+                    ++status.empty_response_count;
+                } else if (r.size() == collector->get_num_bidders()) {
+                    ++status.all_response_count;
+                } else {
+                    ++status.timeout_response_count;
+                }
+            })
+            .on_add([&status](const vanilla::multibidder_collector* collector) {
+                 ++status.bidder_response_count;
+            });
         
-        using kv_type = vanilla::key_value_client<vanilla::redis_client_wrapper>;
+        
+        using kv_type = vanilla::asio_key_value_client<vanilla::redis_client_adapter>;
         thread_local kv_type kv_client;
         
         //auto kv_client = kv_pool.get();
@@ -318,7 +308,7 @@ int main(int argc, char* argv[]) {
             
             //kv_pool.push(kv_client); // return it back
         }
-        return collector.getResponse();
+        return collector.response();
         
     });
     
@@ -331,9 +321,7 @@ int main(int argc, char* argv[]) {
         });
     dispatcher.crud_match(boost::regex("/status.html"))
         .get([&status](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-            std::stringstream ss;
-            ss << status;
-            r << ss.str() ;
+            r << status.to_string();
             r.stock_reply(http::server::reply::ok);
         });
 

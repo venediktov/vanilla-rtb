@@ -12,7 +12,7 @@
 #include <iostream>
 #include "rtb/common/perf_timer.hpp"
 #include "selector.hpp"
-#include "user_info.hpp"
+#include "examples/multiexchange/user_info.hpp"
 
 namespace vanilla {
     template<typename Config = BidderConfig>

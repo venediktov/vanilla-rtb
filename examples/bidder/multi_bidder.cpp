@@ -37,7 +37,7 @@
 #include <process.h>
 #endif
 #include "response_builder.hpp"
-#include "user_info.hpp"
+#include "examples/multiexchange/user_info.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
