@@ -28,6 +28,8 @@
 #include "CRUD/service/reply.hpp"
 #include "CRUD/handlers/crud_matcher.hpp"
 
+#include <iostream>
+
 namespace vanilla { namespace exchange {
 
 thread_local boost::asio::io_service io_service;
@@ -116,12 +118,15 @@ public:
             auto submit_async = [&]() {
                 auto auction_response = auction_async_handler(bid_request);
                 wire_response = parser.create_response(auction_response);
+                timer.cancel();
                 io_service.stop();
             };
             io_service.post(submit_async);
             timer.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
             timer.async_wait([](const boost::system::error_code& error) {
+                std::cout << error.message() << std::endl;
                 if (error != boost::asio::error::operation_aborted) {
+                    timer.cancel();
                     io_service.stop();
                 }
             });

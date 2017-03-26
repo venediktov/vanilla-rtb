@@ -255,7 +255,7 @@ int main(int argc, char* argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request for distribution error " << data ;
     })
-    //.auction([&config, &status/*, &redis, &ioService*/, &kv_pool](const openrtb::BidRequest &request) {
+    
     .auction_async([&config, &status](const openrtb::BidRequest &request) {
         using namespace vanilla::messaging;
         ++status.request_count;
@@ -288,7 +288,6 @@ int main(int argc, char* argv[]) {
         using kv_type = vanilla::asio_key_value_client<vanilla::redis_client_adapter>;
         thread_local kv_type kv_client;
         
-        //auto kv_client = kv_pool.get();
         if(!kv_client.connected()) {
             LOG(debug) << "kv not connected";
             kv_client.connect("127.0.0.1", 6379);
@@ -306,7 +305,6 @@ int main(int argc, char* argv[]) {
                 })
                 .request(vanilla_request.user_info.user_id, vanilla_request.user_info.user_data);
             
-            //kv_pool.push(kv_client); // return it back
         }
         return collector.response();
         
