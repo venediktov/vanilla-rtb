@@ -50,3 +50,8 @@ target_link_libraries(
         ${CMAKE_THREAD_LIBS_INIT}
         ${RT_LIB}
         )
+
+install(TARGETS http_bidder_test multi_exchange_handler multi_bidder
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+)
