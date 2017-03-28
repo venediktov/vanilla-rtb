@@ -159,17 +159,20 @@ namespace vanilla {
             }); // sort by first imp bid?
             return responses[0]; 
         }
+
         
         bool done() const {
             return responses.size() == num_bidders;
         }
-        
+        self_type & clear() {
+            responses.clear();
+            return *this;
+        }
         
         void add(openrtb::BidResponse && bid) {
             if(add_handler) {
                 add_handler(this);
             }
-            //++status.bidder_response_count;
             responses.emplace_back(bid);
         }
         
@@ -268,8 +271,9 @@ int main(int argc, char* argv[]) {
             vanilla_request.user_info.user_id = request.user.get().buyeruid;
         }
         thread_local vanilla::multibidder_communicator communicator(config);
-        vanilla::multibidder_collector collector(config.data().num_bidders);
+        thread_local vanilla::multibidder_collector collector(config.data().num_bidders);
         collector
+            .clear()
             .on_response([&status](const vanilla::multibidder_collector* collector) {
                 auto &r = collector->get_reponses();
                 if (r.empty()) {
@@ -283,7 +287,6 @@ int main(int argc, char* argv[]) {
             .on_add([&status](const vanilla::multibidder_collector* collector) {
                  ++status.bidder_response_count;
             });
-        
         
         using kv_type = vanilla::asio_key_value_client<vanilla::redis_client_adapter>;
         thread_local kv_type kv_client;
@@ -300,7 +303,7 @@ int main(int argc, char* argv[]) {
         }
         else {
             kv_client
-                .response([&vanilla_request, &collector](){
+                .response([&vanilla_request/*, &collector*/](){
                     communicator.process(vanilla_request, collector);
                 })
                 .request(vanilla_request.user_info.user_id, vanilla_request.user_info.user_data);
