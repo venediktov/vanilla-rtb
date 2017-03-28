@@ -252,20 +252,18 @@ public:
     }
 
     template<typename T, typename Duration, typename Handler>
-    void collect(Duration && timeout, Handler && handler) {
+    void collect(Duration && timeout, Handler handler) {
        if( !distributor_ ) {
            return;
        }
-       distributor_->receive_async([this,&handler](auto data) { //intercept a call for deserialization
-           std::forward<Handler>(handler)(std::move(deserialize<T>(data)), [this](){
-              timer_.cancel();
-              io_service_ptr_->stop();
+       distributor_->receive_async([this,handler](auto data) { //intercept a call for deserialization
+           handler(std::move(deserialize<T>(data)), [this](){
+              io_service_ptr_->stop(); 
            });
        });
        timer_.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
        timer_.async_wait([this](const boost::system::error_code & error) {
             if (error != boost::asio::error::operation_aborted) {
-                timer_.cancel();
                 io_service_ptr_->stop();
            }
        });

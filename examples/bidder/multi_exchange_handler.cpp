@@ -178,6 +178,9 @@ namespace vanilla {
             }); // sort by first imp bid?
             return responses[0]; 
         }
+        void clear() {
+            responses.clear();
+        }
         bool isDone() const {
             return responses.size() == config.data().num_bidders;
         }
@@ -293,7 +296,8 @@ int main(int argc, char* argv[]) {
             vanilla_request.user_info.user_id = request.user.get().buyeruid;
         }
         thread_local vanilla::multibidder_communicator communicator(config);
-        vanilla::multibidder_collector collector(config, status);
+        thread_local vanilla::multibidder_collector collector(config, status);
+        collector.clear();
         
         using kv_type = vanilla::key_value_client<vanilla::redis_client_wrapper>;
         thread_local kv_type kv_client;
@@ -311,7 +315,7 @@ int main(int argc, char* argv[]) {
         }
         else {
             kv_client
-                .response([&vanilla_request, &collector](){
+                .response([&vanilla_request/*, &collector*/](){
                     communicator.process(vanilla_request, collector);
                 })
                 .request(vanilla_request.user_info.user_id, vanilla_request.user_info.user_data);
