@@ -17,12 +17,10 @@
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "CRUD/service/server.hpp"
 #include "rtb/config/config.hpp"
-//#include "rtb/messaging/serialization.hpp"
 #include "rtb/messaging/communicator.hpp"
 #include "core/tagged_tuple.hpp"
 #include "campaign_cache.hpp"
 #include "serialization.hpp"
-//#include <boost/memory_order.hpp>
 
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
