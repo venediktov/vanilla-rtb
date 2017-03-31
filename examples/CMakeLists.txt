@@ -19,6 +19,7 @@ endif()
 include_directories("${PROJECT_SOURCE_DIR}"
                     "${PROJECT_SOURCE_DIR}/rtb"
                     "${PROJECT_SOURCE_DIR}/jsonv/include"
+                    "${PROJECT_SOURCE_DIR}/redisclient/src/"
                    )
 
 add_definitions(-DBOOST_LOG_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK)
@@ -100,3 +101,5 @@ target_link_libraries(
 add_subdirectory(bidder)
 add_subdirectory(loader)
 add_subdirectory(campaign)
+add_subdirectory(multiexchange)
+
