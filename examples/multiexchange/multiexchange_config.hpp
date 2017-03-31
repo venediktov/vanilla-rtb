@@ -21,10 +21,13 @@ namespace vanilla {
             int bidders_port;
             int bidders_response_timeout;
             int concurrency;
+            std::string key_value_host;
+            int key_value_port;
 
 
             multi_exchange_handler_config_data() :
-                log_file_name{}, handler_timeout{}, num_bidders{}, bidders_port{}, bidders_response_timeout{}, concurrency{}
+                log_file_name{}, handler_timeout{}, num_bidders{}, bidders_port{}, bidders_response_timeout{}, concurrency{},
+                key_value_host{}, key_value_port{}
             {
             }
         };
