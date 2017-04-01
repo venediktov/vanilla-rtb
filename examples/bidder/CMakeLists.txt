@@ -6,11 +6,6 @@ add_executable(
 )
 
 add_executable(
-    multi_exchange_handler
-    multi_exchange_handler.cpp
-)
-
-add_executable(
     multi_bidder
     multi_bidder.cpp
 )
@@ -31,15 +26,6 @@ target_link_libraries(
     ${CMAKE_THREAD_LIBS_INIT}
     ${RT_LIB}
 )
-
-target_link_libraries(
-        multi_exchange_handler
-        crud_service
-        vanilla_rtb
-        jsonv
-        ${Boost_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT}
-        )
 
 target_link_libraries(
         multi_bidder

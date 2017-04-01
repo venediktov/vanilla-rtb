@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
-        .auction([&](const openrtb::BidRequest &request) {
+        .auction_async([&](const openrtb::BidRequest &request) {
             openrtb::BidResponse response;
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.getAd(request, imp)) {
@@ -138,11 +138,16 @@ int main(int argc, char *argv[]) {
     connection_endpoint ep {std::make_tuple(config.get("bidder.host"), config.get("bidder.port"), config.get("bidder.root"))};
 
     //initialize and setup CRUD dispatchers
-    restful_dispatcher_t dispatcher(ep.root) ;
+    restful_dispatcher_t dispatcher(ep.root);
     dispatcher.crud_match(boost::regex("/bid/(\\d+)"))
-              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-                  bid_handler.handle_post(r,match);
-              });
+        .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+            bid_handler.handle_post(r, match);
+        });
+    dispatcher.crud_match(boost::regex("/test/"))
+        .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+            r << "test";
+            r.stock_reply(http::server::reply::ok);
+        });
 
     LOG(debug) << "concurrency " << config.data().concurrency;
     exchange_server<restful_dispatcher_t> server{ep,dispatcher} ;

@@ -36,7 +36,8 @@
 #else
 #include <process.h>
 #endif
-#include "reponse_builder.hpp"
+#include "response_builder.hpp"
+#include "examples/multiexchange/user_info.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
@@ -45,8 +46,9 @@ extern void init_framework_logging(const std::string &) ;
 void run(short port, const BidderConfig &config) {
     using namespace vanilla::messaging;
     vanilla::ResponseBuilder<BidderConfig> response_builder(config);
-    communicator<broadcast>().inbound(port).process<openrtb::BidRequest>([&response_builder](auto endpoint, openrtb::BidRequest request) {
-        return response_builder.build(request);
+    communicator<broadcast>().inbound(port).process<vanilla::VanillaRequest>([&response_builder](auto endpoint, vanilla::VanillaRequest vanilla_request) {
+        LOG(debug) << "Request from user " << vanilla_request.user_info.user_id;
+        return response_builder.build(vanilla_request);
     }).dispatch();
 }
 

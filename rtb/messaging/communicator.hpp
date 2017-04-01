@@ -1,3 +1,4 @@
+#pragma once
 //
 // communicator.hpp
 // ~~~~~~~~~~~~
@@ -205,10 +206,12 @@ template<typename ConnectionPolicy>
 class communicator {
     using consumer_type   = std::shared_ptr<receiver<ConnectionPolicy>>;
     using distributor_type = std::shared_ptr<sender<ConnectionPolicy>>;
+    using io_service_type = boost::asio::io_service;
 public:
     using self_type = communicator<ConnectionPolicy> ;
-    communicator() : io_service_{}, timer_{io_service_}
+    communicator() : timer_{io_service_}
     {}
+    
     communicator(communicator &&) = delete;
     communicator(communicator &) = delete;
     communicator &operator=(communicator &) = delete;
@@ -259,29 +262,33 @@ public:
     }
     
     template<typename T, typename Duration, typename Handler>
-    void collect(Duration && timeout, Handler && handler) {
+    void collect(Duration && timeout, Handler handler) {
        if( !distributor_ ) {
            return;
        }
-       distributor_->receive_async([this,&handler](auto data) { //intercept a call for deserialization
-           std::forward<Handler>(handler)(std::move(deserialize<T>(data)), [this](){
-              io_service_.stop();
+       distributor_->receive_async([this,handler](auto data) { //intercept a call for deserialization
+           handler(std::move(deserialize<T>(data)), [this](){
+              io_service_.stop(); 
            });
        });
        timer_.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
-       timer_.async_wait( [this](const boost::system::error_code& error) {
-           io_service_.stop();
+       timer_.async_wait([this](const boost::system::error_code & error) {
+            if (error != boost::asio::error::operation_aborted) {
+                io_service_.stop();
+           }
        });
        //TODO: can be  optimized return before timer if all data is collected from all responders
+       io_service_.reset();
        io_service_.run();
     }
 
     void dispatch() {
+        io_service_.reset();
         io_service_.run();
     }
     
 private:
-    boost::asio::io_service     io_service_;
+    io_service_type io_service_;
     boost::asio::deadline_timer timer_;
     distributor_type distributor_;
     consumer_type   consumer_;

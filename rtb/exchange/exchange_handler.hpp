@@ -58,6 +58,7 @@ public:
         parser{}, auction_handler{}, log_handler{}, tmax{tmax}
     {}
 
+
     self_type & auction(const auction_handler_type &handler) {
         auction_handler = handler;
         return *this;
