@@ -19,3 +19,8 @@ target_link_libraries(
         ${CMAKE_THREAD_LIBS_INIT}
         )
 
+install(TARGETS multi_exchange_handler
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+)
+

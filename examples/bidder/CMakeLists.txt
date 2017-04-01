@@ -37,7 +37,7 @@ target_link_libraries(
         ${RT_LIB}
         )
 
-install(TARGETS http_bidder_test multi_exchange_handler multi_bidder
+install(TARGETS http_bidder_test multi_bidder
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
 )
