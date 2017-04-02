@@ -12,7 +12,7 @@
 //Non-Intrusive boost serialization implementation
 namespace boost { namespace serialization {
     template<class Archive>
-    void serialize(Archive & ar, CampaignBudget & value, const unsigned int) {
+    void serialize(Archive & ar, vanilla::CampaignBudget & value, const unsigned int) {
         ar & value.campaign_id;
         ar & value.day_budget_limit;
         ar & value.day_budget_spent;

@@ -5,6 +5,7 @@
  * Created on 27 февраля 2017 г., 23:33
  */
 
+#include <chrono>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -86,7 +87,10 @@ int main(int argc, char* argv[]) {
         if(request.user) {
             vanilla_request.user_info.user_id = request.user.get().buyeruid;
         }
-        vanilla::multibidder_communicator communicator(config.data().bidders_port, config.data().bidders_response_timeout);
+        vanilla::multibidder_communicator<> communicator(
+            config.data().bidders_port, 
+            std::chrono::milliseconds(config.data().bidders_response_timeout)
+        );
         vanilla::multibidder_collector collector(config.data().num_bidders);
         collector
             .clear()

@@ -18,6 +18,7 @@
 
 extern void init_framework_logging(const std::string &) ;
 
+using namespace vanilla;
 
 template<typename Cache>
 void run(short port, Cache &cache) {

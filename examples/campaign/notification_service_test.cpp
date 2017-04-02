@@ -59,6 +59,7 @@ struct connection_endpoint {
 };
 
 int main(int argc, char* argv[]) {
+    using namespace vanilla;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using CampaignCacheType  = CampaignCache<WinNotificationConfig>;
     using CampaignBudgets = typename CampaignCacheType::DataCollection;
@@ -121,8 +122,7 @@ int main(int argc, char* argv[]) {
             }
             LOG(info) << "received win notification campaign_id=" << *campaign_id << " win price=" << *price;
             std::shared_ptr<CampaignBudget> budget_ptr = budgets.at(0);
-            budget_ptr->day_budget_limit -= *price;
-            budget_ptr->day_budget_spent += *price;
+            budget_ptr->update(vanilla::types::price(*price));
             status.day_budget_limit  = budget_ptr->day_budget_limit;
             status.total_spent_amout = budget_ptr->day_budget_spent;
             ++status.win_notice_count;

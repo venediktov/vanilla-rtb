@@ -90,7 +90,6 @@ class multibidder_collector {
         }
     private:
         int num_bidders;
-        
         responses_type responses;
         response_handler_type response_handler;
         add_handler_type add_handler;

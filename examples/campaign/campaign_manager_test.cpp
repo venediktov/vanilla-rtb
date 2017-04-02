@@ -84,6 +84,7 @@ extern void init_framework_logging(const std::string &) ;
 
 
 int main(int argc, char *argv[]) {
+    using namespace vanilla;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using CampaignCacheType  = CampaignCache<CampaignManagerConfig>;
     using CampaignBudgets = typename CampaignCacheType::DataCollection;
