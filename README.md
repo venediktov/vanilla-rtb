@@ -76,7 +76,7 @@ Linux command \:
 4
 
 pass it to your make script like this
-gmake -j4
+**gmake -j4 install**
 
 ###Running examples\:
 - [x] HTTP-Bidder
