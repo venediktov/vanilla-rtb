@@ -20,8 +20,8 @@ easy to integrate with [your cmake project](https://github.com/vanilla-rtb/rapid
 
 Structure ( work in progress ) :
 * [/](../../tree/master/) -- the root directory
-   * [boost-process/](../../tree/master/boost-process/) -- C++11 not in official boost stack
-   * [boost-dll/](../../tree/master/boost-dll/) -- C++11 not in official boost stack
+   * [boost-process/](../../tree/master/boost-process/) -- C++11 planned for official boost stack version 1.64
+   * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost stack since version 1.61
    * [CRUD/](../../tree/master/CRUD/) -- Restful web-service written in C++11 based on boost.ASIO and CRUD handlers
    * [rtb/](../../tree/master/rtb/) -- C++11 framework and sandbox for testing platform solution 
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
@@ -80,10 +80,17 @@ gmake -j4
 
 ###Running examples\:
 - [x] HTTP-Bidder
-  * vanilla-rtb/examples/bidder$ ../../Release/examples/bidder/http_bidder_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./http_bidder_test --config etc/config.cfg
 - [x] Cache loader
-  * vanilla-rtb/examples$ ../Release/examples/loader/cache_loader_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./cache_loader_test --config etc/config.cfg
 - [x] Exchange Handler with HTTP handler or Exchange Handler distributing to multi-bidders via communicator 
-  * vanilla-rtb/examples$ ../Release/examples/exchange_handler_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./exchange_handler_test --config etc/config.cfg
 - [x] Mock-bidders starting multiple in one swoop,  currently configured as 5 bidders in config
-  * vanilla-rtb/examples$ ../Release/examples/mock_bidder_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./mock_bidder_test --config etc/config.cfg
+- [x] multi-bidders starting multiple in one swoop,  currently configured as 3 bidders in config and exchange
+  * vanilla-rtb/Release/examples/bin$ ./multi_bidder --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./multi_exchange_handler --config etc/config.cfg
+- [x] Notification service and Slave-Banker
+  * vanilla-rtb/Release/examples/bin$ ./notification_service_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./slavebanker_service_test --config etc/config.cfg
+
