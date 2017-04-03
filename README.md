@@ -46,9 +46,9 @@ Structure ( work in progress ) :
 
 
 
-###*(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
+### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
-###Linux \:
+### Linux \:
 - [x] mkdir Release
 - [x] cd Release
 - [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
@@ -59,7 +59,7 @@ Structure ( work in progress ) :
 - [x] cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
 - [x] gmake VERBOSE=1
 
-###Windows \:
+### Windows \:
 *same steps as above for linux , only difference is depending on your environment 
   either Visual Studio or NMake project can be used*
   
@@ -69,16 +69,17 @@ Structure ( work in progress ) :
 - [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 
 
-###For faster builds invoking multiple make processes  , find number of cores on your system
+### For faster builds invoking multiple make processes  , find number of cores on your system
 Linux command \: 
 * nproc
 
 4
 
 pass it to your make script like this
-gmake -j4
 
-###Running examples\:
+**gmake -j4 install**
+
+### Running examples\:
 - [x] HTTP-Bidder
   * vanilla-rtb/Release/examples/bin$ ./http_bidder_test --config etc/config.cfg
 - [x] Cache loader
