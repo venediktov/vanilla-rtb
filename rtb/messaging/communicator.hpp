@@ -249,7 +249,18 @@ public:
        }
        return *this;
     }
-
+    
+    template<typename T, typename Handler>
+    self_type & consume(Handler handler) {
+       if( consumer_ ) {
+           //intercept a call from receive, and call handler-consumer 
+           consumer_->receive_async([this,handler](const boost::asio::ip::udp::endpoint &from_endpoint, auto data) { //intercept a call for deserialization
+               handler(&from_endpoint, std::move(deserialize<T>(data)));
+           });
+       }
+       return *this;
+    }
+    
     template<typename T, typename Duration, typename Handler>
     void collect(Duration && timeout, Handler handler) {
        if( !distributor_ ) {

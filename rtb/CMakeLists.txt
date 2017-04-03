@@ -66,4 +66,7 @@ if (Boost_LIBRARIES)
     target_link_libraries(vanilla_rtb PUBLIC ${Boost_LIBRARIES})
 endif()
 
+install(TARGETS vanilla_rtb
+  LIBRARY DESTINATION lib
+)
 

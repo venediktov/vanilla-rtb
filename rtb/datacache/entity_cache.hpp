@@ -77,6 +77,7 @@ public:
 entity_cache(const std::string &name) : _segment_ptr(), _container_ptr(), _store_name(), _cache_name(name),
 _named_mutex(bip::open_or_create, (_cache_name + "_mutex").c_str()) {
 //TODO: add to ctor to switch between mmap and shm
+//TODO: maybe needs bip::scoped_lock to lock for other processes calling  grow_memory    
 std::string data_base_dir = "/tmp/CACHE" ;
 _store_name =  Memory::convert_base_dir(data_base_dir) + _cache_name;
 _segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), MEMORY_SIZE) ) ;
@@ -140,7 +141,6 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
             << " data was not inserted , MEMORY AVAILABLE="
             <<  _segment_ptr->get_free_memory(); 
             grow_memory(MEMORY_SIZE);
-            Memory::attach([this](){attach();});
             is_success = insert_data(std::forward<Key>(key), std::forward<Serializable>(data));
         }
  
@@ -168,6 +168,17 @@ _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_n
     }
 *******************/
  
+    template<typename Tag, typename Serializable, typename Arg>
+    bool retrieve(Serializable &entry, Arg && arg) {
+        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
+        auto p = _container_ptr->template get<Tag>().find(std::forward<Arg>(arg));
+        bool is_found = p != _container_ptr->end();
+        if ( is_found ) {
+            p->retrieve(entry); 
+        }
+        return is_found;
+    }
+    
     template<typename Tag, typename Serializable, typename Arg>
     bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries, Arg && arg) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);

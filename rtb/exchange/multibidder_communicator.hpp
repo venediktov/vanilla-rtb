@@ -18,23 +18,29 @@
 #ifndef MULTIBIDDER_COMMUNICATOR_HPP
 #define MULTIBIDDER_COMMUNICATOR_HPP
 
+#include <chrono>
 #include "rtb/messaging/communicator.hpp"
 #include "rtb/exchange/multibidder_collector.hpp"
 #include "rtb/core/openrtb.hpp"
 
 namespace vanilla {
 
+    template
+    <  
+        typename Duration  = std::chrono::milliseconds, 
+        typename DeliveryType = vanilla::messaging::broadcast
+    > 
     class multibidder_communicator {
     public:
-        multibidder_communicator(uint16_t bind_port, uint32_t response_timeout) :
+        multibidder_communicator(uint16_t bidders_port, Duration response_timeout) :
             response_timeout(response_timeout) {
-            communicator.outbound(bind_port);
+            communicator.outbound(bidders_port);
         }
 
         void process(const vanilla::VanillaRequest &vanilla_request, multibidder_collector &collector) {
             communicator
                 .distribute(vanilla_request)
-                .collect<openrtb::BidResponse>(std::chrono::milliseconds(response_timeout), [&collector](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
+                .template collect<openrtb::BidResponse>(response_timeout, [&collector](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
                     collector.add(std::move(bid));
                     if (collector.done()) {
                         done();
@@ -42,8 +48,8 @@ namespace vanilla {
                 });
         }
     private:
-        vanilla::messaging::communicator<vanilla::messaging::broadcast> communicator;
-        uint32_t response_timeout;
+        vanilla::messaging::communicator<DeliveryType> communicator;
+        Duration response_timeout;
     };
 }
 #endif /* MULTIBIDDER_COMMUNICATOR_HPP */

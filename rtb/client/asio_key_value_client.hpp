@@ -22,7 +22,7 @@
 #include <boost/asio/io_service.hpp>
 
 namespace vanilla {
-    namespace cleint {
+    namespace client {
         template <typename Wrapper>
         class asio_key_value_client {
         public:
@@ -31,8 +31,7 @@ namespace vanilla {
 
             asio_key_value_client() :
                 client{io}
-            {
-            }
+            {}
 
             self_type &response(const response_handler_type &handler) {
                 response_handler = handler;
@@ -55,9 +54,9 @@ namespace vanilla {
                     [](boost::asio::io_service & io) {
                         io.stop();
                     },
-                [](const std::string& err, boost::asio::io_service & io) {
-                    io.stop();
-                }
+                    [](const std::string& err, boost::asio::io_service & io) {
+                        io.stop();
+                    }
                 );
                 io.reset();
                 io.run();

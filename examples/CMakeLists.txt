@@ -98,6 +98,11 @@ target_link_libraries(
         ${RT_LIB}
         )
 
+install(TARGETS exchange_handler_test messaging_client_test mock_bidder_test country_cache_test
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+)
+
 add_subdirectory(bidder)
 add_subdirectory(loader)
 add_subdirectory(campaign)

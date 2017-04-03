@@ -14,24 +14,43 @@
 #include "datacache/campaign_entity.hpp"
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
+#include <boost/serialization/strong_typedef.hpp>
 #include <memory>
 #include <cstdint>
 #include <iostream>
 
+namespace vanilla {
+    
+namespace types {    
+    BOOST_STRONG_TYPEDEF(uint64_t, budget)
+    BOOST_STRONG_TYPEDEF(uint64_t, price )
+}
+
 struct CampaignBudget {
-    uint32_t campaign_id;
-    uint64_t day_budget_limit; //micro dollars
-    uint64_t day_budget_spent; //micro dollars
-    uint32_t day_show_limit;
-    uint32_t day_click_limit;
+    uint32_t campaign_id{};
+    uint64_t day_budget_limit{}; //micro dollars
+    uint64_t day_budget_spent{}; //micro dollars
+    uint64_t day_budget_overdraft{}; //micro dollars
+    uint32_t day_show_limit{};
+    uint32_t day_click_limit{};
    
-        
+    void update(types::budget value) {
+        day_budget_limit = value;
+    }
+    void update(types::price value) {
+        auto min_value = std::min(day_budget_limit, (uint64_t)value);
+        day_budget_limit -= min_value;
+        day_budget_spent += min_value;
+        if (min_value < value) {
+            day_budget_overdraft += value - min_value; 
+        }
+    }
     friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<CampaignBudget> ptr)  {
         os <<  *ptr;
         return os;
     }
-    friend std::ostream &operator<<(std::ostream & os, const  CampaignBudget & value)  {
-        os << value.campaign_id       << "|" 
+    friend std::ostream &operator<<(std::ostream & os, const CampaignBudget & value)  {
+        os << value.campaign_id      << "|" 
            << value.day_budget_limit << "|"
            << value.day_budget_spent << "|"
            << value.day_show_limit   << "|"
@@ -96,6 +115,7 @@ class CampaignCache {
 };
 
 
+} //vanilla
 
 #endif	/* CAMPAIGN_CACHE_HPP */
 
