@@ -16,6 +16,7 @@ struct campaign_manager_config_data {
     std::string update_restful_prefix;
     std::string delete_restful_prefix;
     std::string ipc_name;
+    std::string campaign_budget_source;
 };
 using CampaignManagerConfig = vanilla::config::config<campaign_manager_config_data>;
 

@@ -15,6 +15,9 @@
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
 #include <boost/serialization/strong_typedef.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 #include <memory>
 #include <cstdint>
 #include <iostream>
@@ -31,8 +34,9 @@ struct CampaignBudget {
     uint64_t day_budget_limit{}; //micro dollars
     uint64_t day_budget_spent{}; //micro dollars
     uint64_t day_budget_overdraft{}; //micro dollars
-    uint32_t day_show_limit{};
-    uint32_t day_click_limit{};
+    uint64_t day_show_limit{};
+    uint64_t day_click_limit{};
+    std::string record{};
    
     void update(types::budget value) {
         day_budget_limit = value;
@@ -57,6 +61,23 @@ struct CampaignBudget {
            << value.day_click_limit
         ;
         return os;
+    }
+    friend std::istream &operator>>(std::istream &is, CampaignBudget &l) {
+        if ( !std::getline(is, l.record) ){
+            return is;
+        }
+        std::vector<std::string> fields;
+        boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
+        if(fields.size() < 5) {
+            return is;
+        }
+        l.campaign_id = atol(fields.at(0).c_str()); 
+        l.day_budget_limit = atol(fields.at(1).c_str());
+        l.day_budget_spent = atol(fields.at(2).c_str());
+        l.day_show_limit = atol(fields.at(3).c_str());
+        l.day_click_limit = atol(fields.at(4).c_str());
+        l.day_budget_overdraft = 0;
+        return is;
     }
    
 };
@@ -108,6 +129,18 @@ class CampaignCache {
         bool remove(uint32_t campaign_id) {
             cache.template remove<CampaignTag>(campaign_id);
             return true;
+        }
+        void load() noexcept(false) {
+            std::ifstream in{config.data().campaign_budget_source};
+            if (!in) {
+                throw std::runtime_error(std::string("could not open file ") + config.data().campaign_budget_source + " exiting...");
+            }
+            LOG(debug) << "File opened " << config.data().campaign_budget_source;
+            cache.clear();
+            
+            std::for_each(std::istream_iterator<CampaignBudget>(in), std::istream_iterator<CampaignBudget>(), [&](const CampaignBudget &c){
+                cache.insert(Keys{c.campaign_id}, c);
+            });            
         }
     private:
         const Config &config;

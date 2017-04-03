@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
             ("campaign-manager.port", "campaign_manager_test Port")
             ("campaign-manager.root", "campaign_manager_test Root")
             ("campaign-manager.ipc_name", boost::program_options::value<std::string>(&d.ipc_name),"campaign_manager_test IPC name")
+            ("campaign-manager.budget_source", boost::program_options::value<std::string>(&d.campaign_budget_source)->default_value("data/campaign_budget"),"campaign_budget source file name")
         ;
     });
     
@@ -115,6 +116,12 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
 
     CampaignCacheType  cache(config);
+    try {
+        cache.load();
+    }
+    catch(std::exception const& e) {
+        LOG(error) << e.what(); // It still can work without preloaded campaign budgets
+    }
  
     std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> create_commands = {
         {"budget/id/" , [&cache](auto cb, auto id){cache.insert(cb,id);}}
@@ -173,6 +180,9 @@ int main(int argc, char *argv[]) {
                       campaign_id = boost::lexical_cast<uint32_t>(value);
                   }
                   read_commands[key](data, campaign_id? *campaign_id : 0 );
+                  if(data.size()) {
+                    LOG(debug) << "data " << *(data.at(0));    
+                  }
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
