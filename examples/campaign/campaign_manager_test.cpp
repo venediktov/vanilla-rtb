@@ -180,13 +180,16 @@ int main(int argc, char *argv[]) {
                       campaign_id = boost::lexical_cast<uint32_t>(value);
                   }
                   read_commands[key](data, campaign_id? *campaign_id : 0 );
-                  if(data.size()) {
-                    LOG(debug) << "data " << *(data.at(0));    
+                  r<< CampaignBudget::desc();
+                  for(auto &d : data) {
+                    r << boost::lexical_cast<std::string>(*d) << "\n";
                   }
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
     });
+
+
     auto host = config.get("campaign-manager.host");
     auto port = config.get("campaign-manager.port");
     http::server::server<restful_dispatcher_t> server(host,port,dispatcher);

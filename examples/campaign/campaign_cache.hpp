@@ -21,6 +21,7 @@
 #include <memory>
 #include <cstdint>
 #include <iostream>
+#include "rtb/common/split_string.hpp"
 
 namespace vanilla {
     
@@ -49,6 +50,9 @@ struct CampaignBudget {
             day_budget_overdraft += value - min_value; 
         }
     }
+    static std::string desc() {
+        return std::string("campaign_id|day_budget_limit|day_budget_spent|day_show_limit|day_click_limit\n");
+    }
     friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<CampaignBudget> ptr)  {
         os <<  *ptr;
         return os;
@@ -67,7 +71,7 @@ struct CampaignBudget {
             return is;
         }
         std::vector<std::string> fields;
-        boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
+        vanilla::common::split_string(fields, l.record, "\t");
         if(fields.size() < 5) {
             return is;
         }
@@ -131,16 +135,21 @@ class CampaignCache {
             return true;
         }
         void load() noexcept(false) {
-            std::ifstream in{config.data().campaign_budget_source};
-            if (!in) {
-                throw std::runtime_error(std::string("could not open file ") + config.data().campaign_budget_source + " exiting...");
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "ad");
+                std::ifstream in{config.data().campaign_budget_source};
+                if (!in) {
+                    throw std::runtime_error(std::string("could not open file ") + config.data().campaign_budget_source + " exiting...");
+                }
+                LOG(debug) << "File opened " << config.data().campaign_budget_source;
+                cache.clear();
+
+                std::for_each(std::istream_iterator<CampaignBudget>(in), std::istream_iterator<CampaignBudget>(), [&](const CampaignBudget & c) {
+                    cache.insert(Keys{c.campaign_id}, c);
+                });
             }
-            LOG(debug) << "File opened " << config.data().campaign_budget_source;
-            cache.clear();
-            
-            std::for_each(std::istream_iterator<CampaignBudget>(in), std::istream_iterator<CampaignBudget>(), [&](const CampaignBudget &c){
-                cache.insert(Keys{c.campaign_id}, c);
-            });            
+            LOG(debug) << sp->str();
         }
     private:
         const Config &config;
