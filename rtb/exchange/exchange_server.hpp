@@ -26,7 +26,6 @@
 #include <boost/asio.hpp>
 #include "CRUD/service/server.hpp"
 #include "CRUD/service/persistent_connection.hpp"
-#include "CRUD/service/server2.hpp"
 
 namespace vanilla { namespace exchange {
 
