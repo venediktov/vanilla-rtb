@@ -25,8 +25,8 @@ n=1000
 c=10
 json_file=REQUEST__SHORT_NOROOT_STRING.json
 
-SHORTOPTS="hvta:"
-LONGOPTS="help,version,auction,mock-bidders,bidder,multi-bidder,c:n:"
+SHORTOPTS="hvta:c:n:"
+LONGOPTS="help,version,auction,mock-bidders,bidder,multi-bidder,test"
 
 ARGS=$(getopt -s bash --options $SHORTOPTS  \
   --longoptions $LONGOPTS --name $PROGNAME -- "$@" )
@@ -62,6 +62,10 @@ while true; do
          ;;
       --bidder)
          CMD=http://localhost:9081/bid/123
+         json_file=BID_REQUEST_BANNER.json
+         ;;
+      --test)
+         CMD=http://localhost:9081/test/
          json_file=BID_REQUEST_BANNER.json
          ;;
       --multi-bidder)
