@@ -25,6 +25,8 @@
 #include <functional>
 #include <boost/asio.hpp>
 #include "CRUD/service/server.hpp"
+#include "CRUD/service/persistent_connection.hpp"
+#include "CRUD/service/server2.hpp"
 
 namespace vanilla { namespace exchange {
 
@@ -64,7 +66,7 @@ public:
         return *this;
     }
     void run() {
-       http::server::server<RestfulDispatcherT> server{ep.host,ep.port,dispatcher} ;
+       http::server::server<RestfulDispatcherT, http::server::persistent_connection> server{ep.host,ep.port,dispatcher};
        std::vector<std::shared_ptr<std::thread>> threads;
        for ( unsigned int i=0; i < hardware_threads ; ++i) {
             threads.push_back( std::make_shared<std::thread>( [&server] () {

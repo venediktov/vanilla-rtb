@@ -145,8 +145,9 @@ int main(int argc, char *argv[]) {
         });
     dispatcher.crud_match(boost::regex("/test/"))
         .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-            r << "test";
-            r.stock_reply(http::server::reply::ok);
+            //r << "test";
+            //r.stock_reply(http::server::reply::ok);
+            r << "test" << http::server::reply::flush("text");
         });
 
     LOG(debug) << "concurrency " << config.data().concurrency;
