@@ -54,34 +54,49 @@
 #endif
  
 namespace http { namespace crud {
-    template<typename Request, typename Response>
+    template<typename Request, typename Response, typename Match=boost::cmatch, typename Expression=boost::regex>
     class crud_dispatcher {
-        typedef crud_matcher<Response, boost::regex, boost::cmatch> crud_matcher_type ;
+        typedef crud_matcher<Response, Expression, Match> crud_matcher_type ;
         typedef std::shared_ptr<crud_matcher_type> crud_matcher_type_p ;
     public :
         crud_dispatcher() : _base_path() {}
         crud_dispatcher(const std::string &base_path) : _base_path(base_path) {}
-        crud_matcher_type & crud_match(const boost::regex &expression) {
+        crud_matcher_type & crud_match(const Expression &expression) {
             crud_matcher_type_p & p = _crud_matchers[expression] ;
             if(!p) {
                 p = std::make_shared<crud_matcher_type>(expression) ;
             }
             return *p;
         }
-        void handle_request(const Request& request, Response& response) {
-            for ( const auto &matched : _crud_matchers ) {
-                boost::cmatch what;
-                if ( boost::regex_match(request.uri.c_str(), what,  matched.first ) ) {
-                    matched.second->handle_request(request, response, what) ;
+        template<typename E = Expression>
+        typename std::enable_if<!std::is_same<E, std::string>::value, void>::type
+        handle_request(const Request& request, Response& response) {
+            for ( const auto &matcher : _crud_matchers ) {
+                Match what;
+                if ( boost::regex_match(request.uri.c_str(), what,  matcher.first ) ) {
+                    matcher.second->handle_request(request, response, what) ;
+                }
+            }
+        }
+        template<typename E = Expression>
+        typename std::enable_if<std::is_same<E, std::string>::value, void>::type
+        handle_request(const Request& request, Response& response) {
+            for ( const auto &matcher : _crud_matchers ) {
+                Match what;
+                if ( request.uri.find(matcher.first) != std::string::npos  ) {
+                    what = matcher.first;
+                    matcher.second->handle_request(request, response, what) ;
+                } else {
+                    std::cout << "request.uri=" << request.uri << ",matcher.first=" << matcher.first << std::endl;
                 }
             }
         }
     private:
         std::string _base_path;
 #ifdef __GNUC__
-        std::map<boost::regex, crud_matcher_type_p> _crud_matchers ;
+        std::map<Expression, crud_matcher_type_p> _crud_matchers ;
 #else
-        boost::container::flat_map<boost::regex, crud_matcher_type_p> _crud_matchers ;
+        boost::container::flat_map<Expression, crud_matcher_type_p> _crud_matchers ;
 #endif
     };
    
