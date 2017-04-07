@@ -15,7 +15,9 @@
  
 #ifndef HTTP_SERVER_HPP
 #define HTTP_SERVER_HPP
- 
+
+#include <iostream>
+#include <thread>
 #include <boost/asio.hpp>
 #include <string>
 #include <signal.h>
@@ -29,7 +31,7 @@ namespace http {
 namespace server {
  
 /// The top-level class of the HTTP server.
-template<typename request_handler_type>
+template<typename request_handler_type, template<class> class  connection_impl = connection>
 class server
 {
 public:
@@ -62,6 +64,7 @@ public:
     boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
     acceptor_.open(endpoint.protocol());
     acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    acceptor_.set_option( boost::asio::socket_base::keep_alive(true));
     acceptor_.bind(endpoint);
     acceptor_.listen();
  
@@ -94,6 +97,7 @@ private:
  
        if (!ec)
        {
+std::cout << "acceptor called... creating new connenction tid=" << std::this_thread::get_id() << std::endl;
          connection_manager_.start(std::make_shared<connection_type>(
              std::move(socket_), connection_manager_, request_handler_));
        }
@@ -116,7 +120,7 @@ private:
         });
   }
  
-  typedef connection<request_handler_type> connection_type;
+  typedef connection_impl<request_handler_type> connection_type;
   typedef std::shared_ptr<connection_type> connection_type_ptr;
  
   /// The io_service used to perform asynchronous operations.
