@@ -37,7 +37,7 @@ static int store(const char *js, jsmntok_t *t, size_t count, jsonv::value &value
     } else if (t->type == JSMN_OBJECT) {
         value = jsonv::object();
         j = 0;
-        for (i = 0; i < t->size; i++) {
+        for (i = 0; i < t->size; ++i) {
             jsonv::value k;
             jsonv::value v;
             j += store(js, t+1+j, count-j, k);
@@ -51,7 +51,7 @@ static int store(const char *js, jsmntok_t *t, size_t count, jsonv::value &value
     } else if (t->type == JSMN_ARRAY) {
         j = 0;
         value = jsonv::array();
-        for (i = 0; i < t->size; i++) {
+        for (i = 0; i < t->size; ++i) {
             jsonv::value v;
             j += store(js, t+1+j, count-j, v);
             if ( !v.is_null()) {
