@@ -1,4 +1,5 @@
 #include "core/openrtb.hpp"
+#include "jsonv_store.hpp"
 
 namespace DSL {
     using namespace openrtb;
@@ -11,7 +12,7 @@ namespace DSL {
         using parse_error_type = jsonv::parse_error;
 
         GenericDSL() {
-        
+         
             formats base_in = formats_builder()
                 .type<Banner>()
                 .member("h", &Banner::h)
@@ -131,8 +132,18 @@ namespace DSL {
 
         }
 
-        deserialized_type extract_request(const std::string & bid_request) {
-            auto encoded = parse(bid_request);
+        template<typename string_view_type>
+        deserialized_type extract_request(const string_view_type & bid_request) {
+            //auto encoded = parse(bid_request);
+            jsmn_parser parser;
+            jsmntok_t t[128];
+            jsonv::value encoded;
+            jsmn_init(&parser);
+            auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));
+            if (r < 0) {
+                throw std::runtime_error("DSL parse exception");
+            }
+            store(bid_request.c_str(), &t[0], parser.toknext, encoded);
             return extract<openrtb::BidRequest>(encoded, request_fmt_);
         }
 

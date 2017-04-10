@@ -55,7 +55,10 @@ INSTALL(FILES ${SHELL_SCRIPTS}
 INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/etc DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/bidder/data DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
+
+
 add_subdirectory(jsonv)
 add_subdirectory(CRUD)
 add_subdirectory(rtb)
+add_subdirectory(jsmn)
 add_subdirectory(examples)

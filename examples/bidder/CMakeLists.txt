@@ -22,6 +22,7 @@ target_link_libraries(
     crud_service
     vanilla_rtb
     jsonv
+    jsmn
     ${Boost_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${RT_LIB}

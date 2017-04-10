@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     exchange_handler<DSL::GenericDSL> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
     .logger([](const std::string &data) {
-        LOG(debug) << "request_data_v1=" << data ;
+//        LOG(debug) << "request_data_v1=" << data ;
     })
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v1 error " << data ;
@@ -71,11 +71,6 @@ int main(int argc, char *argv[]) {
     .auction_async([](const auto &request) {
         //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
         return  openrtb::BidResponse();
-    })
-    .auction([](const openrtb::BidRequest &request) {
-        //TODO: send to the auction synchronously with timeout or bid directly in this handler
-        openrtb::BidResponse response;
-        return response;
     });
 
     //you can put as many exchange handlers as unique URI
@@ -87,7 +82,7 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v2 error " << data ;
     })
-    .auction([&uuid_generator](const openrtb::BidRequest &request) {
+    .auction_async([&uuid_generator](const openrtb::BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         openrtb::BidResponse response;
         boost::uuids::uuid id = uuid_generator() ; 
@@ -104,7 +99,7 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request for distribution error " << data ;
     })
-    .auction([n_bid,port](const openrtb::BidRequest &request) {
+    .auction_async([n_bid,port](const openrtb::BidRequest &request) {
         std::vector<openrtb::BidResponse> responses;
         communicator<broadcast>()
         .outbound(port)
