@@ -16,7 +16,6 @@
 #ifndef HTTP_SERVER_HPP
 #define HTTP_SERVER_HPP
 
-#include <iostream>
 #include <thread>
 #include <boost/asio.hpp>
 #include <string>
@@ -97,7 +96,6 @@ private:
  
        if (!ec)
        {
-std::cout << "acceptor called... creating new connenction tid=" << std::this_thread::get_id() << std::endl;
          connection_manager_.start(std::make_shared<connection_type>(
              std::move(socket_), connection_manager_, request_handler_));
        }

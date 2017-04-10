@@ -86,8 +86,6 @@ namespace http { namespace crud {
                 if ( request.uri.find(matcher.first) != std::string::npos  ) {
                     what = matcher.first;
                     matcher.second->handle_request(request, response, what) ;
-                } else {
-                    std::cout << "request.uri=" << request.uri << ",matcher.first=" << matcher.first << std::endl;
                 }
             }
         }
