@@ -60,5 +60,5 @@ INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/bidder/data DESTINATION $
 add_subdirectory(jsonv)
 add_subdirectory(CRUD)
 add_subdirectory(rtb)
-add_subdirectory(jsmn)
+add_subdirectory(parsers)
 add_subdirectory(examples)

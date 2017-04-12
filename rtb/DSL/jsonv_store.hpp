@@ -9,7 +9,7 @@
 #ifndef JSONV_STORE_HPP
 #define JSONV_STORE_HPP
 
-#include "jsmn/jsmn.h"
+#include "parsers/jsmn.h"
 #include "jsonv/all.hpp"
 #include <boost/lexical_cast.hpp>
 
