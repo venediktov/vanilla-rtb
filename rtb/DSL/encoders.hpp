@@ -13,7 +13,9 @@
 #include "jsonv/all.hpp"
 #include <boost/lexical_cast.hpp>
 
-static int store(const char *js, jsmntok_t *t, size_t count, jsonv::value &value) {
+namespace  encoders {
+    
+static int encode(const char *js, jsmntok_t *t, size_t count, jsonv::value &value) {
     int i, j, k;
     if (count == 0) {
         return 0;
@@ -40,8 +42,8 @@ static int store(const char *js, jsmntok_t *t, size_t count, jsonv::value &value
         for (i = 0; i < t->size; ++i) {
             jsonv::value k;
             jsonv::value v;
-            j += store(js, t+1+j, count-j, k);
-            j += store(js, t+1+j, count-j, v);
+            j += encode(js, t+1+j, count-j, k);
+            j += encode(js, t+1+j, count-j, v);
             if ( k.is_null() || v.is_null()) {
                 continue;
             }
@@ -53,7 +55,7 @@ static int store(const char *js, jsmntok_t *t, size_t count, jsonv::value &value
         value = jsonv::array();
         for (i = 0; i < t->size; ++i) {
             jsonv::value v;
-            j += store(js, t+1+j, count-j, v);
+            j += encode(js, t+1+j, count-j, v);
             if ( !v.is_null()) {
                 value.push_back(std::move(v));
             }
@@ -62,6 +64,6 @@ static int store(const char *js, jsmntok_t *t, size_t count, jsonv::value &value
     }
     return 0;
 }
-
+} //namespace
 #endif /* JSONV_STORE_HPP */
 

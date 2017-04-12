@@ -8,27 +8,29 @@ What makes us different from other open-source RTB projects we have seen?
 
 Our stack is fairly small and 
 easy to integrate with [your cmake project](https://github.com/vanilla-rtb/rapid-bidder) 
-, completely decoupled by use of templates and has minimum dependency. 
+, completely decoupled by C++ templates and has minimum dependency on outside vendors.
 
 
 [vanilla-rtb ecosystem](../../wiki)
 
 [Multi-bidder-model-with-communicator-for-Win-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-notifications)
 
+[relatively high - 50K QPS](../../wiki/QPS-test)
+
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
 
-Structure ( work in progress ) :
+Structure :
 * [/](../../tree/master/) -- the root directory
-   * [boost-process/](../../tree/master/boost-process/) -- C++11 planned for official boost stack version 1.64
-   * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost stack since version 1.61
-   * [CRUD/](../../tree/master/CRUD/) -- Restful web-service written in C++11 based on boost.ASIO and CRUD handlers
-   * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded object to C++ structure
-   * [parsers/](../../tree/master/jsonv/) -- fast zero copy , zero memory allocation parsers
-   * [rtb/](../../tree/master/rtb/) -- C++11 framework and sandbox for testing platform solution 
+   * [boost-process/](../../tree/master/boost-process/) -- C++11 planned for official boost release version 1.64
+   * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost release since version 1.61
+   * [CRUD/](../../tree/master/CRUD/) -- C++11 high performance HTTP-restful handlers based on boost.ASIO and CRUD API
+   * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
+   * [parsers/](../../tree/master/jsonv/) -- fast zero copy, zero memory allocation parsers
+   * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
-      * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast lookups and matching
+      * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast targeting lookups
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
     * [examples/](../../tree/master/examples) -- root to our sandbox with examples
@@ -38,7 +40,7 @@ Structure ( work in progress ) :
       
 * [CMakeLists.txt] - cmake file
 
->The stack of vanilla-rtb depends on other C++11 projects and is referencing them via gh-subree.
+>The stack of vanilla-rtb includes other C++11 projects and is referencing them via gh-subree.
 >To update to the latest version of boost-process , boost-dll , json-voorhees or CRUD  use the following commands \:
 
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash

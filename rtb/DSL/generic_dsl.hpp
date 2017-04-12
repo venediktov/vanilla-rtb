@@ -1,5 +1,5 @@
 #include "core/openrtb.hpp"
-#include "jsonv_store.hpp"
+#include "encoders.hpp"
 
 namespace DSL {
     using namespace openrtb;
@@ -143,7 +143,7 @@ namespace DSL {
             if (r < 0) {
                 throw std::runtime_error("DSL parse exception");
             }
-            store(bid_request.c_str(), &t[0], parser.toknext, encoded);
+            encoders::encode(bid_request.c_str(), &t[0], parser.toknext, encoded);
             return extract<openrtb::BidRequest>(encoded, request_fmt_);
         }
 
