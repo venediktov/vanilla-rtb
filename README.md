@@ -23,6 +23,8 @@ Structure ( work in progress ) :
    * [boost-process/](../../tree/master/boost-process/) -- C++11 planned for official boost stack version 1.64
    * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost stack since version 1.61
    * [CRUD/](../../tree/master/CRUD/) -- Restful web-service written in C++11 based on boost.ASIO and CRUD handlers
+   * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded object to C++ structure
+   * [parsers/](../../tree/master/jsonv/) -- fast zero copy , zero memory allocation parsers
    * [rtb/](../../tree/master/rtb/) -- C++11 framework and sandbox for testing platform solution 
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
