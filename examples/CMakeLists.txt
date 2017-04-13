@@ -107,4 +107,5 @@ add_subdirectory(bidder)
 add_subdirectory(loader)
 add_subdirectory(campaign)
 add_subdirectory(multiexchange)
+add_subdirectory(ptree_test)
 

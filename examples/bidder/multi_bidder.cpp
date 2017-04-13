@@ -11,7 +11,7 @@
 #include "rtb/config/config.hpp"
 #include "core/tagged_tuple.hpp"
 #include "datacache/ad_entity.hpp"
-#include "datacache/geo_ad_entity.hpp"
+#include "datacache/geo_entity.hpp"
 #include "datacache/city_country_entity.hpp"
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"

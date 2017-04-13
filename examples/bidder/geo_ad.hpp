@@ -20,7 +20,7 @@ namespace boost {
 #include <boost/utility/string_view.hpp>
 #endif
 #include <boost/lexical_cast.hpp>
-
+#include "rtb/datacache/geo_entity.hpp"
 /* 
  * Geo Targeting is implemented this way to test selection and reload on big amount of records
  */
@@ -97,14 +97,14 @@ struct GeoAds {
 
 template <typename Config = BidderConfig,
           typename Memory = typename mpclmi::ipc::Shared,
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::geo_ad_container>::char_allocator >
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::geo_container>::char_allocator >
 class GeoAdDataEntity {
-        using Cache = datacache::entity_cache<Memory, ipc::data::geo_ad_container> ; 
+        using Cache = datacache::entity_cache<Memory, ipc::data::geo_container> ; 
         using Keys = vanilla::tagged_tuple< 
-            typename ipc::data::geo_ad_entity<Alloc>::geo_id_tag,   uint32_t
+            typename ipc::data::geo_entity<Alloc>::geo_id_tag,   uint32_t
         >;
         using DataVect = std::vector<std::shared_ptr <GeoAd> >;
-        using GeoTag = typename ipc::data::geo_ad_entity<Alloc>::geo_id_tag;
+        using GeoTag = typename ipc::data::geo_entity<Alloc>::geo_id_tag;
     public:    
         GeoAdDataEntity(const Config &config):
             config{config}, cache(config.data().geo_ad_ipc_name)

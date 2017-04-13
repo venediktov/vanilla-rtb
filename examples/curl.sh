@@ -80,7 +80,7 @@ while true; do
    shift
 done
 
-CURL_CMD=curl -X POST -H "Content-Type: application/json" --data @${json_file} ${CMD}
+CURL_CMD=`curl -X POST -H "Content-Type: application/json" --data @${json_file} ${CMD}`
 echo ${CURL_CMD}
 output=`${CURL_CMD} 2> /dev/null`
 echo $output

@@ -12,6 +12,8 @@
 #include "ad.hpp"
 #include "geo_ad.hpp"
 #include "geo.hpp"
+#include "geo_campaign.hpp"
+#include "campaign_data.hpp"
 
 namespace vanilla {
 template<typename Config = BidderConfig>
@@ -21,21 +23,36 @@ class Selector {
             config(config),
             ad_data_entity(config),
             geo_ad_data_entity(config),
-            geo_data_entity(config)
+            geo_data_entity(config), 
+            geo_campaign_entity(config),
+            campaign_data_entity(config)
         {}
             
         void load() noexcept(false) {
             auto sp = std::make_shared<std::stringstream>();
             {
                 perf_timer<std::stringstream> timer(sp, "selector load");
-                ad_data_entity.load();
-                auto sp = std::make_shared<std::stringstream>();
+                {
+                    perf_timer<std::stringstream> timer(sp, "ad load");
+                    ad_data_entity.load();
+                }
                 {
                    perf_timer<std::stringstream> timer(sp, "geo_ad load");
                    geo_ad_data_entity.load();
                 }
-                LOG(info) << sp->str() ;
-                geo_data_entity.load();
+                
+                {
+                   perf_timer<std::stringstream> timer(sp, "geo_data load");
+                    geo_data_entity.load();
+                }
+                {
+                   perf_timer<std::stringstream> timer(sp, "geo_campaign load");
+                   geo_campaign_entity.load();
+                }
+                {
+                   perf_timer<std::stringstream> timer(sp, "campaign dataload");
+                   campaign_data_entity.load();
+                }
                 // load others
             }
             LOG(info) << sp->str() ;
@@ -49,6 +66,12 @@ class Selector {
                 LOG(debug) << "No geo";
                 return result;
             }
+            GeoCampaigns retrieved_cached_geo_campaign;
+            if(!getGeoCampaigns(geo->geo_id, retrieved_cached_geo_campaign)) {
+                LOG(debug) << "No campaigns for geo " << geo->geo_id;
+                return result;
+            }
+            
             std::vector<std::shared_ptr <GeoAd> > retrieved_cached_geo_ad;
             if(!getGeoAd(geo->geo_id, retrieved_cached_geo_ad)) {
                 LOG(debug) << "No ads for geo " << geo->geo_id;
@@ -86,6 +109,14 @@ class Selector {
             return true;
         }
         
+        bool getGeoCampaigns(uint32_t geo_id, GeoCampaigns &retrieved_cached_geo_campaign) {
+            if (!this->geo_campaign_entity.retrieve(retrieved_cached_geo_campaign, geo_id)) {
+                LOG(debug) << "GeoAd retrieve failed " << geo_id;
+                return false;
+            }
+            return true;
+        }
+        
         bool getGeo(const openrtb::BidRequest &req, std::shared_ptr<Geo> &geo) {
             std::vector<std::shared_ptr <Geo> > retrieved_cached_geo;
             if (!req.user) {
@@ -115,6 +146,8 @@ class Selector {
         AdDataEntity<Config> ad_data_entity;
         GeoAdDataEntity<Config> geo_ad_data_entity;
         GeoDataEntity<Config> geo_data_entity;
+        GeoCampaignEntity<Config> geo_campaign_entity;
+        CampaignDataEntity<Config> campaign_data_entity;
 };
 }
 

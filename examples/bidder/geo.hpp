@@ -103,6 +103,16 @@ class GeoDataEntity {
             LOG(debug) << sp->str();
             return result;
         }
+        bool retrieve(Geo &geo, const std::string &city, const std::string &country) {
+            bool result = false;
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "geo");
+                result = cache.template retrieve<CityCountryTag>(geo, cache.create_ipc_key(city), cache.create_ipc_key(country));
+            }
+            LOG(debug) << sp->str();
+            return result;
+        }
     private:
         const Config &config;
         Cache cache;
