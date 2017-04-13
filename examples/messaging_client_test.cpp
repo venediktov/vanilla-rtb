@@ -23,7 +23,7 @@ using namespace std::literals;
 namespace openrtb {
     class BidResponse;
     std::ostream& operator<< (std::ostream &os, const BidResponse &bid) {
-        os << to_string(DSL::GenericDSL().create_response(bid));
+        os << to_string(DSL::GenericDSL<>().create_response(bid));
         return os;
     }
 }

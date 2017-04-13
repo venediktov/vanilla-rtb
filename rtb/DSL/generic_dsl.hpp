@@ -1,10 +1,13 @@
 #include "core/openrtb.hpp"
 #include "encoders.hpp"
+#include <vector>
+#include <boost/optional.hpp>
 
 namespace DSL {
     using namespace openrtb;
     using namespace jsonv;
 
+    template<unsigned int Size=128>
     class GenericDSL {
     public:
         using deserialized_type = openrtb::BidRequest;
@@ -12,7 +15,7 @@ namespace DSL {
         using parse_error_type = jsonv::parse_error;
 
         GenericDSL() {
-         
+            
             formats base_in = formats_builder()
                 .type<Banner>()
                 .member("h", &Banner::h)
@@ -50,14 +53,14 @@ namespace DSL {
                 .member("user", &BidRequest::user)
                 .member("site", &BidRequest::site)
                 .encode_if([](const jsonv::serialization_context&, const boost::optional<Site>& x) {return bool(x);})
-                .register_container<std::vector<Impression>>()
-                .register_optional<boost::optional<Banner>>()
-                .register_optional<boost::optional<Site>>()
-                .register_optional<boost::optional<Publisher>>()
-                .register_optional<boost::optional<User>>()
-                .register_optional<boost::optional<Geo>>()
-                .register_container<std::vector<std::string>>()
-                .register_container<std::vector<int>>()
+                .template register_container<std::vector<Impression>>()
+                .template register_optional<boost::optional<Banner>>()
+                .template register_optional<boost::optional<Site>>()
+                .template register_optional<boost::optional<Publisher>>()
+                .template register_optional<boost::optional<User>>()
+                .template register_optional<boost::optional<Geo>>()
+                .template register_container<std::vector<std::string>>()
+                .template register_container<std::vector<int>>()
                 .check_references(formats::defaults())
                 ;
 
@@ -136,7 +139,7 @@ namespace DSL {
         deserialized_type extract_request(const string_view_type & bid_request) {
             //auto encoded = parse(bid_request);
             jsmn_parser parser;
-            jsmntok_t t[128];
+            jsmntok_t t[Size];
             jsonv::value encoded;
             jsmn_init(&parser);
             auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));

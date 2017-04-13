@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         LOG(error) << e.what();
         return 0;
     }
-    exchange_handler<DSL::GenericDSL> bid_handler(std::chrono::milliseconds(config.data().timeout));
+    exchange_handler<DSL::GenericDSL<>> bid_handler(std::chrono::milliseconds(config.data().timeout));
     bid_handler    
         .logger([](const std::string &data) {
             //LOG(debug) << "bid request=" << data ;

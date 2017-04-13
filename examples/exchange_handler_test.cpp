@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
     boost::uuids::random_generator uuid_generator{};
     
-    exchange_handler<DSL::GenericDSL> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
+    exchange_handler<DSL::GenericDSL<>> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
     .logger([](const std::string &data) {
 //        LOG(debug) << "request_data_v1=" << data ;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     });
 
     //you can put as many exchange handlers as unique URI
-    exchange_handler<DSL::GenericDSL> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
+    exchange_handler<DSL::GenericDSL<>> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_v2
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v2=" << data ;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     });
 
     // or you can broadcast to your farm of multiple bidders on multiple remote machines
-    exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
+    exchange_handler<DSL::GenericDSL<>> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_distributor
     .logger([](const std::string &data) {
         //LOG(debug) << "request_data for distribution=" << data ;

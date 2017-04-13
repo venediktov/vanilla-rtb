@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
     vanilla::multiexchange::multi_exchange_status status;
     
     // bid exchange handler
-    vanilla::exchange::exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout));
+    vanilla::exchange::exchange_handler<DSL::GenericDSL<>> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout));
     openrtb_handler_distributor
     .logger([](const std::string &data) {
         //LOG(debug) << "request_data for distribution=" << data ;
