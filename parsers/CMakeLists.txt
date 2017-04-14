@@ -38,6 +38,7 @@ set_target_properties(parsers
                      )
 
 install(TARGETS parsers 
+  ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
 )
 

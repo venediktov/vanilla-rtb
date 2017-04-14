@@ -67,6 +67,7 @@ if (Boost_LIBRARIES)
 endif()
 
 install(TARGETS vanilla_rtb
+  ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
 )
 
