@@ -77,6 +77,10 @@ value::value(const std::string& val) :
     _data.string->_string = val;
 }
 
+value::value(const string_view& val) :
+        value(std::string(val))
+{ }
+
 value::value(const char* val) :
         value(std::string(val))
 { }
@@ -393,6 +397,12 @@ const std::string& value::as_string() const
 {
     check_type(jsonv::kind::string, _kind);
     return _data.string->_string;
+}
+
+string_view value::as_string_view() const &
+{
+    check_type(jsonv::kind::string, _kind);
+    return string_view(_data.string->_string);
 }
 
 std::wstring value::as_wstring() const

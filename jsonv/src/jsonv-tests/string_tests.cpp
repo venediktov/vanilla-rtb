@@ -96,3 +96,13 @@ TEST(wide_strings)
     ensure_eq(narrow, wide);
     ensure(narrow.as_wstring() == wide.as_wstring());
 }
+
+TEST(string_view_construction)
+{
+    using namespace jsonv;
+
+    value cp("Bob");
+    value sv(cp.as_string_view());
+
+    ensure_eq(cp, sv);
+}
