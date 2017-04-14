@@ -7,10 +7,12 @@
 #include "exchange/exchange_handler.hpp"
 #include "exchange/exchange_server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
+#include "rtb/DSL/generic_dsl_view.hpp"
 #include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/config/config.hpp"
 #include "rtb/messaging/serialization.hpp"
 #include "rtb/messaging/communicator.hpp"
+#include "jsonv/all.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
@@ -34,6 +36,9 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+    using DSLT = DSL::VIEW::GenericDSL<jsonv::string_view> ;
+    using BidRequest = DSLT::deserialized_type;
+    using BidResponse = DSLT::serialized_type;
    
     int n_bid{};
     unsigned short port{};
@@ -60,7 +65,7 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
     boost::uuids::random_generator uuid_generator{};
     
-    exchange_handler<DSL::GenericDSL<>> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
+    exchange_handler<DSLT> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
     .logger([](const std::string &data) {
 //        LOG(debug) << "request_data_v1=" << data ;
@@ -70,11 +75,11 @@ int main(int argc, char *argv[]) {
     })
     .auction_async([](const auto &request) {
         //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
-        return  openrtb::BidResponse();
+        return  BidResponse();
     });
 
     //you can put as many exchange handlers as unique URI
-    exchange_handler<DSL::GenericDSL<>> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
+    exchange_handler<DSLT> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_v2
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v2=" << data ;
@@ -82,11 +87,12 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v2 error " << data ;
     })
-    .auction_async([&uuid_generator](const openrtb::BidRequest &request) {
+    .auction_async([&uuid_generator](const BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
-        openrtb::BidResponse response;
-        boost::uuids::uuid id = uuid_generator() ; 
-        response.bidid = boost::uuids::to_string(id);
+        BidResponse response;
+        boost::uuids::uuid id = uuid_generator() ;
+        thread_local std::string id_str = boost::uuids::to_string(id);
+        response.bidid = id_str;
         return response;
     });
 
