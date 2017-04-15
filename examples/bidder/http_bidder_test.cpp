@@ -25,8 +25,9 @@
 #include <random>
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
-#include "selector.hpp"
+//#include "selector.hpp"
 #include "serialization.hpp"
+#include "bidder_selector.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
@@ -80,11 +81,12 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
     
-    vanilla::Selector<> selector(config);
+    //vanilla::Selector<> selector(config); 
     boost::uuids::random_generator uuid_generator{};
-    
+    vanilla::BidderCaches<> caches(config);
     try {
-        selector.load();
+        caches.load(); // Not needed if data cache loader is in work
+        //selector.load();
     }
     catch(std::exception const& e) {
         LOG(error) << e.what();
@@ -99,9 +101,10 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const openrtb::BidRequest &request) {
+            thread_local vanilla::BidderSelector<> selector(caches);
             openrtb::BidResponse response;
             for(auto &imp : request.imp) {    
-                if(auto ad = selector.getAd(request, imp)) {
+                if(auto ad = selector.select(request, imp)) {
                     auto sp = std::make_shared<std::stringstream>();
                     {
                         perf_timer<std::stringstream> timer(sp, "fill response");

@@ -17,9 +17,20 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include "core/tagged_tuple.hpp"
 #include "config.hpp"
+#include "rtb/common/split_string.hpp"
+#include "core/tagged_tuple.hpp"
+#if BOOST_VERSION <= 106000
+#include <boost/utility/string_ref.hpp>
+namespace boost {
+    using string_view = string_ref;
+}
+#else
+#include <boost/utility/string_view.hpp>
+#endif
+#include <boost/lexical_cast.hpp>
 
 struct Ad {
-    std::string ad_id;
+    uint64_t ad_id;
     uint16_t width;
     uint16_t height;
     uint16_t position;
@@ -27,8 +38,8 @@ struct Ad {
     std::string code;
     std::string record;
     
-    Ad(std::string ad_id, uint16_t width, uint16_t height, uint16_t position, uint64_t max_bid_micros, std::string code) : 
-        ad_id{std::move(ad_id)}, width{width}, height{height}, position{position}, 
+    Ad(uint64_t ad_id, uint16_t width, uint16_t height, uint16_t position, uint64_t max_bid_micros, std::string code) : 
+        ad_id{ad_id}, width{width}, height{height}, position{position}, 
         max_bid_micros{max_bid_micros}, code{std::move(code)}, record{}
     {}
     Ad():
@@ -53,17 +64,18 @@ struct Ad {
         if ( !std::getline(is, l.record) ){
             return is;
         }
-        std::vector<std::string> fields;
-        boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
+        
+        std::vector<boost::string_view> fields;
+        vanilla::common::split_string(fields, l.record, "\t");
         if(fields.size() < 6) {
             return is;
         }
-        l.ad_id = fields.at(0); 
-        l.width = atoi(fields.at(1).c_str());
-        l.height = atoi(fields.at(2).c_str());
-        l.position = atoi(fields.at(3).c_str());
-        l.max_bid_micros = atol(fields.at(4).c_str());
-        l.code = fields.at(5);
+        l.ad_id = boost::lexical_cast<uint64_t>(fields.at(0).begin(), fields.at(0).size());
+        l.width = boost::lexical_cast<uint16_t>(fields.at(1).begin(), fields.at(1).size());
+        l.height = boost::lexical_cast<uint16_t>(fields.at(2).begin(), fields.at(2).size());
+        l.position = boost::lexical_cast<uint16_t>(fields.at(3).begin(), fields.at(3).size());
+        l.max_bid_micros = boost::lexical_cast<uint64_t>(fields.at(4).begin(), fields.at(4).size());
+        l.code = fields.at(5).data();
         return is;
     }
 };
@@ -76,7 +88,7 @@ class AdDataEntity {
         using Keys = vanilla::tagged_tuple<
             typename ipc::data::ad_entity<Alloc>::width_tag,    uint16_t, 
             typename ipc::data::ad_entity<Alloc>::height_tag,   uint16_t,
-            typename ipc::data::ad_entity<Alloc>::ad_id_tag,    std::string
+            typename ipc::data::ad_entity<Alloc>::ad_id_tag,    uint64_t
         >;
         using DataVect = std::vector<std::shared_ptr <Ad> >;
         using SizeTag = typename ipc::data::ad_entity<Alloc>::size_ad_id_tag;

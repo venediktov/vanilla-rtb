@@ -9,9 +9,13 @@
 #define BIDDER_SERIALIZATION_HPP
 
 #include <boost/serialization/set.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include "geo_campaign.hpp"
 #include "campaign_data.hpp"
+#include "ad.hpp"
+#include "geo_ad.hpp"
+#include "geo.hpp"
 
 //Non-Intrusive boost serialization implementation
 namespace boost { namespace serialization {

@@ -22,54 +22,12 @@ namespace boost {
 #include <boost/lexical_cast.hpp>
 #include "rtb/datacache/geo_entity.hpp"
 
-struct GeoCampaign {
-    uint32_t geo_id;
-    uint32_t campaign_id;
-    std::string record;
-   
-    GeoCampaign(uint32_t geo_id, uint32_t campaign_id) : 
-        geo_id{geo_id}, campaign_id{campaign_id}, record{}
-    {}
-    GeoCampaign():
-        geo_id{}, campaign_id{}, record{}
-    {}
-        
-    friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<GeoCampaign> &geo_campaign_ptr)  {
-        os <<  *geo_campaign_ptr;
-        return os;
-    }
-    friend std::ostream &operator<<(std::ostream & os, const  GeoCampaign & value)  {
-        os << value.geo_id << "|" 
-           << value.campaign_id
-        ;
-        return os;
-    }
-    friend std::istream &operator>>(std::istream &is, GeoCampaign &l) {
-        if ( !std::getline(is, l.record) ){
-            return is;
-        }
-        std::vector<boost::string_view> fields;
-        vanilla::common::split_string(fields, l.record, "\t");
-        if(fields.size() < 2) {
-            return is;
-        }
-        l.geo_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
-        l.campaign_id = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
-        
-        return is;
-    }
-};
-
 //This struct gets stored in the cache
 struct GeoCampaigns {
-    using collection_type = std::set<uint32_t>;
+    using collection_type = std::vector<uint32_t>;
     using iterator = collection_type::iterator;
     uint32_t geo_id;
     mutable collection_type campaign_ids;
-
-    GeoCampaigns(const GeoCampaign &gc): 
-        geo_id{gc.geo_id} , campaign_ids{gc.campaign_id}
-    {}
      
     GeoCampaigns():
         geo_id{} , campaign_ids{}
@@ -84,13 +42,33 @@ struct GeoCampaigns {
         ;
         return os;
     } 
+    friend std::istream &operator>>(std::istream &is, GeoCampaigns &data) {
+        std::string record;
+        if (!std::getline(is, record) ){
+            return is;
+        }
+        std::vector<boost::string_view> fields;
+        vanilla::common::split_string(fields, record, "\t");
+        if(fields.size() < 2) {
+            return is;
+        }
+        data.geo_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
+        uint32_t count = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
+        data.campaign_ids.clear();
+        data.campaign_ids.reserve(count);
+        
+        uint32_t end_idx = count + 2;
+        for(uint32_t fields_idx = 2; fields_idx < end_idx; fields_idx++) {
+            data.campaign_ids.push_back(boost::lexical_cast<uint32_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size()));
+        }        
+        return is;
+    }
     bool operator< (const GeoCampaigns &gcs) const {
         return geo_id < gcs.geo_id;
     }
-    void operator+=(const GeoCampaign & gc) const {
-        if ( geo_id == gc.geo_id) {
-           campaign_ids.insert(gc.campaign_id);
-        }
+    void clear() {
+        geo_id = 0;
+        campaign_ids.clear();
     }
 };
 
@@ -115,18 +93,9 @@ class GeoCampaignEntity {
             LOG(debug) << "File opened " << config.data().geo_campaign_source;
             cache.clear();
             
-            std::set<GeoCampaigns> unique_geos;
-            std::for_each(std::istream_iterator<GeoCampaign>(in), std::istream_iterator<GeoCampaign>(), [&](const GeoCampaign &geo_campaign) {
-                GeoCampaigns geo_campaigns{geo_campaign};
-                auto p = unique_geos.insert(geo_campaigns);
-                if ( !p.second ) {
-                    (*p.first) += geo_campaign;
-                }
-            });
-            
-            std::for_each(std::begin(unique_geos), std::end(unique_geos), [this](const GeoCampaigns &geo_campaigns){
-                if (!cache.insert(Keys{geo_campaigns.geo_id}, geo_campaigns) ) {
-                    LOG(debug) << "Failed to insert geo_campaign=" << geo_campaigns;    
+            std::for_each(std::istream_iterator<GeoCampaigns>(in), std::istream_iterator<GeoCampaigns>(), [this](const GeoCampaigns &data) {
+                if (!this->cache.insert(Keys{data.geo_id}, data) ) {
+                    LOG(debug) << "Failed to insert geo_campaign=" << data.geo_id;    
                 }
             });
         }

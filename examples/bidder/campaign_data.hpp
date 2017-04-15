@@ -25,7 +25,7 @@ namespace boost {
 
 //This struct gets stored in the cache
 struct CampaignData {
-    using collection_type = std::set<uint64_t> ;
+    using collection_type = std::vector<uint64_t> ;
     using iterator = collection_type::iterator;
     uint32_t campaign_id;
     mutable collection_type ad_ids;
@@ -62,16 +62,21 @@ struct CampaignData {
         data.campaign_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
         uint32_t ads_count = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
         data.ad_ids.clear();
+        data.ad_ids.reserve(ads_count);
         //data.ad_ids.reserve(ads_count);
         uint32_t ads_end_idx = ads_count + 2;
         for(uint32_t fields_idx = 2; fields_idx < ads_end_idx; fields_idx++) {
             //data.ad_ids.push_back(boost::lexical_cast<uint32_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size()));
-            data.ad_ids.insert(boost::lexical_cast<uint32_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size()));
+            data.ad_ids.push_back(boost::lexical_cast<uint64_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size()));
         }        
         return is;
     }
     bool operator< (const CampaignData &data) const {
         return campaign_id < data.campaign_id;
+    }
+    void clear() {
+        campaign_id = 0;
+        ad_ids.clear();
     }
 };
 
@@ -97,7 +102,6 @@ class CampaignDataEntity {
             cache.clear();
             
             std::for_each(std::istream_iterator<CampaignData>(in), std::istream_iterator<CampaignData>(), [this](const CampaignData &data) {
-                LOG(debug) << "insert campaign " << data.campaign_id << " ads count " << data.ad_ids.size();
                 if (!this->cache.insert(Keys{data.campaign_id}, data) ) {
                     LOG(debug) << "Failed to insert campaign_data=" << data.campaign_id;    
                 }

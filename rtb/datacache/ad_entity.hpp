@@ -21,9 +21,7 @@
 namespace ipc { namespace data {
     
     template <typename Alloc>
-    struct ad_entity : base_entity<Alloc>
-    {
-        using char_string = typename base_entity<Alloc>::char_string;
+    struct ad_entity : base_entity<Alloc> {
         using base_type   = base_entity<Alloc>; 
       
         //for tagging in multi_index_container
@@ -38,22 +36,21 @@ namespace ipc { namespace data {
             base_entity<Alloc>(a),
             width{},
             height{},
-            ad_id(a)
+            ad_id{}
         {} //ctor END
        
         uint16_t width;
         uint16_t height;
-        char_string ad_id;
+        uint64_t ad_id;
         
         template<typename Key, typename Serializable>
         void store(Key && key, Serializable  && data)  {
             base_type::store(std::forward<Serializable>(data)) ;
             //Store keys
-            const std::string &key_ad_id = key.template get<ad_id_tag>() ;
-            
             width = key.template get<width_tag>();
             height = key.template get<height_tag>();  
-            ad_id = char_string(key_ad_id.data(), key_ad_id.size(), base_type::allocator);
+            ad_id = key.template get<ad_id_tag>();  
+            
         }
         
         template<typename Serializable>
@@ -93,7 +90,7 @@ boost::multi_index_container<
                 ad_entity<Alloc>,
                 BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint16_t,width),
                 BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint16_t,height),
-                BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,typename ad_entity<Alloc>::char_string,ad_id)
+                BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint64_t,ad_id)
             >
         >
     >,

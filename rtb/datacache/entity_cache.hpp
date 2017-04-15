@@ -74,17 +74,18 @@ public:
     using Container_t = Container<char_allocator> ;
     using Data_t = typename Container_t::value_type;
        
-entity_cache(const std::string &name) : _segment_ptr(), _container_ptr(), _store_name(), _cache_name(name),
-_named_mutex(bip::open_or_create, (_cache_name + "_mutex").c_str()) {
-//TODO: add to ctor to switch between mmap and shm
-//TODO: maybe needs bip::scoped_lock to lock for other processes calling  grow_memory    
-std::string data_base_dir = "/tmp/CACHE" ;
-_store_name =  Memory::convert_base_dir(data_base_dir) + _cache_name;
-_segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), MEMORY_SIZE) ) ;
-_container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_name.c_str() )
-    (typename Container_t::ctor_args_list() , typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
- 
-}
+    entity_cache(const std::string &name) : 
+        _segment_ptr(), _container_ptr(), _store_name(), _cache_name(name), _named_mutex(bip::open_or_create, (_cache_name + "_mutex").c_str()) {
+        //TODO: add to ctor to switch between mmap and shm
+        //TODO: maybe needs bip::scoped_lock to lock for other processes calling  grow_memory    
+        std::string data_base_dir = "/tmp/CACHE" ;
+        _store_name =  Memory::convert_base_dir(data_base_dir) + _cache_name;
+        _segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), MEMORY_SIZE) ) ;
+        _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_name.c_str() )
+        (typename Container_t::ctor_args_list() , typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
+        fprintf(stderr, "construct\n");
+    }
+    
     void clear() {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
         _container_ptr->clear() ;
