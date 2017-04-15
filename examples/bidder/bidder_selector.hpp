@@ -30,7 +30,6 @@ class BidderSelector {
         BidderSelector(BidderCaches<Config> &bidder_caches):
             bidder_caches{bidder_caches}
         {
-            LOG(debug) << "Create selector";
         }
         
         std::shared_ptr<Ad> select(const openrtb::BidRequest &req, const openrtb::Impression &imp) {
@@ -63,20 +62,25 @@ class BidderSelector {
             }
             LOG(debug) << "size (" << imp.banner.get().w << "x"  << imp.banner.get().h << ") ads count " << retrieved_cached_ads.size();
             
-            intersection.clear();
-            std::set_intersection(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
-                      campaign_ads.begin(), campaign_ads.end(),
-                      std::back_inserter(intersection),
-                      intersc_cmp()
-                      //[](auto lhs, auto rhs) { return lhs->ad_id < rhs->ad_id; }
-            );
-            // Sort by cicros
-            // TODO make ability to make custom algorithm
-            std::sort(intersection.begin(), intersection.end(),
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "intersection and sort");
+                intersection.clear();
+                std::set_intersection(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
+                    campaign_ads.begin(), campaign_ads.end(),
+                    std::back_inserter(intersection),
+                    intersc_cmp()
+                    //[](auto lhs, auto rhs) { return lhs->ad_id < rhs->ad_id; }
+                    );
+                // Sort by cicros
+                // TODO make ability to make custom algorithm
+                std::sort(intersection.begin(), intersection.end(),
                     [](const std::shared_ptr<Ad> &first, const std::shared_ptr<Ad> &second) -> bool {
                         return first->max_bid_micros > second->max_bid_micros;
-            });
-            LOG(debug) << "intersecion size " << intersection.size();
+                    });
+                LOG(debug) << "intersecion size " << intersection.size();
+            }
+            LOG(debug) << sp->str();
             if(intersection.size()) {
                 result = intersection[0];
             }
@@ -117,20 +121,26 @@ class BidderSelector {
             return true;
         }
         bool getCampaignAds(const GeoCampaigns::collection_type &campaigns) {
-            campaign_ads.clear();
-            campaign_data.clear();
-            LOG(debug) << "select ads from  " << campaigns.size() << " campaigns";
-            for(auto &campaign : campaigns) {
-                LOG(debug) << "search campaign " << campaign;
+            auto sp = std::make_shared<std::stringstream>();
+            {
+                perf_timer<std::stringstream> timer(sp, "get selected campaign ads");
+                campaign_ads.clear();
                 campaign_data.clear();
-                if(!bidder_caches.campaign_data_entity.retrieve(campaign_data, campaign)) {
-                    continue;
+                LOG(debug) << "select ads from  " << campaigns.size() << " campaigns";
+                for (auto &campaign : campaigns) {
+                    LOG(debug) << "search campaign " << campaign;
+                    campaign_data.clear();
+                    if (!bidder_caches.campaign_data_entity.retrieve(campaign_data, campaign)) {
+                        continue;
+                    }
+                    LOG(debug) << "ads in campaign " << campaign_data.ad_ids.size();
+             
+                    std::for_each(campaign_data.ad_ids.begin(), campaign_data.ad_ids.end(), [&](auto &v) {
+                        campaign_ads.insert(v);
+                    });
                 }
-                LOG(debug) << "ads in campaign " << campaign_data.ad_ids.size();
-                std::for_each(campaign_data.ad_ids.begin(), campaign_data.ad_ids.end(), [&](auto &v) {
-                    campaign_ads.insert(v);
-                });
             }
+            LOG(debug) << sp->str();
             return campaign_ads.size() > 0;
         }
     private:   

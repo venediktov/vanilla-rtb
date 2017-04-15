@@ -83,7 +83,6 @@ public:
         _segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), MEMORY_SIZE) ) ;
         _container_ptr = _segment_ptr->template find_or_construct<Container_t>( _cache_name.c_str() )
         (typename Container_t::ctor_args_list() , typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
-        fprintf(stderr, "construct\n");
     }
     
     void clear() {
