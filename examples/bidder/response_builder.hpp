@@ -11,7 +11,7 @@
 #include <memory>
 #include <iostream>
 #include "rtb/common/perf_timer.hpp"
-#include "selector.hpp"
+#include "bidder_selector.hpp"
 #include "examples/multiexchange/user_info.hpp"
 
 namespace vanilla {
@@ -24,20 +24,20 @@ namespace vanilla {
         using Bid         = openrtb::Bid<T>;
 
     public:
-        ResponseBuilder(const BidderConfig &config) :
-            selector{config}, uuid_generator{}
+        ResponseBuilder(BidderCaches<> &caches) :
+            selector{caches}, uuid_generator{}
         {
         }
 
-        BidResponse build(const vanilla::VanillaRequest &vanilla_request) {
-            BidResponse response;
+        const BidResponse& build(const vanilla::VanillaRequest &vanilla_request) {
+            response.clear();
             const BidRequest request = vanilla_request.bid_request;
             auto sp = std::make_shared<std::stringstream>();
             {
                 perf_timer<std::stringstream> timer(sp, "fill response");
                 for (auto &imp : request.imp) {
 
-                    buildImpResponse(request, response, imp);
+                    buildImpResponse(request, imp);
                 }
             }
             LOG(debug) << sp->str();
@@ -45,7 +45,7 @@ namespace vanilla {
         }
     private:
 
-        inline void addCurrency(const BidRequest& request, BidResponse& response, const Impression& imp) {
+        inline void addCurrency(const BidRequest& request, const Impression& imp) {
             if (request.cur.size()) {
                 response.cur = request.cur[0];
             } else if (imp.bidfloorcur.length()) {
@@ -53,7 +53,7 @@ namespace vanilla {
             }
         }
 
-        inline void addBid(const BidRequest& request, BidResponse& response, const Impression& imp, const std::shared_ptr<Ad> &ad) {
+        inline void addBid(const BidRequest& request, const Impression& imp, const std::shared_ptr<Ad> &ad) {
             if (response.seatbid.size() == 0) {
                 response.seatbid.emplace_back(SeatBid());
             }
@@ -70,17 +70,18 @@ namespace vanilla {
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
-        inline void buildImpResponse(const BidRequest& request, BidResponse& response, const Impression& imp) {
-            if (auto ad = selector.getAd(request, imp)) {
+        inline void buildImpResponse(const BidRequest& request, const Impression& imp) {
+            if (auto ad = selector.select(request, imp)) {
                 boost::uuids::uuid bidid = uuid_generator();
                 response.bidid = boost::uuids::to_string(bidid);
 
-                addCurrency(request, response, imp);
-                addBid(request, response, imp, ad);
+                addCurrency(request, imp);
+                addBid(request, imp, ad);
             }
         }
-        vanilla::Selector<Config> selector;
+        vanilla::BidderSelector<Config> selector;
         boost::uuids::random_generator uuid_generator;
+        BidResponse response;
     };
 }
 #endif /* RESPONSE_BULDER_HPP */

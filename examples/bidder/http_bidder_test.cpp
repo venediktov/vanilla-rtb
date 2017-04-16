@@ -25,7 +25,6 @@
 #include <random>
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
-//#include "selector.hpp"
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
 

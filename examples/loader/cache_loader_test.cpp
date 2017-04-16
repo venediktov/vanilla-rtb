@@ -10,7 +10,7 @@
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
 #include "rtb/common/perf_timer.hpp"
-#include "bidder/selector.hpp"
+#include "bidder/bidder_caches.hpp"
 #include "bidder/serialization.hpp"
 #include "config.hpp"
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     }
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
-    vanilla::Selector<CacheLoadConfig> selector(config);
+    vanilla::BidderCaches<CacheLoadConfig> bidder_caches(config);
     GeoAdDataEntity<CacheLoadConfig>  geo_ad_cache(config);
     GeoDataEntity<CacheLoadConfig>    geo_cache(config);
     AdDataEntity<CacheLoadConfig>     ad_cache(config);
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
         {"geo_ad" , [&geo_ad_cache](){geo_ad_cache.load();}},
         {"geo"    , [&geo_cache]   (){geo_cache.load();}   },
         {"ad"     , [&ad_cache]    (){ad_cache.load();}    },
-        {""       , [&selector]    (){selector.load();}    }
+        {""       , [&bidder_caches]    (){bidder_caches.load();}    }
     };
     
     //initialize and setup CRUD dispatcher
