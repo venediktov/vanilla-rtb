@@ -34,7 +34,7 @@ static int encode(const char *js, jsmntok_t *t, size_t count, jsonv::value &valu
             value = static_cast<int64_t>(boost::lexical_cast<uint64_t>(s.data(), s.size()));
         return 1;
     } else if (t->type == JSMN_STRING) {
-        value = std::string(js + t->start, t->end - t->start);
+        value = jsonv::string_view(js + t->start, t->end - t->start);
         return 1;
     } else if (t->type == JSMN_OBJECT) {
         value = jsonv::object();

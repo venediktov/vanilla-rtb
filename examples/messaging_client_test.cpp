@@ -21,15 +21,19 @@ using namespace vanilla::messaging;
 using namespace std::literals;
 
 namespace openrtb {
-    class BidResponse;
-    std::ostream& operator<< (std::ostream &os, const BidResponse &bid) {
-        os << to_string(DSL::GenericDSL<>().create_response(bid));
+    template<typename T> class BidResponse;
+
+    template<typename T>
+    std::ostream& operator<< (std::ostream &os, const BidResponse<T> &bid) {
+        os << to_string(DSL::GenericDSL<T>().create_response(bid));
         return os;
     }
 }
 
 int main(int argc, char**argv) {
 
+  using BidRequest = openrtb::BidRequest<std::string>;
+  using BidResponse = openrtb::BidResponse<std::string>;
   init_framework_logging("/tmp/openrtb_messaging_test_log");
 
   std::string remote_address{};
@@ -59,14 +63,14 @@ int main(int argc, char**argv) {
 
 
 //This code below can be placed in  exchange_handler_test.cpp inside auction handler
-std::vector<openrtb::BidResponse> responses;
+std::vector<BidResponse> responses;
 auto sp = std::make_shared<std::stringstream>();
 {
     perf_timer<std::stringstream> timer(sp);
     communicator<broadcast>()
     .outbound(port)
-    .distribute(openrtb::BidRequest())
-    .collect<openrtb::BidResponse>(10ms, [&responses,n_bid](openrtb::BidResponse bid, auto done) {
+    .distribute(BidRequest())
+    .collect<BidResponse>(10ms, [&responses,n_bid](BidResponse bid, auto done) {
         responses.push_back(bid);
         if (responses.size() == n_bid) {
             done();
@@ -74,7 +78,7 @@ auto sp = std::make_shared<std::stringstream>();
     });
 }
 LOG(debug) << sp->str();
-std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<openrtb::BidResponse>(std::cout, "\n"));
+std::copy ( std::begin(responses), std::end(responses), std::ostream_iterator<BidResponse>(std::cout, "\n"));
 
 }
 

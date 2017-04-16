@@ -48,6 +48,10 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+    using BidRequest = openrtb::BidRequest<std::string>;
+    using BidResponse = openrtb::BidResponse<std::string>;
+    using SeatBid = openrtb::SeatBid<std::string>;
+    using Bid = openrtb::Bid<std::string>;
     
     BidderConfig config([](bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -94,8 +98,8 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
-        .auction_async([&](const openrtb::BidRequest &request) {
-            openrtb::BidResponse response;
+        .auction_async([&](const BidRequest &request) {
+            BidResponse response;
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.getAd(request, imp)) {
                     auto sp = std::make_shared<std::stringstream>();
@@ -112,10 +116,10 @@ int main(int argc, char *argv[]) {
                         }
 
                         if (response.seatbid.size() == 0) {
-                            response.seatbid.emplace_back(openrtb::SeatBid());
+                            response.seatbid.emplace_back(SeatBid());
                         }
 
-                        openrtb::Bid bid;
+                        Bid bid;
                         bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
                         // Is it the same as response.bidid?
                         bid.impid = imp.id;

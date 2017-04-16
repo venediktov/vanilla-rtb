@@ -1,19 +1,54 @@
+/* 
+ * File:   generic_dsl.hpp
+ * Author: Vladimir Venediktov vvenedict@gmail.com
+ * Copyright (c) 2016-2018 Venediktes Gruppe, LLC
+ *
+ * Created on October 7, 2016, 9:08 PM
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+*/
+
 #include "core/openrtb.hpp"
 #include "encoders.hpp"
 #include <vector>
 #include <boost/optional.hpp>
 
 namespace DSL {
-    using namespace openrtb;
     using namespace jsonv;
 
-    template<unsigned int Size=128>
+    template<typename T=std::string , unsigned int Size=128>
     class GenericDSL {
     public:
-        using deserialized_type = openrtb::BidRequest;
-        using serialized_type = openrtb::BidResponse;
+        using deserialized_type = openrtb::BidRequest<T>;
+        using serialized_type = openrtb::BidResponse<T>;
         using parse_error_type = jsonv::parse_error;
-
+    private:    
+        //BidRequest
+        using Banner = openrtb::Banner<T>;
+        using AdPosition = openrtb::AdPosition;
+        using Impression = openrtb::Impression<T>;
+        using User = openrtb::User<T>;
+        using Geo = openrtb::Geo<T>;
+        using Site = openrtb::Site<T>;
+        using Publisher = openrtb::Publisher<T>;
+        using BidRequest = openrtb::BidRequest<T>;
+        //BidResponse
+        using Bid = openrtb::Bid<T>;
+        using SeatBid = openrtb::SeatBid<T>;
+        using NoBidReason = openrtb::NoBidReason;
+        using CreativeAttribute= openrtb::CreativeAttribute;
+        using BidResponse = openrtb::BidResponse<T>;
+            
+        
+    public:    
         GenericDSL() {
             
             formats base_in = formats_builder()
@@ -21,7 +56,7 @@ namespace DSL {
                 .member("h", &Banner::h)
                 .member("w", &Banner::w)
                 .member("pos", &Banner::pos)
-                .enum_type<AdPosition>("pos",
+                .template enum_type<AdPosition>("pos",
                 {
                     { AdPosition::UNKNOWN,  0 },
                     { AdPosition::ABOVE, 1 },
@@ -32,22 +67,22 @@ namespace DSL {
                     { AdPosition::SIDEBAR, 6 },
                     { AdPosition::FULLSCREEN,7 }
                 })
-                .type<Impression>()
+                .template type<Impression>()
                 .member("id", &Impression::id)
                 .member("banner", &Impression::banner)
                 .member("bidfloor", &Impression::bidfloor)
                 .member("bidfloorcur", &Impression::bidfloorcur)
-                .type<User>()
+                .template type<User>()
                     .member("id", &User::id)
                     .member("buyeruid", &User::buyeruid)
                     .member("geo", &User::geo)
-                .type<Geo>()
+                .template type<Geo>()
                     .member("city", &Geo::city)
                     .member("country", &Geo::country)
-                .type<Site>()
+                .template type<Site>()
                 .member("id", &Site::id)
-                .type<Publisher>()
-                .type<BidRequest>()
+                .template type<Publisher>()
+                .template type<BidRequest>()
                 .member("id", &BidRequest::id)
                 .member("imp", &BidRequest::imp)
                 .member("user", &BidRequest::user)
@@ -59,7 +94,7 @@ namespace DSL {
                 .template register_optional<boost::optional<Publisher>>()
                 .template register_optional<boost::optional<User>>()
                 .template register_optional<boost::optional<Geo>>()
-                .template register_container<std::vector<std::string>>()
+                .template register_container<std::vector<T>>()
                 .template register_container<std::vector<int>>()
                 .check_references(formats::defaults())
                 ;
@@ -79,7 +114,7 @@ namespace DSL {
                 .member("cid", &Bid::cid)
                 .member("crid", &Bid::crid)
                 .member("attr", &Bid::attr)
-                .enum_type<CreativeAttribute>("attr",
+                .template enum_type<CreativeAttribute>("attr",
                 {
                     { CreativeAttribute::UNDEFINED,  -1},
                     { CreativeAttribute::AUDIO_AD_AUTO_PLAY, 1},
@@ -99,12 +134,12 @@ namespace DSL {
                     { CreativeAttribute::HAS_AUDIO_ON_OFF_BUTTON, 15},
                     { CreativeAttribute::AD_CAN_BE_SKIPPED, 16}
                 })
-                .type<SeatBid>()
+                .template type<SeatBid>()
                 .member("bid", &SeatBid::bid)
                 .member("seat", &SeatBid::seat)
                 .member("group", &SeatBid::group)
                 .member("ext", &SeatBid::ext)
-                .type<BidResponse>()
+                .template type<BidResponse>()
                 .member("id", &BidResponse::id)
                 .member("seatbid", &BidResponse::seatbid)
                 .member("bidid", &BidResponse::bidid)
@@ -112,7 +147,7 @@ namespace DSL {
                 .member("customdata", &BidResponse::customdata)
                 .member("nbr", &BidResponse::nbr)
                 .member("ext", &BidResponse::ext)
-                .enum_type<NoBidReason>("nbr",
+                .template enum_type<NoBidReason>("nbr",
                 {
                     { NoBidReason::UNKNOWN_ERROR,  0 },
                     { NoBidReason::TECHNICAL_ERROR, 1 },
@@ -124,10 +159,10 @@ namespace DSL {
                     { NoBidReason::BLOCKED_PUBLISHER_OR_SITE,7 },
                     { NoBidReason::UNMATCHED_USER,8 }
                 })
-                .register_container<std::vector<SeatBid>>()
-                .register_container<std::vector<Bid>>()
-                .register_container<std::vector<CreativeAttribute>>()
-                .register_container<std::vector<std::string>>()
+                .template register_container<std::vector<SeatBid>>()
+                .template register_container<std::vector<Bid>>()
+                .template register_container<std::vector<CreativeAttribute>>()
+                .template register_container<std::vector<T>>()
                 .check_references(formats::defaults())
                 ;
 
@@ -137,14 +172,13 @@ namespace DSL {
 
         template<typename string_view_type>
         deserialized_type extract_request(const string_view_type & bid_request) {
-            //auto encoded = parse(bid_request);
             jsmn_parser parser;
             jsmntok_t t[Size];
-            jsonv::value encoded;
+            thread_local jsonv::value encoded;
             jsmn_init(&parser);
             auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));
             if (r < 0) {
-                throw std::runtime_error("DSL parse exception");
+                throw std::runtime_error("DSL::jsmn_parse exception");
             }
             encoders::encode(bid_request.c_str(), &t[0], parser.toknext, encoded);
             return extract<deserialized_type>(encoded, request_fmt_);
@@ -158,7 +192,5 @@ namespace DSL {
         formats request_fmt_;
         formats response_fmt_;
     };
-}
-/*
 
- */
+} //namespace
