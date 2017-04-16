@@ -24,18 +24,6 @@ find_package(Boost
              REQUIRED
             )
 
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
-
-
-## Configuring vanilla-rtb
-include_directories("${PROJECT_SOURCE_DIR}"
-                    "${PROJECT_SOURCE_DIR}/core"
-                    "${PROJECT_SOURCE_DIR}/datacache"
-                    "${PROJECT_SOURCE_DIR}/DSL"
-                    "${PROJECT_SOURCE_DIR}/exchange"
-                   )
 
 file(GLOB_RECURSE vanilla_rtb_cpps RELATIVE_PATH "." "*.cpp")
 file(GLOB_RECURSE vanilla_rtb_hpps RELATIVE_PATH "." "*.hpp")
@@ -52,6 +40,19 @@ endif()
 #add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps} ${vanilla_rtb_hpps} )
 add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps})
 
+## Configuring vanilla-rtb
+
+target_link_libraries(vanilla_rtb jsonv ${Boost_LIBRARIES})
+
+# so one can do include "DSL/generic_dsl.hpp", TODO: VL: change RTB to not use broken relative includes and remove this line
+target_include_directories(vanilla_rtb PUBLIC "${PROJECT_SOURCE_DIR}")
+
+# so one can do include <rtb/DSL/generic_dsl.hpp>, TODO: VL: improve so no ".." is required
+target_include_directories(vanilla_rtb INTERFACE "${PROJECT_SOURCE_DIR}/..")
+
+# so jsonv referred to from rtb headers can be found when rtb headers are used dependent projects, TODO: VL: find out why jsonv transitive dependency does not work and fix so it does
+target_include_directories(vanilla_rtb INTERFACE "${PROJECT_SOURCE_DIR}/../jsonv/include")
+
 set_target_properties(vanilla_rtb
                       PROPERTIES
                       SOVERSION ${VANILLA_RTB_VERSION}
@@ -62,11 +63,9 @@ set_target_properties(vanilla_rtb
 
 add_definitions(-DBOOST_LOG_DYN_LINK)
 
-if (Boost_LIBRARIES)
-    target_link_libraries(vanilla_rtb PUBLIC ${Boost_LIBRARIES})
-endif()
-
 install(TARGETS vanilla_rtb
-  LIBRARY DESTINATION lib
-)
+        LIBRARY DESTINATION lib)
+
+install(FILES ${vanilla_rtb_hpps}
+        DESTINATION include/rtb)
 
