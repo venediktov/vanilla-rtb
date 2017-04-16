@@ -11,6 +11,7 @@
 #include "rtb/config/config.hpp"
 #include "rtb/messaging/serialization.hpp"
 #include "rtb/messaging/communicator.hpp"
+#include "jsonv/all.hpp"
 
 #define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
 
@@ -34,6 +35,9 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+    using DSLT = DSL::GenericDSL<jsonv::string_view> ;
+    using BidRequest = DSLT::deserialized_type;
+    using BidResponse = DSLT::serialized_type;
    
     int n_bid{};
     unsigned short port{};
@@ -60,26 +64,21 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
     boost::uuids::random_generator uuid_generator{};
     
-    exchange_handler<DSL::GenericDSL> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
+    exchange_handler<DSLT> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
     .logger([](const std::string &data) {
-        LOG(debug) << "request_data_v1=" << data ;
+//        LOG(debug) << "request_data_v1=" << data ;
     })
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v1 error " << data ;
     })
     .auction_async([](const auto &request) {
         //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
-        return  openrtb::BidResponse();
-    })
-    .auction([](const openrtb::BidRequest &request) {
-        //TODO: send to the auction synchronously with timeout or bid directly in this handler
-        openrtb::BidResponse response;
-        return response;
+        return  BidResponse();
     });
 
     //you can put as many exchange handlers as unique URI
-    exchange_handler<DSL::GenericDSL> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
+    exchange_handler<DSLT> openrtb_handler_v2(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_v2
     .logger([](const std::string &data) {
         LOG(debug) << "request_data_v2=" << data ;
@@ -87,16 +86,17 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v2 error " << data ;
     })
-    .auction([&uuid_generator](const openrtb::BidRequest &request) {
+    .auction_async([&uuid_generator](const BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
-        openrtb::BidResponse response;
-        boost::uuids::uuid id = uuid_generator() ; 
-        response.bidid = boost::uuids::to_string(id);
+        BidResponse response;
+        boost::uuids::uuid id = uuid_generator() ;
+        thread_local std::string id_str = boost::uuids::to_string(id);
+        response.bidid = id_str;
         return response;
     });
 
     // or you can broadcast to your farm of multiple bidders on multiple remote machines
-    exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
+    exchange_handler<DSLT> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_distributor
     .logger([](const std::string &data) {
         //LOG(debug) << "request_data for distribution=" << data ;
@@ -104,18 +104,18 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request for distribution error " << data ;
     })
-    .auction([n_bid,port](const openrtb::BidRequest &request) {
-        std::vector<openrtb::BidResponse> responses;
+    .auction_async([n_bid,port](const BidRequest &request) {
+        std::vector<BidResponse> responses;
         communicator<broadcast>()
         .outbound(port)
         .distribute(request)
-        .collect<openrtb::BidResponse>(10ms, [&responses,n_bid](openrtb::BidResponse bid, auto done) { //move ctored by collect()
+        .collect<BidResponse>(10ms, [&responses,n_bid](BidResponse bid, auto done) { //move ctored by collect()
             responses.push_back(bid);
             if ( responses.size() == n_bid) {
                 done();
             }
         });
-        return responses.empty() ? openrtb::BidResponse() : responses[0];
+        return responses.empty() ? BidResponse() : responses[0];
     });
 
     connection_endpoint ep {std::make_tuple(config.get("exchange.host"), config.get("exchange.port"), config.get("exchange.root"))};

@@ -6,6 +6,8 @@ add_subdirectory(service)
 
 set(CMAKE_CXX_STANDARD 14)
 
+set ( CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
+
 find_package(Boost
              COMPONENTS "log" "system" "serialization" "program_options"
              REQUIRED

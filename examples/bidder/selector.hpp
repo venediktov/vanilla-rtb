@@ -40,8 +40,9 @@ class Selector {
             }
             LOG(info) << sp->str() ;
         }
-        
-        std::shared_ptr<Ad> getAd(const openrtb::BidRequest &req, const openrtb::Impression &imp) {
+       
+        template<typename T> 
+        std::shared_ptr<Ad> getAd(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
             std::shared_ptr <Ad> result;
             
             std::shared_ptr<Geo> geo;
@@ -86,7 +87,8 @@ class Selector {
             return true;
         }
         
-        bool getGeo(const openrtb::BidRequest &req, std::shared_ptr<Geo> &geo) {
+        template<typename T> 
+        bool getGeo(const openrtb::BidRequest<T> &req, std::shared_ptr<Geo> &geo) {
             std::vector<std::shared_ptr <Geo> > retrieved_cached_geo;
             if (!req.user) {
                 LOG(debug) << "No user";

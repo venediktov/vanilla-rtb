@@ -15,17 +15,23 @@
 #include "examples/multiexchange/user_info.hpp"
 
 namespace vanilla {
-    template<typename Config = BidderConfig>
+    template<typename Config = BidderConfig, typename T = std::string>
     class ResponseBuilder {
+        using BidRequest  = openrtb::BidRequest<T>;
+        using BidResponse = openrtb::BidResponse<T>;
+        using Impression  = openrtb::Impression<T>;
+        using SeatBid     = openrtb::SeatBid<T>;
+        using Bid         = openrtb::Bid<T>;
+
     public:
         ResponseBuilder(const BidderConfig &config) :
             selector{config}, uuid_generator{}
         {
         }
 
-        openrtb::BidResponse build(const vanilla::VanillaRequest &vanilla_request) {
-            openrtb::BidResponse response;
-            const openrtb::BidRequest request = vanilla_request.bid_request;
+        BidResponse build(const vanilla::VanillaRequest &vanilla_request) {
+            BidResponse response;
+            const BidRequest request = vanilla_request.bid_request;
             auto sp = std::make_shared<std::stringstream>();
             {
                 perf_timer<std::stringstream> timer(sp, "fill response");
@@ -39,7 +45,7 @@ namespace vanilla {
         }
     private:
 
-        inline void addCurrency(const openrtb::BidRequest& request, openrtb::BidResponse& response, const openrtb::Impression& imp) {
+        inline void addCurrency(const BidRequest& request, BidResponse& response, const Impression& imp) {
             if (request.cur.size()) {
                 response.cur = request.cur[0];
             } else if (imp.bidfloorcur.length()) {
@@ -47,11 +53,11 @@ namespace vanilla {
             }
         }
 
-        inline void addBid(const openrtb::BidRequest& request, openrtb::BidResponse& response, const openrtb::Impression& imp, const std::shared_ptr<Ad> &ad) {
+        inline void addBid(const BidRequest& request, BidResponse& response, const Impression& imp, const std::shared_ptr<Ad> &ad) {
             if (response.seatbid.size() == 0) {
-                response.seatbid.emplace_back(openrtb::SeatBid());
+                response.seatbid.emplace_back(SeatBid());
             }
-            openrtb::Bid bid;
+            Bid bid;
             boost::uuids::uuid bidid = uuid_generator();
             bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
             // Is it the same as response.bidid?
@@ -64,7 +70,7 @@ namespace vanilla {
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
-        inline void buildImpResponse(const openrtb::BidRequest& request, openrtb::BidResponse& response, const openrtb::Impression& imp) {
+        inline void buildImpResponse(const BidRequest& request, BidResponse& response, const Impression& imp) {
             if (auto ad = selector.getAd(request, imp)) {
                 boost::uuids::uuid bidid = uuid_generator();
                 response.bidid = boost::uuids::to_string(bidid);

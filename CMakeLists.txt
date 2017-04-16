@@ -38,8 +38,9 @@ IF("${isSystemDir}" STREQUAL "-1")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
 #Install CRUD libraries
-file(GLOB CRUD_LIB ${CMAKE_CURRENT_BINARY_DIR}/CRUD/service/*.so)
-INSTALL(FILES ${CRUD_LIB} DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+#file(GLOB CRUD_LIB ${CMAKE_CURRENT_BINARY_DIR}/CRUD/service/*.so)
+INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CRUD/service/libcrud_service.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+
 
 #Install all json files from our examples
 file(GLOB_RECURSE JSON_FILES ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.json)
@@ -47,12 +48,17 @@ INSTALL(FILES ${JSON_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 #Install all shell scripts running our samples
 file(GLOB_RECURSE SHELL_SCRIPTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.sh)
-INSTALL(FILES ${SHELL_SCRIPTS} DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+INSTALL(FILES ${SHELL_SCRIPTS}  
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_READ GROUP_EXECUTE 
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/etc DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples/bidder/data DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
+
+
 add_subdirectory(jsonv)
 add_subdirectory(CRUD)
 add_subdirectory(rtb)
+add_subdirectory(parsers)
 add_subdirectory(examples)

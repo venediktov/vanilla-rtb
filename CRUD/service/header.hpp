@@ -20,6 +20,10 @@ struct header
 {
   std::string name;
   std::string value;
+  header() 
+  {}
+  header(const std::string &name, const std::string &value) : name{name}, value{value}
+  {}
 };
 
 } // namespace server

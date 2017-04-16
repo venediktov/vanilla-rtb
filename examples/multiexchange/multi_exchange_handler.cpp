@@ -39,6 +39,11 @@ int main(int argc, char* argv[]) {
     using namespace vanilla::exchange;
     using namespace vanilla::multiexchange;
     namespace po = boost::program_options;   
+ 
+    using string_view = std::string;
+    using BidRequest = openrtb::BidRequest<string_view>;
+    using BidResponse = openrtb::BidResponse<string_view>;
+
     vanilla::multiexchange::multiexchange_config config([&](multi_exchange_handler_config_data &d, po::options_description &desc){
         desc.add_options()
             ("multi_exchange.log", po::value<std::string>(&d.log_file_name), "exchange_handler_test log file name log")
@@ -68,7 +73,7 @@ int main(int argc, char* argv[]) {
     vanilla::multiexchange::multi_exchange_status status;
     
     // bid exchange handler
-    vanilla::exchange::exchange_handler<DSL::GenericDSL> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout));
+    vanilla::exchange::exchange_handler<DSL::GenericDSL<>> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout));
     openrtb_handler_distributor
     .logger([](const std::string &data) {
         //LOG(debug) << "request_data for distribution=" << data ;
@@ -77,7 +82,7 @@ int main(int argc, char* argv[]) {
         LOG(debug) << "request for distribution error " << data ;
     })
     
-    .auction_async([&config, &status](const openrtb::BidRequest &request) {
+    .auction_async([&config, &status](const BidRequest &request) {
         using namespace vanilla::messaging;
         ++status.request_count;
                 
@@ -91,10 +96,10 @@ int main(int argc, char* argv[]) {
             config.data().bidders_port, 
             std::chrono::milliseconds(config.data().bidders_response_timeout)
         );
-        vanilla::multibidder_collector collector(config.data().num_bidders);
+        vanilla::multibidder_collector<string_view> collector(config.data().num_bidders);
         collector
             .clear()
-            .on_response([&status](const vanilla::multibidder_collector* collector) {
+            .on_response([&status](const vanilla::multibidder_collector<string_view>* collector) {
                 auto &r = collector->get_reponses();
                 if (r.empty()) {
                     ++status.empty_response_count;
@@ -104,7 +109,7 @@ int main(int argc, char* argv[]) {
                     ++status.timeout_response_count;
                 }
             })
-            .on_add([&status](const vanilla::multibidder_collector* collector) {
+            .on_add([&status](const vanilla::multibidder_collector<string_view>* collector) {
                  ++status.bidder_response_count;
             });
         

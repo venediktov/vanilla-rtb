@@ -410,6 +410,11 @@ static formats create_default_formats()
                                                );
     fmt.register_adapter(&string_extractor);
 
+    static auto string_view_adapter = make_adapter([] (const value& from) { return from.as_string_view(); },
+                                                   [] (const string_view& from) { return value(from); }
+                                                  );
+    fmt.register_adapter(&string_view_adapter);
+
     static auto cchar_ptr_serializer = make_serializer<const char*>([] (const char* from) { return value(from); });
     fmt.register_serializer(&cchar_ptr_serializer);
     static auto char_ptr_serializer = make_serializer<char*>([] (char* from) { return value(from); });
