@@ -37,10 +37,11 @@ namespace vanilla {
             communicator.outbound(bidders_port);
         }
 
-        void process(const vanilla::VanillaRequest &vanilla_request, multibidder_collector &collector) {
+        template<typename T>
+        void process(const vanilla::VanillaRequest &vanilla_request, multibidder_collector<T> &collector) {
             communicator
                 .distribute(vanilla_request)
-                .template collect<openrtb::BidResponse>(response_timeout, [&collector](openrtb::BidResponse bid, auto done) { //move ctored by collect()    
+                .template collect<openrtb::BidResponse<T>>(response_timeout, [&collector](openrtb::BidResponse<T> bid, auto done) { //move ctored by collect()    
                     collector.add(std::move(bid));
                     if (collector.done()) {
                         done();

@@ -49,6 +49,10 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+    using BidRequest = openrtb::BidRequest<std::string>;
+    using BidResponse = openrtb::BidResponse<std::string>;
+    using SeatBid = openrtb::SeatBid<std::string>;
+    using Bid = openrtb::Bid<std::string>;
     
     BidderConfig config([](bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -92,7 +96,7 @@ int main(int argc, char *argv[]) {
         LOG(error) << e.what();
         return 0;
     }
-    exchange_handler<DSL::GenericDSL> bid_handler(std::chrono::milliseconds(config.data().timeout));
+    exchange_handler<DSL::GenericDSL<>> bid_handler(std::chrono::milliseconds(config.data().timeout));
     bid_handler    
         .logger([](const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
@@ -100,9 +104,12 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
-        .auction_async([&](const openrtb::BidRequest &request) {
+
+        .auction_async([&](const BidRequest &request) {
+
             thread_local vanilla::BidderSelector<> selector(caches);
-            openrtb::BidResponse response;
+            BidResponse response;
+
             for(auto &imp : request.imp) {    
                 if(auto ad = selector.select(request, imp)) {
                     auto sp = std::make_shared<std::stringstream>();
@@ -119,10 +126,10 @@ int main(int argc, char *argv[]) {
                         }
 
                         if (response.seatbid.size() == 0) {
-                            response.seatbid.emplace_back(openrtb::SeatBid());
+                            response.seatbid.emplace_back(SeatBid());
                         }
 
-                        openrtb::Bid bid;
+                        Bid bid;
                         bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
                         // Is it the same as response.bidid?
                         bid.impid = imp.id;
@@ -152,8 +159,9 @@ int main(int argc, char *argv[]) {
         });
     dispatcher.crud_match(boost::regex("/test/"))
         .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-            r << "test";
-            r.stock_reply(http::server::reply::ok);
+            //r << "test";
+            //r.stock_reply(http::server::reply::ok);
+            r << "test" << http::server::reply::flush("text");
         });
 
     LOG(debug) << "concurrency " << config.data().concurrency;

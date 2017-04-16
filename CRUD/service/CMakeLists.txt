@@ -38,3 +38,7 @@ if (Boost_LIBRARIES)
     target_link_libraries( crud_service ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+install(TARGETS crud_service
+  LIBRARY DESTINATION lib
+)
+

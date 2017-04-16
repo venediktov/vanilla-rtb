@@ -109,6 +109,14 @@ TEST_PARSE(object_empties_in_array)
     ensure_eq(expected, result);
 }
 
+TEST_PARSE(empty_object_char_ptr_range)
+{
+    const char buff[] = "{}";
+    value result = parse(buff + 0, buff + sizeof buff);
+    value expected = object();
+    ensure_eq(expected, result);
+}
+
 TEST_PARSE(null)
 {
     value result = parse("null");

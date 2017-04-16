@@ -73,10 +73,12 @@ int main(int argc, char**argv) {
 }
 
 void run_communicator(unsigned short port) {
+  using BidRequest  = openrtb::BidRequest<jsonv::string_view>;
+  using BidResponse = openrtb::BidResponse<jsonv::string_view>;
   LOG(info) << "Starting mock bidder pid=" << getpid();
-  communicator<broadcast>().inbound(port).process<openrtb::BidRequest>([](auto endpoint, openrtb::BidRequest data) {
-      LOG(info) << "Received(Broadcast:" << *endpoint  << "):" << data.id;
-      return openrtb::BidResponse();
+  communicator<broadcast>().inbound(port).process<BidRequest>([](auto endpoint, BidRequest data) {
+      //LOG(info) << "Received(Broadcast:" << *endpoint  << "):" << data ;
+      return BidResponse();
   }).dispatch();
 }
 

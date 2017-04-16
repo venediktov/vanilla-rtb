@@ -35,12 +35,23 @@ namespace vanilla { namespace messaging {
     
 template<typename Serializable>
 std::string serialize( Serializable && data ) {
-    std::stringstream ss;
+    std::stringstream ss(std::ios_base::out|std::ios_base::binary);
     boost::archive::binary_oarchive oarch(ss);
-    oarch << std::forward<Serializable>(data) ;
+    oarch << std::forward<Serializable>(data);
     return std::move(ss.str()) ;
 }
 
+template<>
+std::string 
+serialize<const std::string&>( const std::string & data ) {
+    return data;
+}
+
+template<>
+std::string 
+serialize<std::string>( std::string && data ) {
+    return data;
+}
 
 template<typename Deserialized>
 Deserialized
@@ -52,6 +63,11 @@ deserialize( const std::string & wire_data ) {
     return value;
 }
 
+template<>
+std::string 
+deserialize<std::string>( const std::string & wire_data ) {
+    return wire_data;
+}
 
 struct multicast {
     template<typename SocketType, typename IPAddress>
@@ -164,6 +180,14 @@ public:
      });
   }
 
+  void send_async( const char *data, const std::size_t size) {
+     out_data_ = std::move(std::string(data,size));
+     socket_.async_send_to(
+        boost::asio::buffer(out_data_), to_endpoint_,
+        [](const boost::system::error_code& error, std::size_t bytes_transferred) {
+     });
+  }
+  
   template<typename Handler>
   void receive_async(Handler handler) {
       socket_.async_receive_from(
@@ -238,6 +262,13 @@ public:
         return *this;
     }
 
+    self_type & distribute(const char *data, std::size_t size) {
+        if(distributor_) {
+            distributor_->send_async(data,size);
+        }
+        return *this;
+    }
+    
     template<typename T, typename Handler>
     self_type & process(Handler handler) {
        if( consumer_ ) {
@@ -249,7 +280,7 @@ public:
        }
        return *this;
     }
-    
+        
     template<typename T, typename Handler>
     self_type & consume(Handler handler) {
        if( consumer_ ) {

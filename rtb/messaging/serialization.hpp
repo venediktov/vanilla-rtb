@@ -4,14 +4,15 @@
 #include <boost/serialization/optional.hpp>
 #include "rtb/core/openrtb.hpp"
 #include "rtb/core/bid_request.hpp"
+#include "jsonv/all.hpp"
 
 //Non-Intrusive boost serialization implementation
 namespace boost {
     namespace serialization {
 
         /******* BidRequest *************************************************************/
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::BidRequest & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::BidRequest<T> & value, const unsigned int version) {
             ar & value.id;
             ar & value.imp;
             ar & value.site;
@@ -30,8 +31,8 @@ namespace boost {
             //ar & value.unparseable;
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Impression & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Impression<T> & value, const unsigned int version) {
             ar & value.id;
             ar & value.banner;
             ar & value.video;
@@ -48,13 +49,13 @@ namespace boost {
             //ar & value.ext;
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::MimeType & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::MimeType<T> & value, const unsigned int version) {
             ar & value.type;
         }
         
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Banner & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Banner<T> & value, const unsigned int version) {
             ar & value.w;
             ar & value.h;
             ar & value.wmax;
@@ -72,8 +73,8 @@ namespace boost {
             //ar & value.ext;           
         }
         
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Video & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Video<T> & value, const unsigned int version) {
             ar & value.mimes;
             ar & value.minduration;
             ar & value.maxduration;
@@ -103,16 +104,16 @@ namespace boost {
             //jsonv::value ext
         }
         
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Native & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Native<T> & value, const unsigned int version) {
         }
         
         template<class Archive>
         void serialize(Archive & ar, openrtb::PMP & value, const unsigned int version) {
         }
         
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Site & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Site<T> & value, const unsigned int version) {
         }
 
         template<class Archive>
@@ -123,8 +124,8 @@ namespace boost {
         void serialize(Archive & ar, openrtb::Device & value, const unsigned int version) {
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::User & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::User<T> & value, const unsigned int version) {
             ar & value.yob;
             ar & value.id;
             ar & value.buyeruid;
@@ -136,8 +137,8 @@ namespace boost {
             //ar & value.ext;
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Geo & value, const unsigned int version) { //ar & value;
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Geo<T> & value, const unsigned int version) { //ar & value;
             ar & value.lat;
             ar & value.lon;
             ar & value.type;
@@ -151,8 +152,8 @@ namespace boost {
             //ar & value.ext;
         }
         
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::UserData & value, const unsigned int version) { //ar & value;
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::UserData<T> & value, const unsigned int version) { //ar & value;
             ar & value.id;
             ar & value.name;
             //ar & value.segment;
@@ -168,8 +169,8 @@ namespace boost {
 
         /******* BidResponse *************************************************************/
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::BidResponse & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::BidResponse<T> & value, const unsigned int version) {
             ar & value.id;
             ar & value.seatbid;
             ar & value.bidid;
@@ -179,16 +180,16 @@ namespace boost {
             //ar & value.ext //TODO: for this we need template <class Archive> load() and save() 
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::SeatBid & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::SeatBid<T> & value, const unsigned int version) {
             ar & value.bid;
             ar & value.seat;
             ar & value.group;
             //ar & value.ext //TODO: for this we need template <class Archive> load() and save() 
         }
 
-        template<class Archive>
-        void serialize(Archive & ar, openrtb::Bid & value, const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive & ar, openrtb::Bid<T> & value, const unsigned int version) {
             ar & value.id;
             ar & value.impid;
             ar & value.adid;
@@ -210,5 +211,30 @@ namespace boost {
             ar & value.bid_request;
             ar & value.user_info;
         }
+        
+        template <class Archive>
+        void serialize(Archive & ar, jsonv::string_view& value, const unsigned int version)
+        {
+            boost::serialization::split_free(ar, value, version);
+        } 
+        template<class Archive>
+        void save(Archive & ar, const jsonv::string_view & value, const unsigned int version) {
+            ar & value.size();
+            std::for_each(value.begin(), value.end(), [&ar](char c) {
+                ar & c;
+            });
+        }
+        template<class Archive>
+        void load(Archive & ar, jsonv::string_view & value, const unsigned int version) {
+            std::size_t n;
+            ar & n;
+            thread_local std::string value_(n,'\0');
+            for ( int i=0; i < n; ++i) {
+                ar & value_[i];
+            }
+            value = value_;
+        }
     } // namespace serialization
 } // namespace boost
+
+

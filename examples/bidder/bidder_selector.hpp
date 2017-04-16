@@ -31,8 +31,8 @@ class BidderSelector {
             bidder_caches{bidder_caches}
         {
         }
-        
-        std::shared_ptr<Ad> select(const openrtb::BidRequest &req, const openrtb::Impression &imp) {
+        template<typename T> 
+        std::shared_ptr<Ad> select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
             std::shared_ptr <Ad> result;
             
             std::shared_ptr<Geo> geo;
@@ -95,8 +95,8 @@ class BidderSelector {
             }
             return true;
         }
-        
-        bool getGeo(const openrtb::BidRequest &req, std::shared_ptr<Geo> &geo) {
+        template <typename T>
+        bool getGeo(const openrtb::BidRequest<T> &req, std::shared_ptr<Geo> &geo) {
             retrieved_cached_geo.clear();
             if (!req.user) {
                 LOG(debug) << "No user";

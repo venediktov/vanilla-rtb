@@ -23,12 +23,14 @@
 #include "rtb/core/openrtb.hpp"
 
 namespace vanilla {
+template<typename T>
 class multibidder_collector {
     public:
         using response_handler_type = std::function<void(const multibidder_collector*)>;
         using add_handler_type = std::function<void(const multibidder_collector*)>;
         using self_type = multibidder_collector;
-        using responses_type = std::vector<openrtb::BidResponse>;
+        using BidResponse = openrtb::BidResponse<T>;
+        using responses_type = std::vector<BidResponse>;
                 
         multibidder_collector(int num_bidders) :
             num_bidders{num_bidders}
@@ -43,17 +45,17 @@ class multibidder_collector {
             return *this;
         }    
         
-        openrtb::BidResponse response() {
+        BidResponse response() {
             if(response_handler) {
                 response_handler(this);
             }
             
             if(responses.empty()) {
-                return openrtb::BidResponse(); 
+                return BidResponse(); 
             }
             // TODO 
             // Add ability to pass custom selection algorithm
-            std::sort(responses.begin(), responses.end(), [](const openrtb::BidResponse &first, const openrtb::BidResponse & second) -> bool {
+            std::sort(responses.begin(), responses.end(), [](const BidResponse &first, const BidResponse & second) -> bool {
                 if (!first.seatbid.size() || !first.seatbid[0].bid.size()) {
                     return false;
                 }
@@ -74,7 +76,7 @@ class multibidder_collector {
             return *this;
         }
         
-        void add(openrtb::BidResponse && bid) {
+        void add(BidResponse && bid) {
             if(add_handler) {
                 add_handler(this);
             }

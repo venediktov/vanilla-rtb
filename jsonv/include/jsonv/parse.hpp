@@ -287,17 +287,25 @@ private:
  *  std::ifstream file("file.json");
  *  jsonv::value out = parse(file);
  *  \endcode
+ *
+ *  \throws parse_error if an error is found in the JSON. If the \a input terminates unexpectedly, a \c parse_error will
+ *   still be thrown with a message like "Unexpected end: unmatched {...". If you suspect the input of going bad, you
+ *   can check the state flags or set the exception mask of the stream (exceptions thrown by \a input while processing
+ *   will be propagated out)
 **/
 value JSONV_PUBLIC parse(std::istream& input, const parse_options& = parse_options());
 
 /** Construct a JSON value from the given input.
- *  
- *  \throws parse_error if an error is found in the JSON. If the \a input terminates unexpectedly, a \c parse_error will
- *   still be thrown with a message like "Unexpected end: unmatched {...". If you suspect the input of going bad, you
- *   can check the state flags or set the exception mask of the stream (exceptions thrown by \a input while processing
- *   will be propagated out).
+ *
+ *  \throws parse_error if an error is found in the JSON.
 **/
 value JSONV_PUBLIC parse(const string_view& input, const parse_options& = parse_options());
+
+/** Construct a JSON value from the given input in `[begin, end)`.
+ *
+ *  \throws parse_error if an error is found in the JSON.
+**/
+value JSONV_PUBLIC parse(const char* begin, const char* end, const parse_options& = parse_options());
 
 /** Reads a JSON value from a buffered \c tokenizer. This less convenient function is useful when setting
  *  \c parse_options::complete_parse to \c false.

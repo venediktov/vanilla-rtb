@@ -11,9 +11,9 @@
 #include "openrtb.hpp"
 
 namespace vanilla {
-    template <typename UserInfo>
+    template <typename UserInfo, typename T=std::string>
     struct BidRequest {
-        openrtb::BidRequest bid_request;
+        openrtb::BidRequest<T> bid_request;
         UserInfo user_info;
     };
 }

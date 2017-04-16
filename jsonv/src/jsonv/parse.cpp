@@ -795,6 +795,11 @@ value parse(const string_view& input, const parse_options& options)
     return parse(stream, options);
 }
 
+value parse(const char* begin, const char* end, const parse_options& options)
+{
+    return parse(string_view(begin, std::distance(begin, end)), options);
+}
+
 value operator"" _json(const char* str, std::size_t len)
 {
     return parse(string_view(str, len));
