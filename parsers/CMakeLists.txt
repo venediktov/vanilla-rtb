@@ -42,3 +42,5 @@ install(TARGETS parsers
   LIBRARY DESTINATION lib
 )
 
+install(FILES ${parsers_hpps} ${parsers_hs}
+        DESTINATION include/parsers)
