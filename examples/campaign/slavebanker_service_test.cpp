@@ -14,7 +14,7 @@
 #include "campaign_cache.hpp"
 #include "serialization.hpp"
 
-#define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
+#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 

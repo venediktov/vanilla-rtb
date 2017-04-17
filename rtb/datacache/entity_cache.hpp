@@ -29,8 +29,8 @@
 #include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
+//#include <boost/log/core.hpp>
+//#include <boost/log/trivial.hpp>
 #include <memory>
  
 #include <boost/version.hpp>
@@ -52,7 +52,7 @@ std::string demangle(const char* name) {
 #error "Please upgrade version of Boost to 1.56 or higher" 
 #endif
 
-#define LOG(x) BOOST_LOG_TRIVIAL(x)
+#include "rtb/core/core.hpp"
 
 namespace {
     namespace bip = boost::interprocess ;

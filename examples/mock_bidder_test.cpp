@@ -14,7 +14,7 @@
 #include "rtb/messaging/serialization.hpp"
 #include "rtb/config/config.hpp"
 
-#define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
+#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 

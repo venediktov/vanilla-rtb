@@ -35,5 +35,10 @@ boost::log::add_file_log(
 
  boost::log::add_common_attributes();
 
+#ifdef NDEBUG
+    boost::log::core::get()->set_filter (
+        boost::log::trivial::severity >= boost::log::trivial::info
+    );
+#endif
 }
     
