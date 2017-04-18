@@ -30,7 +30,7 @@
 #include "rtb/exchange/multibidder_communicator.hpp"
 #include "rtb/client/empty_key_value_client.hpp"
 
-#define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
+#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 

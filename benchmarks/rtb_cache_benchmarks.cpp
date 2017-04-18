@@ -53,6 +53,7 @@ struct CacheBenchmarkFixture: benchmark::Fixture
         geo_cache_ = std::make_unique<GeoDataEntity<CacheLoadConfig>>(config_);
         //geo_ad_cache_ = std::make_unique<GeoAdDataEntity<CacheLoadConfig>>(config_);
         //geo_ad_cache_ = std::make_unique<GeoAdDataEntity<CacheLoadConfig>>(config_);
+        boost::log::core::get()->set_logging_enabled(false);
     }
 }; // CacheBenchmarkFixture
 

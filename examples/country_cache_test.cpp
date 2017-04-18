@@ -16,7 +16,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/log/trivial.hpp>
 
-#define LOG(x) BOOST_LOG_TRIVIAL(x) //TODO: move to core.hpp
+#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 
