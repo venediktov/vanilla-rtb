@@ -60,6 +60,55 @@ namespace {
  
 namespace datacache {
    
+template<typename Index , typename Arg>
+auto  find(const Index & idx , Arg && arg) -> decltype(idx.find(arg)) {
+    return idx.find(std::forward<Arg>(arg));
+}
+
+template<typename Index , typename ...Args>
+auto  find(const Index & idx , Args && ...args) -> decltype(idx.find(std::forward<Args>(args)...)) {
+    return idx.find(boost::make_tuple(std::forward<Args>(args)...));
+}
+
+template<typename Index , typename Arg>
+auto  equal_range(const Index & idx , Arg && arg) -> decltype(idx.equal_range(arg)) {
+    return idx.equal_range(std::forward<Arg>(arg));
+}
+
+template<typename Index , typename ...Args>
+auto  equal_range(const Index & idx , Args && ...args) -> decltype(idx.equal_range(std::forward<Args>(args)...)) {
+    return idx.equal_range(boost::make_tuple(std::forward<Args>(args)...));
+}
+
+
+template<typename Tag, typename Serializable>
+struct retriever {
+    template<typename Container, typename ...Args>
+    bool operator()(const Container & c, Serializable & entry, Args && ...args) {
+        auto &idx = c.template get<Tag>();
+        auto p = find(idx, std::forward<Args>(args)...);
+        bool is_found = p != idx.end();
+        if ( is_found ) {
+            p->retrieve(entry);
+        }
+        return is_found;
+    }
+};
+
+template<typename Tag, typename Serializable>
+struct retriever<Tag,std::vector<std::shared_ptr<Serializable>>> {
+    template<typename Container, typename ...Args>
+    bool operator()(const Container & c, std::vector<std::shared_ptr<Serializable>> &entries, Args && ...args) {
+        auto &idx = c.template get<Tag>();
+        auto p = equal_range(idx, std::forward<Args>(args)...);
+        std::transform ( p.first, p.second, std::back_inserter(entries), [] ( const auto &data ) {
+            std::shared_ptr<Serializable> impl_ptr { std::make_shared<Serializable>() } ;
+            data.retrieve(*impl_ptr) ;
+            return impl_ptr;
+        });
+        return !entries.empty();
+    }
+};
 
 template<typename Memory, template <class> class Container, size_t MEMORY_SIZE = 67108864 >
 class entity_cache
@@ -167,7 +216,14 @@ public:
         return !n;
     }
 *******************/
- 
+    
+    template<typename Tag, typename Serializable, typename ...Args>
+    bool retrieve(Serializable &entry, Args&& ...args) {
+        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
+        return retriever<Tag,Serializable>()(*_container_ptr,entry,std::forward<Args>(args)...);
+    }
+    
+/*************
     template<typename Tag, typename Serializable, typename Arg>
     bool retrieve(Serializable &entry, Arg && arg) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
@@ -178,7 +234,7 @@ public:
         }
         return is_found;
     }
-    /*
+    
     template<typename Tag, typename Serializable, typename ...Args>
     bool retrieve(Serializable &entry, Args&& ...args) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
@@ -188,7 +244,7 @@ public:
             p->retrieve(entry); 
         }
         return is_found;
-    }*/
+    }
     
     template<typename Tag, typename Serializable, typename Arg>
     bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries, Arg && arg) {
@@ -215,7 +271,7 @@ public:
         });
         return !entries.empty();
     }
- 
+ ************/
  
     template<typename Serializable>
     bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries) {

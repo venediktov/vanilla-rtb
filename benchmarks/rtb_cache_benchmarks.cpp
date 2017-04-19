@@ -92,7 +92,7 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_retrieve_benchmark)(benchmark::Sta
     while (state.KeepRunning())
     {
         Geo geo;
-        //benchmark::DoNotOptimize(geo_cache_->retrieve(geo, city, country));
+        benchmark::DoNotOptimize(geo_cache_->retrieve(geo, city, country));
     }
 }
 
