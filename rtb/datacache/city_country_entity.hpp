@@ -19,9 +19,9 @@
 #ifndef __IPC_DATA_ACCOUNT_ENTITY_HPP__
 #define __IPC_DATA_ACCOUNT_ENTITY_HPP__
 
-#include "base_entity.hpp" 
-#include <string>
-#include <sstream>
+#include "base_entity.hpp"
+#include "any_str_ops.hpp"
+
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/multi_index_container.hpp>
@@ -30,7 +30,11 @@
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-  
+
+#include <string>
+#include <sstream>
+
+
 namespace ipc { namespace data {
     
     template <typename Alloc>
@@ -84,9 +88,8 @@ namespace ipc { namespace data {
             entry.country=country;
         }
     };
-   
- 
- 
+
+
 template<typename Alloc>
 using city_country_container =
 boost::multi_index_container<
@@ -94,11 +97,13 @@ boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::ordered_non_unique<
             boost::multi_index::tag<typename city_country_entity<Alloc>::city_tag>,
-                BOOST_MULTI_INDEX_MEMBER(city_country_entity<Alloc>,typename city_country_entity<Alloc>::char_string,city)
+                BOOST_MULTI_INDEX_MEMBER(city_country_entity<Alloc>,typename city_country_entity<Alloc>::char_string,city),
+            ufw::any_str_less<Alloc>
         >,
         boost::multi_index::ordered_non_unique<
             boost::multi_index::tag<typename city_country_entity<Alloc>::country_tag>,
-                BOOST_MULTI_INDEX_MEMBER(city_country_entity<Alloc>,typename city_country_entity<Alloc>::char_string,country)
+                BOOST_MULTI_INDEX_MEMBER(city_country_entity<Alloc>,typename city_country_entity<Alloc>::char_string,country),
+            ufw::any_str_less<Alloc>
         >,
         boost::multi_index::ordered_unique<
             boost::multi_index::tag<typename city_country_entity<Alloc>::unique_city_country_tag>,
@@ -106,13 +111,15 @@ boost::multi_index_container<
                 city_country_entity<Alloc>,
                 BOOST_MULTI_INDEX_MEMBER(city_country_entity<Alloc>,typename city_country_entity<Alloc>::char_string,city),
                 BOOST_MULTI_INDEX_MEMBER(city_country_entity<Alloc>,typename city_country_entity<Alloc>::char_string,country)
+            >,
+            boost::multi_index::composite_key_compare<
+                ufw::any_str_less<Alloc>, ufw::any_str_less<Alloc>
             >
         >
     >,
     boost::interprocess::allocator<city_country_entity<Alloc>,typename Alloc::segment_manager>
 > ;
-  
-    
+
 }}
  
 #endif     /* __IPC_DATA_ACCOUNT_ENTITY_HPP__  */

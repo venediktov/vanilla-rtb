@@ -27,6 +27,9 @@ struct CacheBenchmarkFixture: benchmark::Fixture
     std::unique_ptr<GeoDataEntity<CacheLoadConfig>> geo_cache_;
     std::unique_ptr<AdDataEntity<CacheLoadConfig>> ad_cache_;
     std::unique_ptr<GeoAdDataEntity<CacheLoadConfig>> geo_ad_cache_;
+
+    GeoAds geoAds_;
+
     CacheBenchmarkFixture():
         config_([](cache_loader_config_data &d, boost::program_options::options_description &desc){
             desc.add_options()
@@ -34,7 +37,7 @@ struct CacheBenchmarkFixture: benchmark::Fixture
                 ("cache-loader.host", "cache_loader_test Host")
                 ("cache-loader.port", "cache_loader_test Port")
                 ("cache-loader.root", "cache_loader_test Root")
-                ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("bidder/data/ads_source"), "ads_source file name")
+                ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("bidder/data/ads_source_big"), "ads_source file name")
                 ("datacache.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
                 ("datacache.geo_ad_source", boost::program_options::value<std::string>(&d.geo_ad_source)->default_value("bidder/data/ad_geo"), "geo_ad_source file name")
                 ("datacache.geo_ad_ipc_name", boost::program_options::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")
@@ -51,11 +54,13 @@ struct CacheBenchmarkFixture: benchmark::Fixture
         char* argv[] {argv0};
         config_.parse(0, argv);
         geo_cache_ = std::make_unique<GeoDataEntity<CacheLoadConfig>>(config_);
-        //geo_ad_cache_ = std::make_unique<GeoAdDataEntity<CacheLoadConfig>>(config_);
-        //geo_ad_cache_ = std::make_unique<GeoAdDataEntity<CacheLoadConfig>>(config_);
+        ad_cache_ = std::make_unique<AdDataEntity<CacheLoadConfig>>(config_);
+        geo_ad_cache_ = std::make_unique<GeoAdDataEntity<CacheLoadConfig>>(config_);
+        geo_ad_cache_->retrieve(geoAds_, 564);
         boost::log::core::get()->set_logging_enabled(false);
     }
 }; // CacheBenchmarkFixture
+
 
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_load_benchmark)(benchmark::State& state)
 {
@@ -85,6 +90,19 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_load_benchmark)(benchmark::State& 
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_load_benchmark);
 
 
+BENCHMARK_DEFINE_F(CacheBenchmarkFixture, ad_load_benchmark)(benchmark::State& state)
+{
+    while (state.KeepRunning())
+    {
+        std::make_unique<AdDataEntity<CacheLoadConfig>>(config_)->load();
+    }
+
+    //state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * input.size());
+}
+
+BENCHMARK_REGISTER_F(CacheBenchmarkFixture, ad_load_benchmark);
+
+
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_retrieve_benchmark)(benchmark::State& state)
 {
     std::string const city {"Novosibirsk"};
@@ -99,19 +117,35 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_retrieve_benchmark)(benchmark::Sta
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_retrieve_benchmark);
 
 
-BENCHMARK_DEFINE_F(CacheBenchmarkFixture, ad_load_benchmark)(benchmark::State& state)
+BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_retrieve_benchmark)(benchmark::State& state)
+{
+    uint32_t const geo_id = 564;
+    while (state.KeepRunning())
+    {
+        GeoAdDataEntity<CacheLoadConfig>::DataVect geoAds;
+        benchmark::DoNotOptimize(geo_ad_cache_->retrieve(geoAds, geo_id));
+    }
+}
+
+BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_retrieve_benchmark);
+
+struct dummy_key {
+    uint32_t const key;
+
+    template <typename T>
+    uint32_t get() const { return key; }
+};
+
+BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark)(benchmark::State& state)
 {
     while (state.KeepRunning())
     {
-        //benchmark::DoNotOptimize()
-        std::make_unique<AdDataEntity<CacheLoadConfig>>(config_)->load();
+        ipc::data::geo_entity<std::allocator<char>> ent {std::allocator<char>()};
+        ent.store(dummy_key{geoAds_.geo_id}, geoAds_);
     }
-
-    //state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * input.size());
 }
 
-BENCHMARK_REGISTER_F(CacheBenchmarkFixture, ad_load_benchmark);
-
+BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark);
 
 } // local namespace
 

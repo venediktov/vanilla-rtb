@@ -103,9 +103,10 @@ class GeoAdDataEntity {
         using Keys = vanilla::tagged_tuple< 
             typename ipc::data::geo_entity<Alloc>::geo_id_tag,   uint32_t
         >;
-        using DataVect = std::vector<std::shared_ptr <GeoAd> >;
         using GeoTag = typename ipc::data::geo_entity<Alloc>::geo_id_tag;
     public:    
+        using DataVect = std::vector<std::shared_ptr <GeoAd> >;
+
         GeoAdDataEntity(const Config &config):
             config{config}, cache(config.data().geo_ad_ipc_name)
         {}
@@ -132,25 +133,29 @@ class GeoAdDataEntity {
                 }
             });
         }
-        
+
+        bool retrieve(GeoAds& geoAds, uint32_t geo_id) {
+            return cache.template retrieve<GeoTag>(geoAds, geo_id);
+        }
+
         bool retrieve(DataVect &vect, uint32_t geo_id) {
             bool result = false;
             std::vector<std::shared_ptr<GeoAds>> geo_ads;
-            auto sp = std::make_shared<std::stringstream>();
             {
-                perf_timer<std::stringstream> timer(sp, "geo_ads");
+                GeoAds geo_ads;
                 result = cache.template retrieve<GeoTag>(geo_ads, geo_id);
                 if(result) {
-                    auto geo_id = geo_ads[0]->geo_id;
-                    auto ads = geo_ads[0]->ad_ids;
+                    auto geo_id = geo_ads.geo_id;
+                    auto ads = geo_ads.ad_ids;
+                    vect.reserve(ads.size());
                     std::transform(std::begin(ads), std::end(ads), std::back_inserter(vect), [geo_id](const std::string &ad_id) {
                         return std::make_shared<GeoAd>(std::move(ad_id),geo_id);
                     });
                 }
             }
-            LOG(debug) << sp->str();
             return result;
         }
+
     private:
         const Config &config;
         Cache cache;
