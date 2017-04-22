@@ -166,7 +166,7 @@ int main(int argc, char**argv) {
      std::vector<std::shared_ptr<CityCountry>> retrieved_cached_cities;
      {
        perf_timer<std::stringstream> timer(sp) ;
-       if ( !cache.retrieve<Tag>(retrieved_cached_cities, cache.create_ipc_key(cities[pick].city) , cache.create_ipc_key(cities[pick].country) ) ) 
+       if ( !cache.retrieve<Tag>(retrieved_cached_cities, cities[pick].city , cities[pick].country ) ) 
        { 
           return 1; 
        }
