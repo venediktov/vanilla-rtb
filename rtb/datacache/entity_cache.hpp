@@ -29,8 +29,6 @@
 #include <boost/interprocess/sync/sharable_lock.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
-//#include <boost/log/core.hpp>
-//#include <boost/log/trivial.hpp>
 #include <memory>
  
 #include <boost/version.hpp>
@@ -163,6 +161,7 @@ public:
     bool update( Key && key, Serializable && data, Args&& ...args) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
         bool is_success {false};
+        //Memory::attach([this](){attach();}); // reattach to newly created
         auto &index = _container_ptr->template get<Tag>();
         auto p = index.equal_range(boost::make_tuple(std::forward<Args>(args)...));
          while ( p.first != p.second ) {
@@ -223,56 +222,6 @@ public:
         return retriever<Tag,Serializable>()(*_container_ptr,entry,std::forward<Args>(args)...);
     }
     
-/*************
-    template<typename Tag, typename Serializable, typename Arg>
-    bool retrieve(Serializable &entry, Arg && arg) {
-        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
-        auto p = _container_ptr->template get<Tag>().find(std::forward<Arg>(arg));
-        bool is_found = p != _container_ptr->end();
-        if ( is_found ) {
-            p->retrieve(entry); 
-        }
-        return is_found;
-    }
-    
-    template<typename Tag, typename Serializable, typename ...Args>
-    bool retrieve(Serializable &entry, Args&& ...args) {
-        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
-        auto p = _container_ptr->template get<Tag>().find(boost::make_tuple(std::forward<Args>(args)...));
-        bool is_found = p != _container_ptr->end();
-        if ( is_found ) {
-            p->retrieve(entry); 
-        }
-        return is_found;
-    }
-    
-    template<typename Tag, typename Serializable, typename Arg>
-    bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries, Arg && arg) {
-        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
-        bool is_found = false;
-        auto p = _container_ptr->template get<Tag>().equal_range(std::forward<Arg>(arg));
-        std::transform ( p.first, p.second, std::back_inserter(entries), [] ( const Data_t &data ) {
-            std::shared_ptr<Serializable> impl_ptr { std::make_shared<Serializable>() } ;
-            data.retrieve(*impl_ptr) ;
-            return impl_ptr;
-        });
-        return !entries.empty();
-    }
-    
-    template<typename Tag, typename Serializable, typename ...Args>
-    bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries, Args&& ...args) {
-        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
-        bool is_found = false;
-        auto p = _container_ptr->template get<Tag>().equal_range(boost::make_tuple(std::forward<Args>(args)...));
-        std::transform ( p.first, p.second, std::back_inserter(entries), [] ( const Data_t &data ) {
-            std::shared_ptr<Serializable> impl_ptr { std::make_shared<Serializable>() } ;
-            data.retrieve(*impl_ptr) ;
-            return impl_ptr;
-        });
-        return !entries.empty();
-    }
- ************/
- 
     template<typename Serializable>
     bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);

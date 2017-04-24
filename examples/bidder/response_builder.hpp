@@ -31,7 +31,7 @@ namespace vanilla {
 
         const BidResponse& build(const vanilla::VanillaRequest &vanilla_request) {
             response.clear();
-            const BidRequest request = vanilla_request.bid_request;
+            const BidRequest &request = vanilla_request.bid_request;
             auto sp = std::make_shared<std::stringstream>();
             {
                 perf_timer<std::stringstream> timer(sp, "fill response");

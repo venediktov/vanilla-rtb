@@ -21,11 +21,14 @@
  
 #include <string>
 #include <sstream>
+#include <array>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-  
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+
 namespace ipc { namespace data {
     
     template <typename Alloc>
@@ -39,13 +42,15 @@ namespace ipc { namespace data {
         Alloc allocator ;
         char_string blob;
  
-        template<typename Serializable>
+        template<typename Serializable, std::size_t Size=4096>
         void store(Serializable  && data)  {
-            std::stringstream ss;
-            boost::archive::binary_oarchive oarch(ss);
-            oarch << std::forward<Serializable>(data) ;
-            std::string blob_str = std::move(ss.str()) ;
-            blob = char_string(blob_str.data(), blob_str.length(), allocator) ;
+             std::array<char,Size> buffer;
+             boost::iostreams::array_sink sink(buffer.data(), buffer.size());
+             boost::iostreams::stream<boost::iostreams::array_sink> ss(sink);
+             boost::archive::binary_oarchive oarch(ss);
+             oarch << std::forward<Serializable>(data);
+             auto pos = boost::iostreams::seek(ss, 0, std::ios_base::cur);
+             blob = char_string(&buffer[0], pos, allocator);
         }
         template<typename Serializable>
         static std::size_t size(const Serializable && data) {
@@ -56,7 +61,8 @@ namespace ipc { namespace data {
         }
         template<typename Serializable>
         void retrieve(Serializable  & data) const {
-            std::stringstream ss (std::string(blob.data(),blob.length()));
+            boost::iostreams::array_source source(blob.data(), blob.length());
+            boost::iostreams::stream<boost::iostreams::array_source> ss(source);
             boost::archive::binary_iarchive iarch(ss);
             iarch >> data;
         }

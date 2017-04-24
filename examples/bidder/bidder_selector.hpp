@@ -35,14 +35,14 @@ class BidderSelector {
         std::shared_ptr<Ad> select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
             std::shared_ptr <Ad> result;
             
-            std::shared_ptr<Geo> geo;
-            if(!getGeo(req, geo) || !geo) {
+            Geo geo;
+            if(!getGeo(req, geo) ) {
                 LOG(debug) << "No geo";
                 return result;
             }
             
-            if(!getGeoCampaigns(geo->geo_id)) {
-                LOG(debug) << "No campaigns for geo " << geo->geo_id;
+            if(!getGeoCampaigns(geo.geo_id)) {
+                LOG(debug) << "No campaigns for geo " << geo.geo_id;
                 return result;
             }
             else {
@@ -50,7 +50,7 @@ class BidderSelector {
             }
             
             if(!getCampaignAds(geo_campaigns.campaign_ids)) {
-                LOG(debug) << "No ads for geo " << geo->geo_id;
+                LOG(debug) << "No ads for geo " << geo.geo_id;
                 return result;
             }
             else {
@@ -96,8 +96,7 @@ class BidderSelector {
             return true;
         }
         template <typename T>
-        bool getGeo(const openrtb::BidRequest<T> &req, std::shared_ptr<Geo> &geo) {
-            retrieved_cached_geo.clear();
+        bool getGeo(const openrtb::BidRequest<T> &req, Geo &geo) {
             if (!req.user) {
                 LOG(debug) << "No user";
                 return true;
@@ -110,14 +109,11 @@ class BidderSelector {
             const std::string city = boost::algorithm::to_lower_copy(req.user.get().geo.get().city);
             const std::string country = boost::algorithm::to_lower_copy(req.user.get().geo.get().country);
 
-            if (!bidder_caches.geo_data_entity.retrieve(retrieved_cached_geo, city, country)) {
+            if (!bidder_caches.geo_data_entity.retrieve(geo, city, country)) {
                 LOG(debug) << "retrieve failed " << city << " " << country;
                 return false;
             }
-            if (!retrieved_cached_geo.size()) {
-                return false;
-            }
-            geo = retrieved_cached_geo[0];
+            
             return true;
         }
         bool getCampaignAds(const GeoCampaigns::collection_type &campaigns) {
@@ -146,7 +142,6 @@ class BidderSelector {
     private:   
         SpecBidderCaches &bidder_caches;
         GeoCampaigns geo_campaigns;
-        std::vector<std::shared_ptr <Geo> > retrieved_cached_geo;
         CampaignData campaign_data;
         std::vector<ad_retrieve_type> retrieved_cached_ads;
         std::set<uint64_t> campaign_ads;
