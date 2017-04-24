@@ -21,7 +21,7 @@
 #include <boost/utility/string_ref.hpp>
 namespace boost {
     template<typename CharT, typename CharTraits>
-    using string_view = boost::basic_string_ref<CharT,CharTraits>;
+    using basic_string_view = boost::basic_string_ref<CharT,CharTraits>;
 }
 #else
 #include <boost/utility/string_view.hpp>
