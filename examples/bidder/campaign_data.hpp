@@ -110,12 +110,12 @@ class CampaignDataEntity {
         
         bool retrieve(CampaignData &data, uint32_t campaign_id) {
             bool result = false;
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "campaign_data");
+            //auto sp = std::make_shared<std::stringstream>();
+            //{
+                //perf_timer<std::stringstream> timer(sp, "campaign_data");
                 result = cache.template retrieve<CampaignTag>(data, campaign_id);
-            }
-            LOG(debug) << sp->str();
+            //}
+            //LOG(debug) << sp->str();
             return result;
         }
     private:
