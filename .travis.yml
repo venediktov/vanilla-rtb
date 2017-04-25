@@ -57,6 +57,7 @@ install:
   - |
    if [[ "$CXX" = "g++" ]]; then
        export CXX="g++-5" CC="gcc-5" BOOST_TOOLSET=gcc; 
+       export CXXFLAGS="--param ggc-min-expand=0 --param ggc-min-heapsize=512000"
        ln -s /usr/bin/${CXX} latest-gcc-symlinks/g++ 
        ln -s /usr/bin/${CC} latest-gcc-symlinks/gcc
    fi
