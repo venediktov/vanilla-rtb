@@ -129,12 +129,14 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_retrieve_benchmark)(benchmark::
 
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_retrieve_benchmark);
 
+
 struct dummy_key {
     uint32_t const key;
 
     template <typename T>
     uint32_t get() const { return key; }
 };
+
 
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark)(benchmark::State& state)
 {
@@ -146,6 +148,20 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark)(benchmark:
 }
 
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark);
+
+
+BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_deserialize_benchmark)(benchmark::State& state)
+{
+    ipc::data::geo_entity<std::allocator<char>> ent {std::allocator<char>()};
+    ent.store(dummy_key{geoAds_.geo_id}, geoAds_);
+    while (state.KeepRunning())
+    {
+        GeoAds geoAds;
+        ent.retrieve(geoAds);
+    }
+}
+
+BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_deserialize_benchmark);
 
 } // local namespace
 
