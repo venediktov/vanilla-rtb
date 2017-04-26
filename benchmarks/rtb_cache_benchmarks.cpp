@@ -112,8 +112,8 @@ BENCHMARK_REGISTER_F(CacheBenchmarkFixture, ad_load_benchmark);
 
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_retrieve_benchmark)(benchmark::State& state)
 {
-    std::string const city {"Novosibirsk"};
-    std::string const country {"Russia"};
+    std::string const city {"novosibirsk"};
+    std::string const country {"russia"};
     while (state.KeepRunning())
     {
         Geo geo;
