@@ -20,7 +20,7 @@ namespace boost {
 #include <boost/utility/string_view.hpp>
 #endif
 #include <boost/lexical_cast.hpp>
-#include "rtb/datacache/geo_entity.hpp"
+#include "rtb/datacache/campaign_entity.hpp"
 
 //This struct gets stored in the cache
 struct GeoCampaigns {
@@ -74,13 +74,13 @@ struct GeoCampaigns {
 
 template <typename Config = BidderConfig,
           typename Memory = typename mpclmi::ipc::Shared,
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::geo_container>::char_allocator >
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container>::char_allocator >
 class GeoCampaignEntity {
-        using Cache = datacache::entity_cache<Memory, ipc::data::geo_container> ; 
+        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_container> ; 
         using Keys = vanilla::tagged_tuple< 
-            typename ipc::data::geo_entity<Alloc>::geo_id_tag,   uint32_t
+            typename ipc::data::campaign_entity<Alloc>::campaign_id_tag,   uint32_t
         >;
-        using GeoTag = typename ipc::data::geo_entity<Alloc>::geo_id_tag;
+        using GeoTag = typename ipc::data::campaign_entity<Alloc>::campaign_id_tag;
     public:    
         GeoCampaignEntity(const Config &config):
             config{config}, cache(config.data().geo_campaign_ipc_name)

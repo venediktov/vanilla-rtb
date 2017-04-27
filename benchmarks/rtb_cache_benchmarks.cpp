@@ -7,8 +7,8 @@ namespace po = boost::program_options;
 #include <rtb/datacache/memory_types.hpp>
 #include <rtb/datacache/entity_cache.hpp>
 #include <rtb/datacache/ad_entity.hpp>
-#include <rtb/datacache/geo_entity.hpp>
-#include <rtb/datacache/city_country_entity.hpp>
+#include  "../examples/datacache/geo_entity.hpp"
+#include  "../examples/datacache/city_country_entity.hpp"
 #include <rtb/datacache/campaign_entity.hpp>
 #include <rtb/common/perf_timer.hpp>
 #include "../examples/bidder/ad.hpp"
@@ -31,7 +31,7 @@ struct CacheBenchmarkFixture: benchmark::Fixture
     std::unique_ptr<GeoAdDataEntity<CacheLoadConfig>> geo_ad_cache_;
     std::unique_ptr<CampaignDataEntity<CacheLoadConfig>> campaign_cache_;
 
-    GeoAds geoAds_;
+    GeoAdDataEntity<CacheLoadConfig>::DataVect geoAds_;
     CampaignData campaignData_;
 
     CacheBenchmarkFixture():
@@ -148,7 +148,7 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark)(benchmark:
     while (state.KeepRunning())
     {
         ipc::data::geo_entity<std::allocator<char>> ent {std::allocator<char>()};
-        ent.store(dummy_key{geoAds_.geo_id}, geoAds_);
+        ent.store(dummy_key{564}, GeoAd());
     }
 }
 

@@ -107,7 +107,7 @@ struct retriever<Tag,std::vector<std::shared_ptr<Serializable>>> {
         return !entries.empty();
     }
 };
-
+ 
 template<typename Memory, template <class> class Container, size_t MEMORY_SIZE = 67108864 >
 class entity_cache
 {
@@ -220,6 +220,13 @@ public:
     bool retrieve(Serializable &entry, Args&& ...args) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
         return retriever<Tag,Serializable>()(*_container_ptr,entry,std::forward<Args>(args)...);
+    }
+
+    template<typename Tag, typename ...Args>
+    auto retrieve_raw(Args&& ...args) {
+        bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
+        auto &idx = _container_ptr->template get<Tag>();
+        return equal_range(idx, std::forward<Args>(args)...);
     }
     
     template<typename Serializable>

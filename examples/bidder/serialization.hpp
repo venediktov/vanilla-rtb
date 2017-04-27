@@ -30,9 +30,9 @@ namespace boost { namespace serialization {
         ar & value.record;
     }
     template<class Archive>
-    void serialize(Archive & ar, GeoAds & value, const unsigned int version) {
+    void serialize(Archive & ar, GeoAd & value, const unsigned int version) {
         ar & value.geo_id;
-        ar & value.ad_ids;
+        ar & value.ad_id;
     }
     template<class Archive>
     void serialize(Archive & ar, Geo & value, const unsigned int version) {

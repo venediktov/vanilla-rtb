@@ -1,34 +1,34 @@
-
+#include <vector>
+#include <random>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/program_options.hpp>
-#include "exchange/exchange_handler.hpp"
-#include "exchange/exchange_server.hpp"
-#include "CRUD/handlers/crud_dispatcher.hpp"
-#include "DSL/generic_dsl.hpp"
-#include "rtb/config/config.hpp"
-#include "core/tagged_tuple.hpp"
-#include "datacache/ad_entity.hpp"
-#include "datacache/geo_entity.hpp"
-#include "datacache/city_country_entity.hpp"
-#include "datacache/entity_cache.hpp"
-#include "datacache/memory_types.hpp"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include <vector>
-#include <random>
+#include "rtb/core/core.hpp"
+#include "rtb/exchange/exchange_handler.hpp"
+#include "rtb/exchange/exchange_server.hpp"
+#include "rtb/DSL/generic_dsl.hpp"
+#include "rtb/config/config.hpp"
+#include "rtb/core/tagged_tuple.hpp"
+#include "rtb/datacache/ad_entity.hpp"
+#include "rtb/datacache/entity_cache.hpp"
+#include "rtb/datacache/memory_types.hpp"
+#include "CRUD/handlers/crud_dispatcher.hpp"
+#include "examples/datacache/geo_entity.hpp"
+#include "examples/datacache/city_country_entity.hpp"
+
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
 
-#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 
