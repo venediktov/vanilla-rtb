@@ -15,7 +15,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
-#include "core/tagged_tuple.hpp"
+#include "rtb/core/tagged_tuple.hpp"
 #include "config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"

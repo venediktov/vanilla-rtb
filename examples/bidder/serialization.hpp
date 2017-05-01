@@ -42,14 +42,14 @@ namespace boost { namespace serialization {
         ar & value.record;
     }
     template<class Archive>
-    void serialize(Archive & ar, GeoCampaigns & value, const unsigned int version) {
+    void serialize(Archive & ar, GeoCampaign & value, const unsigned int version) {
         ar & value.geo_id;
-        ar & value.campaign_ids;
+        ar & value.campaign_id;
     }
     template<class Archive>
     void serialize(Archive & ar, CampaignData & value, const unsigned int version) {
         ar & value.campaign_id;
-        ar & value.ad_ids;
+        ar & value.ad_id;
     }
 }} 
 
