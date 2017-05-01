@@ -42,7 +42,9 @@ auto random_pick(int max) {
   return dis(gen);
 }
 
-
+class http_bidder_decisions_manager {
+public:
+};
 int main(int argc, char *argv[]) {
     using namespace std::placeholders;
     using namespace vanilla::exchange;
@@ -95,7 +97,10 @@ int main(int argc, char *argv[]) {
         LOG(error) << e.what();
         return 0;
     }
-    exchange_handler<DSL::GenericDSL<>> bid_handler(std::chrono::milliseconds(config.data().timeout));
+    
+
+    using bid_handler_type = exchange_handler<DSL::GenericDSL<>>;
+    bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
     bid_handler    
         .logger([](const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
@@ -103,50 +108,58 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
+        .auction_async([&](const BidRequest & request) {
+        thread_local vanilla::BidderSelector<> selector(caches);
+        BidResponse response;
 
-        .auction_async([&](const BidRequest &request) {
+        for (auto &imp : request.imp) {
+            if (auto ad = selector.select(request, imp)) {
+                auto sp = std::make_shared<std::stringstream>();
+                {
+                    perf_timer<std::stringstream> timer(sp, "fill response");
 
-            thread_local vanilla::BidderSelector<> selector(caches);
-            BidResponse response;
+                    boost::uuids::uuid bidid = uuid_generator();
+                    response.bidid = boost::uuids::to_string(bidid);
 
-            for(auto &imp : request.imp) {    
-                if(auto ad = selector.select(request, imp)) {
-                    auto sp = std::make_shared<std::stringstream>();
-                    {
-                        perf_timer<std::stringstream> timer(sp, "fill response");
-                        
-                        boost::uuids::uuid bidid = uuid_generator();
-                        response.bidid = boost::uuids::to_string(bidid);
-
-                        if (request.cur.size()) {
-                            response.cur = request.cur[0];
-                        } else if (imp.bidfloorcur.length()) {
-                            response.cur = imp.bidfloorcur; // Just return back
-                        }
-
-                        if (response.seatbid.size() == 0) {
-                            response.seatbid.emplace_back(SeatBid());
-                        }
-
-                        Bid bid;
-                        bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
-                        // Is it the same as response.bidid?
-                        bid.impid = imp.id;
-                        bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
-                        bid.w = ad->width;
-                        bid.h = ad->height;
-                        bid.adm = ad->code;
-                        bid.adid = ad->ad_id;
-
-                        response.seatbid.back().bid.emplace_back(std::move(bid));
+                    if (request.cur.size()) {
+                        response.cur = request.cur[0];
+                    } else if (imp.bidfloorcur.length()) {
+                        response.cur = imp.bidfloorcur; // Just return back
                     }
-                    LOG(debug) << sp->str();
+
+                    if (response.seatbid.size() == 0) {
+                        response.seatbid.emplace_back(SeatBid());
+                    }
+
+                    Bid bid;
+                    bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
+                    // Is it the same as response.bidid?
+                    bid.impid = imp.id;
+                    bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
+                    bid.w = ad->width;
+                    bid.h = ad->height;
+                    bid.adm = ad->code;
+                    bid.adid = ad->ad_id;
+
+                    response.seatbid.back().bid.emplace_back(std::move(bid));
                 }
+                LOG(debug) << sp->str();
             }
-            
-            
-            return response;
-        });
+        }
+        return response;
+     })
+     .decision([&](bid_handler_type::decision_params_type &&decision_params) {
+         using da = vanilla::common::decision_action<bid_handler_type::decision_params_type>;
+         vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, 1> manager(
+            vanilla::common::decision_tree<bid_handler_type::decision_params_type, 1>({
+                {0, {[&](bid_handler_type::decision_params_type &params) -> bool {
+                            return std::get<0>(params).hanle_auction_async(std::get<1>(params), std::get<2>(params));
+                    }, da::EXIT, da::EXIT}}
+            })
+         );
+         manager.execute(decision_params);
+     })
+     ;
     
     connection_endpoint ep {std::make_tuple(config.get("bidder.host"), config.get("bidder.port"), config.get("bidder.root"))};
 

@@ -42,70 +42,67 @@ tm.execute();
 
  **/
 
-namespace vanilla { namespace common { 
+namespace vanilla {
+    namespace common {
+        template <typename PARAMS>
+        struct decision_action {
+            using function_type = std::function<bool(PARAMS &params)>;
 
-struct decision_action {
-    using function_type  = std::function<bool()>;
-    struct node_S {
-        function_type f;
-        int next_true;
-        int next_false;
-    };
-    using node_type = node_S;
-    enum CODES { EXIT=-1 , CONTINUE=0 };
-    template<bool T> int get() const ;
-    int operator()() const;
+            struct node_S {
+                function_type f;
+                int next_true;
+                int next_false;
+            };
+            using node_type = node_S;
 
-    uint32_t row_num;
-    node_type node;
-};
+            enum CODES {
+                EXIT = -1, CONTINUE = 0
+            };
+            int get(bool res) const {
+                return res ? node.next_true : node.next_false;
+            }
 
-template<>
-inline int decision_action::get<true>() const {
-    return node.next_true;
-}
+            inline int operator()(PARAMS &params) const {
+                return get(node.f(params));
+            }
 
-template<>
-inline int decision_action::get<false>() const {
-    return node.next_false;
-}
+            uint32_t row_num;
+            node_type node;
+        };
 
-inline int decision_action::operator()() const {
-    if (node.f()) {        
-        return get<true>();
-    } else {
-        return get<false>();
+
+        template<typename PARAMS, std::size_t N>
+        using decision_tree = std::array<decision_action<PARAMS>, N>;
+
+        template<typename PARAMS, std::size_t N>
+        struct decision_tree_manager {
+            using params_decision_action = decision_action<PARAMS>;
+            decision_tree_manager(decision_tree<PARAMS, N> && tree) : tree{std::move(tree)}
+            {
+            }
+            decision_tree_manager(const decision_tree<PARAMS, N> & tree) : tree{tree}
+            {
+            }
+
+            void execute(PARAMS &params) const {
+                next(params, tree.at(0));
+            }
+
+            params_decision_action next(PARAMS &params, const params_decision_action &action_now) const {
+                int next_node_idx = action_now(params); //executes and produces action_next
+                if (next_node_idx == params_decision_action::CONTINUE) {
+                    next(params, tree.at(action_now.row_num + 1));
+                }
+                if (next_node_idx != params_decision_action::EXIT) {
+                    next(params, tree.at(next_node_idx));
+                }
+            }
+        private:
+            decision_tree<PARAMS, N> tree;
+        };
+
     }
 }
-
-
-template<std::size_t N>
-using decision_tree = std::array<decision_action,N>;
-
-template<std::size_t N>
-struct decision_tree_manager {
-    decision_tree_manager(decision_tree<N> && tree) : tree{std::move(tree)} 
-    {}
-    decision_tree_manager(const decision_tree<N> & tree) : tree{tree} 
-    {}
-    
-    void execute() {
-        next(tree.at(0));
-    }
-    decision_action next(const decision_action &action_now) {
-        int next_node_idx = action_now(); //executes and produces action_next
-        if ( next_node_idx == decision_action::CONTINUE ) {
-            next(tree.at(action_now.row_num+1));
-        }
-        if ( next_node_idx != decision_action::EXIT ) {
-            next(tree.at(next_node_idx));
-        }
-    }
-private:
-    decision_tree<N> tree;
-};
-
-}}
 
 #endif /* VANILLA_COMMON_DECISION_TREE_HPP */
 
