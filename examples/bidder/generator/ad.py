@@ -50,10 +50,8 @@ max_ad = 1
 max_ads_in_campaign = 20
 for campaign_id in range(1, max_campaigns+1):    
     ads_in_campaign = random.randint(1, max_ads_in_campaign)
-    file.write("%d\t%d" % (campaign_id, ads_in_campaign))
     for ad_id in range(max_ad, max_ad + ads_in_campaign+1):
-        file.write("\t%d" % (ad_id))
-    file.write("\n")
+        file.write("%d\t%d\n" % (campaign_id, ad_id))
     max_ad += ads_in_campaign+1
 file.close()
 

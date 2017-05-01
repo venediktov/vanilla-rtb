@@ -56,7 +56,7 @@ struct CampaignData {
         std::copy(std::begin(value), std::end(value), std::ostream_iterator<CampaignData>(os, " "));
         return os;
     } 
-    friend std::istream &operator>>(std::istream &is, std::vector<CampaignData> &data) {
+    friend std::istream &operator>>(std::istream &is, CampaignData &data) {
         std::string record;
         if (!std::getline(is, record) ){
             return is;
@@ -66,14 +66,8 @@ struct CampaignData {
         if(fields.size() < 2) {
             return is;
         }
-        uint32_t campaign_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
-        uint32_t ads_count = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
-        data.clear();
-        data.reserve(ads_count);
-        uint32_t ads_end_idx = ads_count + 2;
-        for(uint32_t fields_idx = 2; fields_idx < ads_end_idx; fields_idx++) {
-            data.push_back(CampaignData(campaign_id, boost::lexical_cast<uint32_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size())));
-        }
+        data.campaign_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
+        data.ad_id = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
         return is;
     }
 
@@ -83,7 +77,7 @@ struct CampaignData {
         ad_id =  data.ad_id;
     }
 
-    void retrieve(CampaignData  & data) const {
+    void retrieve(CampaignData  &data) const {
         data.campaign_id=campaign_id;
         data.ad_id=ad_id;
     }
@@ -136,13 +130,10 @@ class CampaignDataEntity {
             LOG(debug) << "File opened " << config.data().campaign_data_source;
             cache.clear();
             
-            std::for_each(std::istream_iterator<CampaignDataCollection>(in), 
-                          std::istream_iterator<CampaignDataCollection>(), [this](const CampaignDataCollection &data) {
-                std::for_each(std::begin(data), std::end(data), [this](const CampaignData &cd) {
-                    if (!this->cache.insert(Keys{cd.campaign_id}, cd) ) {
-                        LOG(debug) << "Failed to insert campaign_data=" << cd.campaign_id;
-                    }
-                });
+            std::for_each(std::istream_iterator<CampaignData>(in), std::istream_iterator<CampaignData>(), [this](const CampaignData &data) {
+                if (!this->cache.insert(Keys{data.campaign_id}, data) ) {
+                    LOG(debug) << "Failed to insert campaign_data=" << data.campaign_id;
+                }
             });
         }
         
