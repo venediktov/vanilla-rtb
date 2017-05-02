@@ -32,15 +32,10 @@ namespace vanilla {
         const BidResponse& build(const vanilla::VanillaRequest &vanilla_request) {
             response.clear();
             const BidRequest &request = vanilla_request.bid_request;
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "fill response");
-                for (auto &imp : request.imp) {
-
-                    buildImpResponse(request, imp);
-                }
+            for (auto &imp : request.imp) {
+                buildImpResponse(request, imp);
             }
-            LOG(debug) << sp->str();
+            
             return response;
         }
     private:

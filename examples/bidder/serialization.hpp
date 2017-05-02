@@ -22,12 +22,12 @@ namespace boost { namespace serialization {
     template<class Archive>
     void serialize(Archive & ar, Ad & value, const unsigned int version) {
         ar & value.ad_id;
+        ar & value.campaign_id;
         ar & value.width;
         ar & value.height;
         ar & value.position;
         ar & value.max_bid_micros;
         ar & value.code;
-        ar & value.record;
     }
     template<class Archive>
     void serialize(Archive & ar, GeoAd & value, const unsigned int version) {

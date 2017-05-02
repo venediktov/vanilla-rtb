@@ -64,7 +64,7 @@ auto  find(const Index & idx , Arg && arg) -> decltype(idx.find(arg)) {
 }
 
 template<typename Index , typename ...Args>
-auto  find(const Index & idx , Args && ...args) -> decltype(idx.find(std::forward<Args>(args)...)) {
+auto  find(const Index & idx , Args && ...args) -> decltype(idx.find(boost::make_tuple(std::forward<Args>(args)...))) {
     return idx.find(boost::make_tuple(std::forward<Args>(args)...));
 }
 
@@ -74,7 +74,7 @@ auto  equal_range(const Index & idx , Arg && arg) -> decltype(idx.equal_range(ar
 }
 
 template<typename Index , typename ...Args>
-auto  equal_range(const Index & idx , Args && ...args) -> decltype(idx.equal_range(std::forward<Args>(args)...)) {
+auto  equal_range(const Index & idx , Args && ...args) -> decltype(idx.equal_range(boost::make_tuple(std::forward<Args>(args)...))) {
     return idx.equal_range(boost::make_tuple(std::forward<Args>(args)...));
 }
 

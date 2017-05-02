@@ -29,6 +29,7 @@ class BidderSelector {
         BidderSelector(BidderCaches<Config> &bidder_caches):
             bidder_caches{bidder_caches}
         {
+            retrieved_cached_ads.reserve(500);
         }
         template<typename T> 
         std::shared_ptr<Ad> select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
@@ -48,39 +49,19 @@ class BidderSelector {
                 LOG(debug) << "Selected campaigns " << geo_campaigns.size();
             }
             
-            if(!getCampaignAds(geo_campaigns)) {
+            if(!getCampaignAds(geo_campaigns, imp)) {
                 LOG(debug) << "No ads for geo " << geo.geo_id;
                 return result;
             }
             else {
-                LOG(debug) << "selected ads " << campaign_ads.size();
+                LOG(debug) << "selected ads " << retrieved_cached_ads.size();
             }
-            /*********** TODO: decommision Ad cache and transfer ad.w ad.h into campaign_data
-            retrieved_cached_ads.clear();
-            if(!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, imp.banner.get().w, imp.banner.get().h)) {
-                return result;
-            }
-            LOG(debug) << "size (" << imp.banner.get().w << "x"  << imp.banner.get().h << ") ads count " << retrieved_cached_ads.size();
             
-            intersection.clear();
-            std::set_intersection(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
-                campaign_ads.begin(), campaign_ads.end(),
-                std::back_inserter(intersection),
-                intersc_cmp()
-                //[](auto lhs, auto rhs) { return lhs->ad_id < rhs->ad_id; }
-                );
-            // Sort by cicros
-            // TODO make ability to make custom algorithm
-            std::sort(intersection.begin(), intersection.end(),
+            std::sort(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
                 [](const Ad &first, const Ad &second) -> bool {
                 return first.max_bid_micros > second.max_bid_micros;
             });
-            LOG(debug) << "intersecion size " << intersection.size();
-            if(intersection.size()) {
-                result = std::make_shared<Ad>(intersection[0]);
-            }
-            return result;
-            *************************************************************/
+            result = std::make_shared<Ad>(retrieved_cached_ads[0]);
             return result;
         }
         
@@ -111,35 +92,24 @@ class BidderSelector {
             if (!bidder_caches.geo_data_entity.retrieve(geo, city, country)) {
                 LOG(debug) << "retrieve failed " << city << " " << country;
                 return false;
-            }
-            
+            } 
             return true;
         }
-        bool getCampaignAds(const std::vector<GeoCampaign> &campaigns) {
-           campaign_ads.clear();
-           campaign_data.clear();
-           LOG(debug) << "select ads from  " << campaigns.size() << " campaigns";
-           for (auto &campaign : campaigns) {
-                LOG(debug) << "search campaign " << campaign;
-                campaign_data.clear();
-                if (!bidder_caches.campaign_data_entity.retrieve(campaign_data, campaign.campaign_id)) {
+
+        template <typename T>
+        bool getCampaignAds(const std::vector<GeoCampaign> &campaigns, const openrtb::Impression<T> &imp) {
+            retrieved_cached_ads.clear();
+            for (auto &campaign : campaigns) {
+                if (!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                     continue;
                 }
-                LOG(debug) << "ads in campaign " << campaign_data.size();
-             
-                std::for_each(std::begin(campaign_data), std::end(campaign_data), [&](auto &cd) {
-                    campaign_ads.insert(cd.ad_id);
-                });
-           }
-           return campaign_ads.size() > 0;
+            }
+            return retrieved_cached_ads.size() > 0;
         }
     private:   
         SpecBidderCaches &bidder_caches;
         std::vector<GeoCampaign> geo_campaigns;
-        std::vector<CampaignData> campaign_data;
         std::vector<Ad> retrieved_cached_ads;
-        std::set<uint64_t> campaign_ads;
-        std::vector<Ad> intersection;
 };
 }
 

@@ -120,6 +120,7 @@ int main(int argc, char *argv[]) {
                    Bid bid;
                    bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
                    // Is it the same as response.bidid?
+                   // Wrong filling type
                    bid.impid = imp.id;
                    bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
                    bid.w = ad->width;
