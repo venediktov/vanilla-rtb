@@ -38,11 +38,9 @@ codes = ["""<script>alert("code1!");</script>""", """<script>alert("code2!");</s
 file = open("../data/geo_campaign", "w")
 for geo_id, city, country in geo:
     max_targetings = random.randint(1, max_campaigns/10)
-    file.write("%d\t%d" % (geo_id, max_targetings))
     start_pos = random.randint(1, max_campaigns-max_targetings)
     for i in range(start_pos, start_pos+max_targetings+1):
-        file.write("\t%d" % (i))
-    file.write("\n")
+        file.write("%d\t%d\n" % (geo_id, i))
 file.close()
 
 file = open("../data/campaign_data", "w")
