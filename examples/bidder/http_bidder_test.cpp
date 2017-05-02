@@ -108,43 +108,33 @@ int main(int argc, char *argv[]) {
 
             thread_local vanilla::BidderSelector<> selector(caches);
             BidResponse response;
-
-            for(auto &imp : request.imp) {    
+            for(auto &imp : request.imp) {
                 if(auto ad = selector.select(request, imp)) {
-                    auto sp = std::make_shared<std::stringstream>();
-                    {
-                        perf_timer<std::stringstream> timer(sp, "fill response");
-                        
-                        boost::uuids::uuid bidid = uuid_generator();
-                        response.bidid = boost::uuids::to_string(bidid);
-
-                        if (request.cur.size()) {
-                            response.cur = request.cur[0];
-                        } else if (imp.bidfloorcur.length()) {
-                            response.cur = imp.bidfloorcur; // Just return back
-                        }
-
-                        if (response.seatbid.size() == 0) {
-                            response.seatbid.emplace_back(SeatBid());
-                        }
-
-                        Bid bid;
-                        bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
-                        // Is it the same as response.bidid?
-                        bid.impid = imp.id;
-                        bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
-                        bid.w = ad->width;
-                        bid.h = ad->height;
-                        bid.adm = ad->code;
-                        bid.adid = ad->ad_id;
-
-                        response.seatbid.back().bid.emplace_back(std::move(bid));
-                    }
-                    LOG(debug) << sp->str();
+                   boost::uuids::uuid bidid = uuid_generator();
+                   response.bidid = boost::uuids::to_string(bidid);
+                   if (request.cur.size()) {
+                       response.cur = request.cur[0];
+                   } else if (imp.bidfloorcur.length()) {
+                       response.cur = imp.bidfloorcur; // Just return back
+                   }
+                   Bid bid;
+                   bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
+                   // Is it the same as response.bidid?
+                   bid.impid = imp.id;
+                   bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
+                   bid.w = ad->width;
+                   bid.h = ad->height;
+                   bid.adm = ad->code;
+                   bid.adid = ad->ad_id;
+                   if (response.seatbid.size() == 0) {
+                      SeatBid seatbid;
+                      seatbid.bid.push_back(bid);
+                      response.seatbid.push_back(seatbid);
+                   } else {
+                      response.seatbid.back().bid.push_back(bid);
+                   }
                 }
             }
-            
-            
             return response;
         });
     

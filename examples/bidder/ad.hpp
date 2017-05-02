@@ -90,7 +90,7 @@ class AdDataEntity {
             typename ipc::data::ad_entity<Alloc>::height_tag,   uint16_t,
             typename ipc::data::ad_entity<Alloc>::ad_id_tag,    uint64_t
         >;
-        using DataVect = std::vector<std::shared_ptr <Ad> >;
+        using DataVect = std::vector<Ad>;
         using SizeTag = typename ipc::data::ad_entity<Alloc>::size_ad_id_tag;
     public:
         AdDataEntity(const Config &config):
@@ -109,15 +109,17 @@ class AdDataEntity {
             });            
         }
         template <typename ...Args>
-        bool retrieve(DataVect &vect, Args && ...args) {
-            bool result = false;
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "ad");
-                result = cache.retrieve<SizeTag>(vect, std::forward<Args>(args)...);
+        bool retrieve(DataVect &ads, Args && ...args) {
+            auto p = cache.template retrieve_raw<SizeTag>(std::forward<Args>(args)...);
+            auto is_found = p.first != p.second;
+            ads.reserve(500);
+            while ( p.first != p.second ) {
+                Ad ad;
+                p.first->retrieve(ad);
+                ads.emplace_back(std::move(ad));
+                ++p.first;
             }
-            LOG(debug) << sp->str();
-            return result;
+            return is_found;
         }
     private:
         const Config &config;

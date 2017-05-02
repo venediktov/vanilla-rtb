@@ -16,15 +16,14 @@ namespace vanilla {
 template<typename Config = BidderConfig>
 class BidderSelector {
     public:
-        using ad_retrieve_type = std::shared_ptr<Ad>;
         using SpecBidderCaches = BidderCaches<Config>;
        
         struct intersc_cmp {
-            bool operator()(const uint64_t &l, const ad_retrieve_type &r) const {
-                return l < r->ad_id;
+            bool operator()(const uint64_t &l, const Ad &r) const {
+                return l < r.ad_id;
             }
-            bool operator()(const ad_retrieve_type &l, const uint64_t &r) const {
-                return l->ad_id < r;
+            bool operator()(const Ad &l, const uint64_t &r) const {
+                return l.ad_id < r;
             }
         };
         BidderSelector(BidderCaches<Config> &bidder_caches):
@@ -56,6 +55,7 @@ class BidderSelector {
             else {
                 LOG(debug) << "selected ads " << campaign_ads.size();
             }
+            /*********** TODO: decommision Ad cache and transfer ad.w ad.h into campaign_data
             retrieved_cached_ads.clear();
             if(!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, imp.banner.get().w, imp.banner.get().h)) {
                 return result;
@@ -72,13 +72,15 @@ class BidderSelector {
             // Sort by cicros
             // TODO make ability to make custom algorithm
             std::sort(intersection.begin(), intersection.end(),
-                [](const std::shared_ptr<Ad> &first, const std::shared_ptr<Ad> &second) -> bool {
-                return first->max_bid_micros > second->max_bid_micros;
+                [](const Ad &first, const Ad &second) -> bool {
+                return first.max_bid_micros > second.max_bid_micros;
             });
             LOG(debug) << "intersecion size " << intersection.size();
             if(intersection.size()) {
-                result = intersection[0];
+                result = std::make_shared<Ad>(intersection[0]);
             }
+            return result;
+            *************************************************************/
             return result;
         }
         
@@ -135,9 +137,9 @@ class BidderSelector {
         SpecBidderCaches &bidder_caches;
         std::vector<GeoCampaign> geo_campaigns;
         std::vector<CampaignData> campaign_data;
-        std::vector<ad_retrieve_type> retrieved_cached_ads;
+        std::vector<Ad> retrieved_cached_ads;
         std::set<uint64_t> campaign_ads;
-        std::vector<ad_retrieve_type> intersection;
+        std::vector<Ad> intersection;
 };
 }
 
