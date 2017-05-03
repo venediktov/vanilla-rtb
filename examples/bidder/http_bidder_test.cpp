@@ -17,12 +17,12 @@
 #include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/config/config.hpp"
 #include "rtb/core/tagged_tuple.hpp"
-#include "rtb/datacache/ad_entity.hpp"
 #include "rtb/datacache/entity_cache.hpp"
 #include "rtb/datacache/memory_types.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "examples/datacache/geo_entity.hpp"
 #include "examples/datacache/city_country_entity.hpp"
+#include "examples/datacache/ad_entity.hpp"
 
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"

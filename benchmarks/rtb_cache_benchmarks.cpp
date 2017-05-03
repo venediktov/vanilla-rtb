@@ -44,7 +44,7 @@ struct CacheBenchmarkFixture: benchmark::Fixture
                 ("cache-loader.host", "cache_loader_test Host")
                 ("cache-loader.port", "cache_loader_test Port")
                 ("cache-loader.root", "cache_loader_test Root")
-                ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("bidder/data/ads_source_big"), "ads_source file name")
+                ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("bidder/data/ads"), "ads_source file name")
                 ("datacache.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
                 ("datacache.geo_ad_source", boost::program_options::value<std::string>(&d.geo_ad_source)->default_value("bidder/data/ad_geo"), "geo_ad_source file name")
                 ("datacache.geo_ad_ipc_name", boost::program_options::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")

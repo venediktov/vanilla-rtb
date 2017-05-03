@@ -10,7 +10,7 @@
 #include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/config/config.hpp"
 #include "rtb/core/tagged_tuple.hpp"
-#include "rtb/datacache/ad_entity.hpp"
+#include "examples/datacache/ad_entity.hpp"
 #include "examples/datacache/geo_entity.hpp"
 #include "examples/datacache/city_country_entity.hpp"
 #include "rtb/datacache/entity_cache.hpp"
