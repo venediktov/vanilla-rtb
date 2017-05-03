@@ -142,12 +142,14 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_retrieve_benchmark)(benchmark::
 
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_retrieve_benchmark);
 
+
 struct dummy_key {
     uint32_t const key;
 
     template <typename T>
     uint32_t get() const { return key; }
 };
+
 
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark)(benchmark::State& state)
 {
