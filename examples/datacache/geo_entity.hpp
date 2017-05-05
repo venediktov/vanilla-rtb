@@ -8,7 +8,7 @@
 #ifndef __IPC_DATA_GEO_ENTITY_HPP__
 #define __IPC_DATA_GEO_ENTITY_HPP__
 
-#include "base_entity.hpp"
+#include "rtb/datacache/base_entity.hpp"
 #include <string>
 #include <cstdint>
 #include <boost/interprocess/containers/string.hpp>
@@ -31,15 +31,17 @@ namespace ipc { namespace data {
         
         geo_entity( const Alloc & a ) :
             base_entity<Alloc>(a),
-            geo_id{}
+            geo_id{},
+            ad_id{a}
         {}
             
         uint32_t geo_id;
+        char_string ad_id;
         
         template<typename Key, typename Serializable>
         void store(Key && key, Serializable  && data)  {
-            base_type::store(std::forward<Serializable>(data)) ;
             geo_id = key.template get<geo_id_tag>();  
+            ad_id =  char_string(data.ad_id.data(), data.ad_id.size(), base_type::allocator);
         }
         template<typename Serializable>
         static std::size_t size(const Serializable && data) {
@@ -52,12 +54,13 @@ namespace ipc { namespace data {
         }
         template<typename Serializable>
         void retrieve(Serializable  & data) const {
-            base_type::template retrieve(data) ;
+            data.geo_id = geo_id;
+            data.ad_id = std::move(std::string(ad_id.data(), ad_id.length()));
         }
         //needed for ability to update after matching by calling index.modify(itr,entry)
         void operator()(geo_entity &entry) const {
-            base_entity<Alloc>::operator()(static_cast<base_type &>(entry));            
             entry.geo_id=geo_id;
+            entry.ad_id=ad_id;
         }
     };
    
@@ -70,7 +73,11 @@ boost::multi_index_container<
     boost::multi_index::indexed_by<
         boost::multi_index::ordered_unique<
             boost::multi_index::tag<typename geo_entity<Alloc>::geo_id_tag>,
-              BOOST_MULTI_INDEX_MEMBER(geo_entity<Alloc>,uint32_t,geo_id)
+            boost::multi_index::composite_key<
+              geo_entity<Alloc>,
+              BOOST_MULTI_INDEX_MEMBER(geo_entity<Alloc>,uint32_t,geo_id),
+              BOOST_MULTI_INDEX_MEMBER(geo_entity<Alloc>,typename geo_entity<Alloc>::char_string,ad_id)
+            >
         >
     >,
     boost::interprocess::allocator<geo_entity<Alloc>,typename Alloc::segment_manager>

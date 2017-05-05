@@ -38,36 +38,31 @@ codes = ["""<script>alert("code1!");</script>""", """<script>alert("code2!");</s
 file = open("../data/geo_campaign", "w")
 for geo_id, city, country in geo:
     max_targetings = random.randint(1, max_campaigns/10)
-    file.write("%d\t%d" % (geo_id, max_targetings))
     start_pos = random.randint(1, max_campaigns-max_targetings)
     for i in range(start_pos, start_pos+max_targetings+1):
-        file.write("\t%d" % (i))
-    file.write("\n")
+        file.write("%d\t%d\n" % (geo_id, i))
 file.close()
 
-file = open("../data/campaign_data", "w")
+
 max_ad = 1
-max_ads_in_campaign = 20
-for campaign_id in range(1, max_campaigns+1):    
-    ads_in_campaign = random.randint(1, max_ads_in_campaign)
-    file.write("%d\t%d" % (campaign_id, ads_in_campaign))
-    for ad_id in range(max_ad, max_ad + ads_in_campaign+1):
-        file.write("\t%d" % (ad_id))
-    file.write("\n")
-    max_ad += ads_in_campaign+1
-file.close()
+max_ads_in_campaign = 30
 
 file = open("../data/ads", "w")
-for banner_id in range(1, max_ad+1):
-    rand_size = random.choice(size),
-    file.write("%u\t%u\t%u\t%u\t%u\t%s\n" % (
-        banner_id, 
-        rand_size[0][0],
-        rand_size[0][1],
-        random.choice(position),
-        random.randint(max_bid[0], max_bid[1]),
-        random.choice(codes)
-    ))
+for campaign_id in range(1, max_campaigns+1):    
+    ads_in_campaign = random.randint(1, max_ads_in_campaign)
+    
+    for ad_id in range(max_ad, max_ad+ads_in_campaign+1):
+        rand_size = random.choice(size),
+        file.write("%u\t%u\t%u\t%u\t%u\t%u\t%s\n" % (
+            ad_id, 
+            campaign_id,
+            rand_size[0][0],
+            rand_size[0][1],
+            random.choice(position),
+            random.randint(max_bid[0], max_bid[1]),
+            random.choice(codes)
+        ))
+    max_ad+=ads_in_campaign+1
 file.close()
 
 file = open("../data/ad_geo", "w")

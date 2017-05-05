@@ -1,8 +1,8 @@
 
 #include "core/tagged_tuple.hpp"
-#include "datacache/city_country_entity.hpp"
-#include "datacache/entity_cache.hpp"
-#include "datacache/memory_types.hpp"
+#include "examples/datacache/city_country_entity.hpp"
+#include "rtb/datacache/entity_cache.hpp"
+#include "rtb/datacache/memory_types.hpp"
 #include <chrono>
 #include <iterator>
 #include <fstream>
@@ -25,6 +25,7 @@ namespace po = boost::program_options;
 struct CityCountry {
     std::string city;
     std::string country;
+    uint32_t geo_id;
     std::string record;
     CityCountry(std::string city, std::string country) : city{std::move(city)}, country{std::move(country)} {}
     CityCountry() : city{}, country{} {}

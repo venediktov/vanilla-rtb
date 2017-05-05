@@ -19,8 +19,8 @@
 #ifndef __IPC_DATA_ACCOUNT_ENTITY_HPP__
 #define __IPC_DATA_ACCOUNT_ENTITY_HPP__
 
-#include "base_entity.hpp"
-#include "any_str_ops.hpp"
+#include "rtb/datacache/base_entity.hpp"
+#include "rtb/datacache/any_str_ops.hpp"
 
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -52,20 +52,21 @@ namespace ipc { namespace data {
         city_country_entity( const Alloc & a ) :
         base_entity<Alloc>(a),
         city(a),
-        country(a)
+        country(a),
+        geo_id{}
         {} //ctor END
        
         char_string city;
         char_string country;
+        uint32_t geo_id;
  
         template<typename Key, typename Serializable>
         void store(Key && key, Serializable  && data)  {
-            base_type::store(std::forward<Serializable>(data)) ;
-            //Store keys
             const std::string &key_city     = key.template get<city_tag>() ;
             const std::string &key_country  = key.template get<country_tag>() ;
             city      = char_string(key_city.data(), key_city.size(), base_type::allocator);
             country   = char_string(key_country.data(),  key_country.size(), base_type::allocator) ;
+            geo_id    = data.geo_id;
         }
         template<typename Serializable>
         static std::size_t size(const Serializable && data) {
@@ -79,13 +80,15 @@ namespace ipc { namespace data {
         }
         template<typename Serializable>
         void retrieve(Serializable  & data) const {
-            base_type::template retrieve(data) ;
+            data.city=std::string(city.data(), city.size());
+            data.country=std::string(country.data(), country.size());
+            data.geo_id=geo_id;
         }
         //needed for ability to update after matching by calling index.modify(itr,entry)
         void operator()(city_country_entity &entry) const {
-            base_entity<Alloc>::operator()(static_cast<base_type &>(entry));
             entry.city=city;
             entry.country=country;
+            entry.geo_id=geo_id;
         }
     };
 

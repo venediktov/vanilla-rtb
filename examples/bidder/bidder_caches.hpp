@@ -23,8 +23,7 @@ struct BidderCaches {
             config(config),
             ad_data_entity(config),
             geo_data_entity(config), 
-            geo_campaign_entity(config),
-            campaign_data_entity(config)
+            geo_campaign_entity(config)
         {}        
         void load() noexcept(false) {
             auto sp = std::make_shared<std::stringstream>();
@@ -42,10 +41,6 @@ struct BidderCaches {
                    perf_timer<std::stringstream> timer(sp, "\ngeo_campaign load");
                    geo_campaign_entity.load();
                 }
-                {
-                   perf_timer<std::stringstream> timer(sp, "\ncampaign data load");
-                   campaign_data_entity.load();
-                }
                 // load others
             }
             LOG(info) << sp->str() ;
@@ -54,7 +49,6 @@ struct BidderCaches {
         AdDataEntity<Config> ad_data_entity;
         GeoDataEntity<Config> geo_data_entity;
         GeoCampaignEntity<Config> geo_campaign_entity;
-        CampaignDataEntity<Config> campaign_data_entity;
 };
 }
 

@@ -16,74 +16,52 @@ namespace vanilla {
 template<typename Config = BidderConfig>
 class BidderSelector {
     public:
-        using ad_retrieve_type = std::shared_ptr<Ad>;
         using SpecBidderCaches = BidderCaches<Config>;
        
         struct intersc_cmp {
-            bool operator()(const uint64_t &l, const ad_retrieve_type &r) const {
-                return l < r->ad_id;
+            bool operator()(const uint64_t &l, const Ad &r) const {
+                return l < r.ad_id;
             }
-            bool operator()(const ad_retrieve_type &l, const uint64_t &r) const {
-                return l->ad_id < r;
+            bool operator()(const Ad &l, const uint64_t &r) const {
+                return l.ad_id < r;
             }
         };
         BidderSelector(BidderCaches<Config> &bidder_caches):
             bidder_caches{bidder_caches}
         {
+            retrieved_cached_ads.reserve(500);
         }
         template<typename T> 
         std::shared_ptr<Ad> select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
             std::shared_ptr <Ad> result;
             
-            std::shared_ptr<Geo> geo;
-            if(!getGeo(req, geo) || !geo) {
+            Geo geo;
+            if(!getGeo(req, geo) ) {
                 LOG(debug) << "No geo";
                 return result;
             }
             
-            if(!getGeoCampaigns(geo->geo_id)) {
-                LOG(debug) << "No campaigns for geo " << geo->geo_id;
+            if(!getGeoCampaigns(geo.geo_id)) {
+                LOG(debug) << "No campaigns for geo " << geo.geo_id;
                 return result;
             }
             else {
-                LOG(debug) << "Selected campaigns " << geo_campaigns.campaign_ids.size();
+                LOG(debug) << "Selected campaigns " << geo_campaigns.size();
             }
             
-            if(!getCampaignAds(geo_campaigns.campaign_ids)) {
-                LOG(debug) << "No ads for geo " << geo->geo_id;
+            if(!getCampaignAds(geo_campaigns, imp)) {
+                LOG(debug) << "No ads for geo " << geo.geo_id;
                 return result;
             }
             else {
-                LOG(debug) << "selected ads " << campaign_ads.size();
+                LOG(debug) << "selected ads " << retrieved_cached_ads.size();
             }
-            retrieved_cached_ads.clear();
-            if(!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, imp.banner.get().w, imp.banner.get().h)) {
-                return result;
-            }
-            LOG(debug) << "size (" << imp.banner.get().w << "x"  << imp.banner.get().h << ") ads count " << retrieved_cached_ads.size();
             
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "intersection and sort");
-                intersection.clear();
-                std::set_intersection(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
-                    campaign_ads.begin(), campaign_ads.end(),
-                    std::back_inserter(intersection),
-                    intersc_cmp()
-                    //[](auto lhs, auto rhs) { return lhs->ad_id < rhs->ad_id; }
-                    );
-                // Sort by cicros
-                // TODO make ability to make custom algorithm
-                std::sort(intersection.begin(), intersection.end(),
-                    [](const std::shared_ptr<Ad> &first, const std::shared_ptr<Ad> &second) -> bool {
-                        return first->max_bid_micros > second->max_bid_micros;
-                    });
-                LOG(debug) << "intersecion size " << intersection.size();
-            }
-            LOG(debug) << sp->str();
-            if(intersection.size()) {
-                result = intersection[0];
-            }
+            std::sort(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
+                [](const Ad &first, const Ad &second) -> bool {
+                return first.max_bid_micros > second.max_bid_micros;
+            });
+            result = std::make_shared<Ad>(retrieved_cached_ads[0]);
             return result;
         }
         
@@ -96,8 +74,7 @@ class BidderSelector {
             return true;
         }
         template <typename T>
-        bool getGeo(const openrtb::BidRequest<T> &req, std::shared_ptr<Geo> &geo) {
-            retrieved_cached_geo.clear();
+        bool getGeo(const openrtb::BidRequest<T> &req, Geo &geo) {
             if (!req.user) {
                 LOG(debug) << "No user";
                 return true;
@@ -106,51 +83,33 @@ class BidderSelector {
                 LOG(debug) << "No user geo";
                 return true;
             }
-            
-            const std::string city = boost::algorithm::to_lower_copy(req.user.get().geo.get().city);
-            const std::string country = boost::algorithm::to_lower_copy(req.user.get().geo.get().country);
+           
+            auto &city_view = req.user.get().geo.get().city ;
+            auto &country_view = req.user.get().geo.get().country;
+            const std::string city = boost::algorithm::to_lower_copy(std::string(city_view.data(), city_view.size()));
+            const std::string country = boost::algorithm::to_lower_copy(std::string(country_view.data(), country_view.size()));
 
-            if (!bidder_caches.geo_data_entity.retrieve(retrieved_cached_geo, city, country)) {
+            if (!bidder_caches.geo_data_entity.retrieve(geo, city, country)) {
                 LOG(debug) << "retrieve failed " << city << " " << country;
                 return false;
-            }
-            if (!retrieved_cached_geo.size()) {
-                return false;
-            }
-            geo = retrieved_cached_geo[0];
+            } 
             return true;
         }
-        bool getCampaignAds(const GeoCampaigns::collection_type &campaigns) {
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "get selected campaign ads");
-                campaign_ads.clear();
-                campaign_data.clear();
-                LOG(debug) << "select ads from  " << campaigns.size() << " campaigns";
-                for (auto &campaign : campaigns) {
-                    LOG(debug) << "search campaign " << campaign;
-                    campaign_data.clear();
-                    if (!bidder_caches.campaign_data_entity.retrieve(campaign_data, campaign)) {
-                        continue;
-                    }
-                    LOG(debug) << "ads in campaign " << campaign_data.ad_ids.size();
-             
-                    std::for_each(campaign_data.ad_ids.begin(), campaign_data.ad_ids.end(), [&](auto &v) {
-                        campaign_ads.insert(v);
-                    });
+
+        template <typename T>
+        bool getCampaignAds(const std::vector<GeoCampaign> &campaigns, const openrtb::Impression<T> &imp) {
+            retrieved_cached_ads.clear();
+            for (auto &campaign : campaigns) {
+                if (!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
+                    continue;
                 }
             }
-            LOG(debug) << sp->str();
-            return campaign_ads.size() > 0;
+            return retrieved_cached_ads.size() > 0;
         }
     private:   
         SpecBidderCaches &bidder_caches;
-        GeoCampaigns geo_campaigns;
-        std::vector<std::shared_ptr <Geo> > retrieved_cached_geo;
-        CampaignData campaign_data;
-        std::vector<ad_retrieve_type> retrieved_cached_ads;
-        std::set<uint64_t> campaign_ads;
-        std::vector<ad_retrieve_type> intersection;
+        std::vector<GeoCampaign> geo_campaigns;
+        std::vector<Ad> retrieved_cached_ads;
 };
 }
 
