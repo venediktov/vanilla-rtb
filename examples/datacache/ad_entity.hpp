@@ -8,7 +8,7 @@
 #ifndef __IPC_DATA_AD_ENTITY_HPP__
 #define __IPC_DATA_AD_ENTITY_HPP__
 
-#include "base_entity.hpp" 
+#include "rtb/datacache/base_entity.hpp" 
 #include <string>
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
@@ -16,13 +16,13 @@
 #include <boost/multi_index/composite_key.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
-#include <boost/archive/binary_oarchive.hpp>
   
 namespace ipc { namespace data {
     
     template <typename Alloc>
     struct ad_entity : base_entity<Alloc> {
         using base_type   = base_entity<Alloc>; 
+        using char_string = typename base_type::char_string;
       
         //for tagging in multi_index_container
         
@@ -35,51 +35,54 @@ namespace ipc { namespace data {
        
         ad_entity( const Alloc & a ) :
             base_entity<Alloc>(a),
+            ad_id{},
             campaign_id{},
             width{},
             height{},
-            ad_id{}
+            position{},
+            max_bid_micros{},
+            code(a)
         {} //ctor END
        
+        uint64_t ad_id;
         uint32_t campaign_id;
         uint16_t width;
         uint16_t height;
-        uint64_t ad_id;
+        uint64_t position;
+        uint64_t max_bid_micros;
+        char_string code;
         
         template<typename Key, typename Serializable>
         void store(Key && key, Serializable  && data)  {
-            base_type::store(std::forward<Serializable>(data)) ;
-            //Store keys
             campaign_id = key.template get<campaign_tag>();
             width = key.template get<width_tag>();
             height = key.template get<height_tag>();  
             ad_id = key.template get<ad_id_tag>();  
-            
+            position = data.position;
+            max_bid_micros = data.max_bid_micros;
+            code = char_string(data.code.data(), data.code.size(), base_type::allocator);
         }
         
         template<typename Serializable>
-        static std::size_t size(const Serializable && data) {
-            std::stringstream ss;
-            boost::archive::binary_oarchive oarch(ss);
-            oarch << std::forward<Serializable>(data) ;
-            return base_type::size(std::forward<Serializable>(data)) +                
-                   sizeof(data.campaign_id) +
-                   sizeof(data.width) +
-                   sizeof(data.height) +                
-                   sizeof(data.ad_id) +
-                   ss.str().size() ;
-        }
-        template<typename Serializable>
         void retrieve(Serializable  & data) const {
-            base_type::template retrieve(data) ;
+            data.campaign_id=campaign_id;
+            data.width=width;
+            data.height=height;
+            data.ad_id = ad_id;
+            data.position = position;
+            data.max_bid_micros = max_bid_micros;
+            data.code = std::string(code.data(), code.size());
         }
         //needed for ability to update after matching by calling index.modify(itr,entry)
         void operator()(ad_entity &entry) const {
-            base_entity<Alloc>::operator()(static_cast<base_type &>(entry));            
             entry.campaign_id=campaign_id;
             entry.width=width;
             entry.height=height;
             entry.ad_id = ad_id;
+            entry.position = position;
+            entry.max_bid_micros = max_bid_micros;
+            entry.code = code;
+
         }
     };
    
@@ -99,11 +102,7 @@ boost::multi_index_container<
                 BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint16_t,height),
                 BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint64_t,ad_id)
             >
-        >/*,
-        boost::multi_index::ordered_unique<
-            boost::multi_index::tag<typename ad_entity<Alloc>::ad_id_tag>,
-                BOOST_MULTI_INDEX_MEMBER(ad_entity<Alloc>,uint64_t,ad_id)
-        >*/
+        >
     >,
     boost::interprocess::allocator<ad_entity<Alloc>,typename Alloc::segment_manager>
 > ;

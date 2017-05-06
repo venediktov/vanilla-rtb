@@ -28,6 +28,7 @@
 #include "CRUD/service/reply.hpp"
 #include "CRUD/handlers/crud_matcher.hpp"
 #include <rtb/common/decision_tree.hpp>
+#include <iostream>
 
 namespace vanilla {
     namespace exchange {
@@ -50,7 +51,7 @@ namespace vanilla {
         public:
             using decision_params_type = std::tuple<self_type&, http::server::reply&, auction_request_type &>;
         private:
-            using decision_handler_type = std::function<void (decision_params_type &&)>;
+            using decision_handler_type = std::function<void (const decision_params_type &)>;
             
             DSL parser;
             auction_handler_type auction_handler;
@@ -93,7 +94,7 @@ namespace vanilla {
                 return *this;
             }
 
-            bool handle_auction(http::server::reply& r, auction_request_type bid_request) {
+            bool handle_auction(http::server::reply& r, const auction_request_type &bid_request) {
                 if (auction_handler) {
                     std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
                     auto future = std::async(std::launch::async, [&]() {
@@ -111,7 +112,7 @@ namespace vanilla {
                 return false;
             }
 
-            bool hanle_auction_async(http::server::reply& r, auction_request_type bid_request) {
+            bool hanle_auction_async(http::server::reply& r, const auction_request_type &bid_request) {
                 if (auction_async_handler) {
                     std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
                     boost::optional<wire_response_type> wire_response;

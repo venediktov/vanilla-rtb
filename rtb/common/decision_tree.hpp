@@ -46,13 +46,14 @@ namespace vanilla {
     namespace common {
         template <typename PARAMS>
         struct decision_action {
-            using function_type = std::function<bool(PARAMS &params)>;
+            using function_type = std::function<bool(const PARAMS &params)>;
 
             struct node_S {
                 function_type f;
                 int next_true;
                 int next_false;
             };
+            
             using node_type = node_S;
 
             enum CODES {
@@ -62,11 +63,11 @@ namespace vanilla {
                 return res ? node.next_true : node.next_false;
             }
 
-            inline int operator()(PARAMS &params) const {
+            inline int operator()(const PARAMS &params) const {
                 return get(node.f(params));
             }
 
-            uint32_t row_num;
+            uint32_t row_num{0};
             node_type node;
         };
 
@@ -77,28 +78,28 @@ namespace vanilla {
         template<typename PARAMS, std::size_t N>
         struct decision_tree_manager {
             using params_decision_action = decision_action<PARAMS>;
-            decision_tree_manager(decision_tree<PARAMS, N> && tree) : tree{std::move(tree)}
+            using decision_tree_type = decision_tree<PARAMS, N>;
+            decision_tree_manager(decision_tree_type && tree) : tree{std::move(tree)}
             {
             }
-            decision_tree_manager(const decision_tree<PARAMS, N> & tree) : tree{tree}
+            decision_tree_manager(const decision_tree_type & tree) : tree{tree}
             {
             }
-
-            void execute(PARAMS &params) const {
+            void execute(const PARAMS &params) const noexcept(false) {
                 next(params, tree.at(0));
             }
 
-            params_decision_action next(PARAMS &params, const params_decision_action &action_now) const {
+            void next(const PARAMS &params, const params_decision_action &action_now) const noexcept(false) {
                 int next_node_idx = action_now(params); //executes and produces action_next
                 if (next_node_idx == params_decision_action::CONTINUE) {
                     next(params, tree.at(action_now.row_num + 1));
                 }
-                if (next_node_idx != params_decision_action::EXIT) {
+                else if (next_node_idx != params_decision_action::EXIT) {
                     next(params, tree.at(next_node_idx));
                 }
             }
         private:
-            decision_tree<PARAMS, N> tree;
+            decision_tree_type tree;
         };
 
     }

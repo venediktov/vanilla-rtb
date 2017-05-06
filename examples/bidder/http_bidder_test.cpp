@@ -1,34 +1,34 @@
-
+#include <vector>
+#include <random>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/program_options.hpp>
-#include "exchange/exchange_handler.hpp"
-#include "exchange/exchange_server.hpp"
-#include "CRUD/handlers/crud_dispatcher.hpp"
-#include "DSL/generic_dsl.hpp"
-#include "rtb/config/config.hpp"
-#include "core/tagged_tuple.hpp"
-#include "datacache/ad_entity.hpp"
-#include "datacache/geo_entity.hpp"
-#include "datacache/city_country_entity.hpp"
-#include "datacache/entity_cache.hpp"
-#include "datacache/memory_types.hpp"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-#include <vector>
-#include <random>
+#include "rtb/core/core.hpp"
+#include "rtb/exchange/exchange_handler.hpp"
+#include "rtb/exchange/exchange_server.hpp"
+#include "rtb/DSL/generic_dsl.hpp"
+#include "rtb/config/config.hpp"
+#include "rtb/core/tagged_tuple.hpp"
+#include "rtb/datacache/entity_cache.hpp"
+#include "rtb/datacache/memory_types.hpp"
+#include "CRUD/handlers/crud_dispatcher.hpp"
+#include "examples/datacache/geo_entity.hpp"
+#include "examples/datacache/city_country_entity.hpp"
+#include "examples/datacache/ad_entity.hpp"
+
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
 
-#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 
@@ -108,58 +108,54 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
-        .auction_async([&](const BidRequest & request) {
-        thread_local vanilla::BidderSelector<> selector(caches);
-        BidResponse response;
-
-        for (auto &imp : request.imp) {
-            if (auto ad = selector.select(request, imp)) {
-                auto sp = std::make_shared<std::stringstream>();
-                {
-                    perf_timer<std::stringstream> timer(sp, "fill response");
-
-                    boost::uuids::uuid bidid = uuid_generator();
-                    response.bidid = boost::uuids::to_string(bidid);
-
-                    if (request.cur.size()) {
-                        response.cur = request.cur[0];
-                    } else if (imp.bidfloorcur.length()) {
-                        response.cur = imp.bidfloorcur; // Just return back
-                    }
-
-                    if (response.seatbid.size() == 0) {
-                        response.seatbid.emplace_back(SeatBid());
-                    }
-
-                    Bid bid;
-                    bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
-                    // Is it the same as response.bidid?
-                    bid.impid = imp.id;
-                    bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
-                    bid.w = ad->width;
-                    bid.h = ad->height;
-                    bid.adm = ad->code;
-                    bid.adid = ad->ad_id;
-
-                    response.seatbid.back().bid.emplace_back(std::move(bid));
+        .auction_async([&](const BidRequest &request) {
+            thread_local vanilla::BidderSelector<> selector(caches);
+            BidResponse response;
+            for(auto &imp : request.imp) {
+                if(auto ad = selector.select(request, imp)) {
+                   boost::uuids::uuid bidid = uuid_generator();
+                   response.bidid = boost::uuids::to_string(bidid);
+                   if (request.cur.size()) {
+                       response.cur = request.cur[0];
+                   } else if (imp.bidfloorcur.length()) {
+                       response.cur = imp.bidfloorcur; // Just return back
+                   }
+                   Bid bid;
+                   bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
+                   // Is it the same as response.bidid?
+                   // Wrong filling type
+                   bid.impid = imp.id;
+                   bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
+                   bid.w = ad->width;
+                   bid.h = ad->height;
+                   bid.adm = ad->code;
+                   bid.adid = ad->ad_id;
+                   if (response.seatbid.size() == 0) {
+                      SeatBid seatbid;
+                      seatbid.bid.push_back(bid);
+                      response.seatbid.push_back(seatbid);
+                   } else {
+                      response.seatbid.back().bid.push_back(bid);
+                   }
                 }
-                LOG(debug) << sp->str();
             }
-        }
-        return response;
-     })
-     .decision([&](bid_handler_type::decision_params_type &&decision_params) {
-         using da = vanilla::common::decision_action<bid_handler_type::decision_params_type>;
-         vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, 1> manager(
-            vanilla::common::decision_tree<bid_handler_type::decision_params_type, 1>({
-                {0, {[&](bid_handler_type::decision_params_type &params) -> bool {
+            return response;
+        })
+        .decision([&](const bid_handler_type::decision_params_type & decision_params) {
+            using da = vanilla::common::decision_action<bid_handler_type::decision_params_type>;
+            using decision_manager = vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, 1>;
+            decision_manager::decision_tree_type tree({{
+                { 0, {[&](const bid_handler_type::decision_params_type & params) -> bool {
                             return std::get<0>(params).hanle_auction_async(std::get<1>(params), std::get<2>(params));
-                    }, da::EXIT, da::EXIT}}
-            })
-         );
-         manager.execute(decision_params);
-     })
-     ;
+                        }, 
+                        da::EXIT, da::EXIT
+                    }
+                }
+            }});
+            decision_manager manager(tree);
+            manager.execute(decision_params);
+        })
+    ;   
     
     connection_endpoint ep {std::make_tuple(config.get("bidder.host"), config.get("bidder.port"), config.get("bidder.root"))};
 

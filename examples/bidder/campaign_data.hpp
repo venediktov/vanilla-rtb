@@ -20,33 +20,40 @@ namespace boost {
 #include <boost/utility/string_view.hpp>
 #endif
 #include <boost/lexical_cast.hpp>
-#include "rtb/datacache/campaign_entity.hpp"
+#include <iterator>
 
 
 //This struct gets stored in the cache
 struct CampaignData {
-    using collection_type = std::vector<uint64_t> ;
-    using iterator = collection_type::iterator;
     uint32_t campaign_id;
-    mutable collection_type ad_ids;
+    uint32_t ad_id;
+   
+    struct campaign_id_tag{};
 
-    CampaignData(const CampaignData &data): 
-        campaign_id{data.campaign_id} , ad_ids{data.ad_ids}
+    CampaignData(const CampaignData &data) :
+        campaign_id{data.campaign_id} , ad_id{data.ad_id}
     {}
      
-    CampaignData():
-        campaign_id{} , ad_ids{}
+    CampaignData() :
+        campaign_id{} , ad_id{}
+    {}
+
+    template<typename Alloc>
+    CampaignData( const Alloc &) :
+        campaign_id{} , ad_id{}
+    {}
+
+    CampaignData(uint32_t campaign_id, uint32_t ad_id) :
+        campaign_id{campaign_id,} , ad_id{ad_id}
     {}
         
-    friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<CampaignData> &campaign_data_ptr)  {
-        os <<  *campaign_data_ptr;
-        return os;
-    }
     friend std::ostream &operator<<(std::ostream & os, const  CampaignData & value)  {
-        os << value.campaign_id;
-        for(auto &id : value.ad_ids) {
-            os << "|" << id;
-        }
+        os << "{" << value.campaign_id << "|"
+           << value.ad_id << "}";
+        return os;
+    } 
+    friend std::ostream &operator<<(std::ostream & os, const  std::vector<CampaignData> & value)  {
+        std::copy(std::begin(value), std::end(value), std::ostream_iterator<CampaignData>(os, " "));
         return os;
     } 
     friend std::istream &operator>>(std::istream &is, CampaignData &data) {
@@ -60,36 +67,58 @@ struct CampaignData {
             return is;
         }
         data.campaign_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
-        uint32_t ads_count = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
-        data.ad_ids.clear();
-        data.ad_ids.reserve(ads_count);
-        //data.ad_ids.reserve(ads_count);
-        uint32_t ads_end_idx = ads_count + 2;
-        for(uint32_t fields_idx = 2; fields_idx < ads_end_idx; fields_idx++) {
-            //data.ad_ids.push_back(boost::lexical_cast<uint32_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size()));
-            data.ad_ids.push_back(boost::lexical_cast<uint64_t>(fields.at(fields_idx).begin(), fields.at(fields_idx).size()));
-        }        
+        data.ad_id = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
         return is;
     }
-    bool operator< (const CampaignData &data) const {
-        return campaign_id < data.campaign_id;
+
+    template<typename Key>
+    void store(Key && key, const CampaignData  & data)  {
+        campaign_id = key.template get<campaign_id_tag>();
+        ad_id =  data.ad_id;
     }
-    void clear() {
-        campaign_id = 0;
-        ad_ids.clear();
+
+    void retrieve(CampaignData  &data) const {
+        data.campaign_id=campaign_id;
+        data.ad_id=ad_id;
     }
+
+    void operator()(CampaignData &entry) const {
+        entry.campaign_id=campaign_id;
+        entry.ad_id=ad_id;
+    }
+
 };
+
+namespace ipc { namespace data {
+
+template<typename Alloc>
+using campaign_data_container =
+boost::multi_index_container<
+    CampaignData,
+    boost::multi_index::indexed_by<
+        boost::multi_index::ordered_unique<
+            boost::multi_index::tag<typename CampaignData::campaign_id_tag>,
+            boost::multi_index::composite_key<
+              CampaignData,
+              BOOST_MULTI_INDEX_MEMBER(CampaignData,uint32_t,campaign_id),
+              BOOST_MULTI_INDEX_MEMBER(CampaignData,uint32_t,ad_id)
+            >
+        >
+    >,
+    boost::interprocess::allocator<CampaignData,typename Alloc::segment_manager>
+> ;
+
+}}
 
 template <typename Config = BidderConfig,
           typename Memory = typename mpclmi::ipc::Shared,
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container>::char_allocator >
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_data_container>::char_allocator >
 class CampaignDataEntity {
-        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_container> ; 
-        using Keys = vanilla::tagged_tuple< 
-            typename ipc::data::campaign_entity<Alloc>::campaign_id_tag,   uint32_t
-        >;
-        using CampaignTag = typename ipc::data::campaign_entity<Alloc>::campaign_id_tag;
+        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_data_container> ;
+        using CampaignTag = typename CampaignData::campaign_id_tag;
+        using Keys = vanilla::tagged_tuple<CampaignTag, uint32_t>;
     public:    
+        using CampaignDataCollection = std::vector<CampaignData>;
         CampaignDataEntity(const Config &config):
             config{config}, cache(config.data().campaign_data_ipc_name)
         {}
@@ -103,21 +132,24 @@ class CampaignDataEntity {
             
             std::for_each(std::istream_iterator<CampaignData>(in), std::istream_iterator<CampaignData>(), [this](const CampaignData &data) {
                 if (!this->cache.insert(Keys{data.campaign_id}, data) ) {
-                    LOG(debug) << "Failed to insert campaign_data=" << data.campaign_id;    
+                    LOG(debug) << "Failed to insert campaign_data=" << data.campaign_id;
                 }
             });
         }
         
-        bool retrieve(CampaignData &data, uint32_t campaign_id) {
-            bool result = false;
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "campaign_data");
-                result = cache.template retrieve<CampaignTag>(data, campaign_id);
+        bool retrieve(CampaignDataCollection &campaigns, uint32_t campaign_id) {
+            auto p = cache.template retrieve_raw<CampaignTag>(campaign_id);
+            auto is_found = p.first != p.second;
+            campaigns.reserve(500);
+            while ( p.first != p.second ) {
+                CampaignData data;
+                p.first->retrieve(data);
+                campaigns.emplace_back(std::move(data));
+                ++p.first;
             }
-            LOG(debug) << sp->str();
-            return result;
+            return is_found;
         }
+
     private:
         const Config &config;
         Cache cache;
