@@ -23,6 +23,8 @@ struct bidder_config_data {
     int timeout;
     unsigned int concurrency;
     short port;
+    std::string host;
+    std::string root;
     short num_of_bidders;
     
     bidder_config_data() :
@@ -33,7 +35,7 @@ struct bidder_config_data {
         geo_campaign_source{},
         campaign_data_source{}, campaign_data_ipc_name{},
         timeout{}, concurrency{},
-        port{}, num_of_bidders{}
+        port{}, host{}, root{}, num_of_bidders{}
     {}
 };
 using BidderConfig = vanilla::config::config<bidder_config_data>;
