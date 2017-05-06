@@ -62,9 +62,9 @@ int main(int argc, char *argv[]) {
             ("bidder.geo_ad_ipc_name", boost::program_options::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")
             ("bidder.geo_source", boost::program_options::value<std::string>(&d.geo_source)->default_value("data/geo"), "geo_source file name")
             ("bidder.geo_ipc_name", boost::program_options::value<std::string>(&d.geo_ipc_name)->default_value("vanilla-geo-ipc"), "geo ipc name")
-            ("bidder.host", "bidder_test Host")
-            ("bidder.port", "bidder_est Port")
-            ("bidder.root", "bidder_test Root")
+            ("bidder.port", boost::program_options::value<short>(&d.port)->required(), "bidder port")
+            ("bidder.host", boost::program_options::value<std::string>(&d.host)->default_value("0.0.0.0"), "bidder host")
+            ("bidder.root", boost::program_options::value<std::string>(&d.root)->default_value("."), "bidder root")
             ("bidder.timeout", boost::program_options::value<int>(&d.timeout), "bidder_test timeout")
             ("bidder.concurrency", boost::program_options::value<unsigned int>(&d.concurrency)->default_value(0), "bidder concurrency, if 0 is set std::thread::hardware_concurrency()")
             ("bidder.geo_campaign_ipc_name", boost::program_options::value<std::string>(&d.geo_campaign_ipc_name)->default_value("vanilla-geo-campaign-ipc"), "geo campaign ipc name")
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
             return response;
         });
     
-    connection_endpoint ep {std::make_tuple(config.get("bidder.host"), config.get("bidder.port"), config.get("bidder.root"))};
+    connection_endpoint ep {std::make_tuple(config.data().host, boost::lexical_cast<std::string>(config.data().port), config.data().root)};
 
     //initialize and setup CRUD dispatchers
     restful_dispatcher_t dispatcher(ep.root);
