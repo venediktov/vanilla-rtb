@@ -37,9 +37,11 @@ namespace vanilla {
         thread_local boost::asio::deadline_timer timer{io_service};
 
 
-        template<typename DSL>
+        template<typename DSL, typename Request = decltype(DSL().extract_request(std::string())) >
         class exchange_handler {
-            using auction_request_type = decltype(DSL().extract_request(std::string()));
+            //using auction_request_type = decltype(DSL().extract_request(std::string()));
+        public:        
+            using auction_request_type = Request;
             using auction_response_type = typename DSL::serialized_type;
             using wire_response_type = decltype(DSL().create_response(auction_response_type()));
             using parse_error_type = typename DSL::parse_error_type;
@@ -47,8 +49,7 @@ namespace vanilla {
             using auction_async_handler_type = auction_handler_type;
             using log_handler_type = std::function<void (const std::string &)>;
             using error_log_handler_type = std::function<void (const std::string &)>;
-            using self_type = exchange_handler<DSL>;
-        public:
+            using self_type = exchange_handler<DSL, Request>;
             using decision_params_type = std::tuple<self_type&, http::server::reply&, auction_request_type &>;
         private:
             using decision_handler_type = std::function<void (const decision_params_type &)>;
@@ -96,7 +97,7 @@ namespace vanilla {
 
             bool handle_auction(http::server::reply& r, const auction_request_type &bid_request) {
                 if (auction_handler) {
-                    std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
+                    std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
                     auto future = std::async(std::launch::async, [&]() {
                         auto auction_response = auction_handler(bid_request);
                         auto wire_response = parser.create_response(auction_response);
@@ -114,7 +115,7 @@ namespace vanilla {
 
             bool hanle_auction_async(http::server::reply& r, const auction_request_type &bid_request) {
                 if (auction_async_handler) {
-                    std::chrono::milliseconds timeout{bid_request.tmax ? bid_request.tmax : tmax.count()};
+                    std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
                     boost::optional<wire_response_type> wire_response;
                     auto submit_async = [&]() {
                         auto auction_response = auction_async_handler(bid_request);

@@ -13,8 +13,18 @@
 namespace vanilla {
     template <typename UserInfo, typename T=std::string>
     struct BidRequest {
-        openrtb::BidRequest<T> bid_request;
+        using request_type = openrtb::BidRequest<T>;
+        request_type bid_request;
         UserInfo user_info;
+        
+        BidRequest &operator=(const request_type &req) {
+            bid_request = req;
+            return *this;
+        }
+        
+        const request_type& request() const {
+            return bid_request;
+        }
     };
 }
 

@@ -23,6 +23,7 @@
 #include "examples/datacache/geo_entity.hpp"
 #include "examples/datacache/city_country_entity.hpp"
 #include "examples/datacache/ad_entity.hpp"
+#include "response_builder.hpp"
 
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
@@ -50,7 +51,7 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
-    using BidRequest = openrtb::BidRequest<std::string>;
+    //using BidRequest = openrtb::BidRequest<std::string>;
     using BidResponse = openrtb::BidResponse<std::string>;
     using SeatBid = openrtb::SeatBid<std::string>;
     using Bid = openrtb::Bid<std::string>;
@@ -99,7 +100,8 @@ int main(int argc, char *argv[]) {
     }
     
 
-    using bid_handler_type = exchange_handler<DSL::GenericDSL<>>;
+    using bid_handler_type = exchange_handler<DSL::GenericDSL<>, vanilla::VanillaRequest>;
+    using BidRequest = bid_handler_type::auction_request_type;
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
     bid_handler    
         .logger([](const std::string &data) {
@@ -109,44 +111,45 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::BidderSelector<> selector(caches);
-            BidResponse response;
-            for(auto &imp : request.imp) {
-                if(auto ad = selector.select(request, imp)) {
-                   boost::uuids::uuid bidid = uuid_generator();
-                   response.bidid = boost::uuids::to_string(bidid);
-                   if (request.cur.size()) {
-                       response.cur = request.cur[0];
-                   } else if (imp.bidfloorcur.length()) {
-                       response.cur = imp.bidfloorcur; // Just return back
-                   }
-                   Bid bid;
-                   bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
-                   // Is it the same as response.bidid?
-                   // Wrong filling type
-                   bid.impid = imp.id;
-                   bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
-                   bid.w = ad->width;
-                   bid.h = ad->height;
-                   bid.adm = ad->code;
-                   bid.adid = ad->ad_id;
-                   if (response.seatbid.size() == 0) {
-                      SeatBid seatbid;
-                      seatbid.bid.push_back(bid);
-                      response.seatbid.push_back(seatbid);
-                   } else {
-                      response.seatbid.back().bid.push_back(bid);
-                   }
-                }
-            }
-            return response;
+            //LOG(debug) << "Request from user " << request.user_info.user_id;
+            thread_local vanilla::ResponseBuilder<BidderConfig> response_builder(caches);
+            return response_builder.build(request);
         })
         .decision([&](const bid_handler_type::decision_params_type & decision_params) {
             using da = vanilla::common::decision_action<bid_handler_type::decision_params_type>;
-            using decision_manager = vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, 1>;
+            enum class decisions_type {BEFORE, AUCTION, AFTER, COUNT};
+            // How to avoid passing size&
+            using decision_manager = vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, static_cast<int>(decisions_type::COUNT)>;
             decision_manager::decision_tree_type tree({{
-                { 0, {[&](const bid_handler_type::decision_params_type & params) -> bool {
+                {
+                    static_cast<int>(decisions_type::BEFORE), // TODO redundunt
+                    {
+                        [&](const bid_handler_type::decision_params_type & params) -> bool {
+                            //LOG(debug) << "Request some additional data";
+                            BidRequest &req = std::get<2>(params);
+                            req.user_info.user_id = "11111";
+                            return true;
+                        }, 
+                        static_cast<int>(decisions_type::AUCTION), 
+                        static_cast<int>(decisions_type::AUCTION)
+                    }
+                },
+                { 
+                    static_cast<int>(decisions_type::AUCTION), 
+                    {
+                        [&](const bid_handler_type::decision_params_type & params) -> bool {
                             return std::get<0>(params).hanle_auction_async(std::get<1>(params), std::get<2>(params));
+                        }, 
+                        static_cast<int>(decisions_type::AFTER), //da::EXIT, 
+                        da::EXIT
+                    }
+                },
+                {
+                    static_cast<int>(decisions_type::AFTER), 
+                    {
+                        [&](const bid_handler_type::decision_params_type & params) -> bool {
+                            //LOG(debug) << "Log some results";
+                            return true;
                         }, 
                         da::EXIT, da::EXIT
                     }
