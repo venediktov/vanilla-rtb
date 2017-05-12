@@ -50,7 +50,7 @@ namespace vanilla {
             using log_handler_type = std::function<void (const std::string &)>;
             using error_log_handler_type = std::function<void (const std::string &)>;
             using self_type = exchange_handler<DSL, Request>;
-            using decision_params_type = std::tuple<self_type&, http::server::reply&, auction_request_type &>;
+            using decision_params_type = std::tuple<http::server::reply&, auction_request_type &>;
         private:
             using decision_handler_type = std::function<void (const decision_params_type &)>;
             
@@ -113,7 +113,7 @@ namespace vanilla {
                 return false;
             }
 
-            bool hanle_auction_async(http::server::reply& r, const auction_request_type &bid_request) {
+            bool handle_auction_async(http::server::reply& r, const auction_request_type &bid_request) {
                 if (auction_async_handler) {
                     std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
                     boost::optional<wire_response_type> wire_response;
@@ -168,8 +168,8 @@ namespace vanilla {
                 }
 
                 if(decision_handler) {
-                    decision_handler(std::tie(*this, r, bid_request));
-                } else if (hanle_auction_async(r, bid_request)) {
+                    decision_handler(std::tie(r, bid_request));
+                } else if (handle_auction_async(r, bid_request)) {
                     ;
                 }
                 else if (handle_auction(r, bid_request)) {

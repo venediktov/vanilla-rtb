@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
         })
         .decision([&](const bid_handler_type::decision_params_type & decision_params) {
             using da = vanilla::common::decision_action<bid_handler_type::decision_params_type>;
-            enum class decisions_type {BEFORE, AUCTION, AFTER, COUNT};
+            enum class decisions_type {BEFORE=1, AUCTION, AFTER, COUNT=AFTER};
             // How to avoid passing size&
             using decision_manager = vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, static_cast<int>(decisions_type::COUNT)>;
             decision_manager::decision_tree_type tree({{
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
                     {
                         [&](const bid_handler_type::decision_params_type & params) -> bool {
                             //LOG(debug) << "Request some additional data";
-                            BidRequest &req = std::get<2>(params);
+                            BidRequest &req = std::get<1>(params);
                             req.user_info.user_id = "11111";
                             return true;
                         }, 
@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
                     static_cast<int>(decisions_type::AUCTION), 
                     {
                         [&](const bid_handler_type::decision_params_type & params) -> bool {
-                            return std::get<0>(params).hanle_auction_async(std::get<1>(params), std::get<2>(params));
+                            return bid_handler.handle_auction_async(std::get<0>(params), std::get<1>(params));
                         }, 
                         static_cast<int>(decisions_type::AFTER), //da::EXIT, 
                         da::EXIT
