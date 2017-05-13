@@ -29,6 +29,7 @@
 #include "config.hpp"
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
+#include "decision_exchange.hpp"
 
 
 extern void init_framework_logging(const std::string &) ;
@@ -103,6 +104,27 @@ int main(int argc, char *argv[]) {
     using bid_handler_type = exchange_handler<DSL::GenericDSL<>, vanilla::VanillaRequest>;
     using BidRequest = bid_handler_type::auction_request_type;
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
+    
+    using decision_traits = vanilla::decision_exchange::default_traits<bid_handler_type::decision_params_type>;
+    vanilla::decision_exchange::decision_exchange<decision_traits> decision_exchange({{
+       {decision_traits::USER_PROFILE, {
+            [&bid_handler](const bid_handler_type::decision_params_type & params) -> bool {
+                BidRequest &req = std::get<1>(params);
+                req.user_info.user_id = "11111";
+                return true;
+            }, 
+            decision_traits::AUCTION_ASYNC,
+            decision_traits::decision_action::EXIT
+        }},
+        {decision_traits::AUCTION_ASYNC, {
+            [&bid_handler](const bid_handler_type::decision_params_type & params) -> bool {
+                return bid_handler.handle_auction_async(std::get<0>(params), std::get<1>(params));
+            }, 
+            decision_traits::decision_action::EXIT,
+            decision_traits::decision_action::EXIT
+        }}
+   }});
+    
     bid_handler    
         .logger([](const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
@@ -111,52 +133,11 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            //LOG(debug) << "Request from user " << request.user_info.user_id;
             thread_local vanilla::ResponseBuilder<BidderConfig> response_builder(caches);
             return response_builder.build(request);
         })
-        .decision([&](const bid_handler_type::decision_params_type & decision_params) {
-            using da = vanilla::common::decision_action<bid_handler_type::decision_params_type>;
-            enum class decisions_type {BEFORE=1, AUCTION, AFTER, COUNT=AFTER};
-            // How to avoid passing size&
-            using decision_manager = vanilla::common::decision_tree_manager<bid_handler_type::decision_params_type, static_cast<int>(decisions_type::COUNT)>;
-            decision_manager::decision_tree_type tree({{
-                {
-                    static_cast<int>(decisions_type::BEFORE), // TODO redundunt
-                    {
-                        [&](const bid_handler_type::decision_params_type & params) -> bool {
-                            //LOG(debug) << "Request some additional data";
-                            BidRequest &req = std::get<1>(params);
-                            req.user_info.user_id = "11111";
-                            return true;
-                        }, 
-                        static_cast<int>(decisions_type::AUCTION), 
-                        static_cast<int>(decisions_type::AUCTION)
-                    }
-                },
-                { 
-                    static_cast<int>(decisions_type::AUCTION), 
-                    {
-                        [&](const bid_handler_type::decision_params_type & params) -> bool {
-                            return bid_handler.handle_auction_async(std::get<0>(params), std::get<1>(params));
-                        }, 
-                        static_cast<int>(decisions_type::AFTER), //da::EXIT, 
-                        da::EXIT
-                    }
-                },
-                {
-                    static_cast<int>(decisions_type::AFTER), 
-                    {
-                        [&](const bid_handler_type::decision_params_type & params) -> bool {
-                            //LOG(debug) << "Log some results";
-                            return true;
-                        }, 
-                        da::EXIT, da::EXIT
-                    }
-                }
-            }});
-            decision_manager manager(tree);
-            manager.execute(decision_params);
+        .decision([&decision_exchange](const bid_handler_type::decision_params_type & decision_params) {
+            decision_exchange.exchange(decision_params);
         })
     ;   
     
