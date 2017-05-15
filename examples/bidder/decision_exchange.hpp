@@ -12,26 +12,22 @@
 
 namespace vanilla {
     namespace decision_exchange {
+  
+        enum class DEFAULT_CODES {AUCTION_ASYNC, COUNT};
         
-        template <typename Params>
-        struct default_traits {
-            enum CODES {USER_PROFILE, AUCTION_ASYNC, COUNT};
-            using decision_params = Params;
-            using decision_action = vanilla::common::decision_action<decision_params>;
-            using decision_manager = vanilla::common::decision_tree_manager<decision_params, COUNT>;
-        };
-        
-        template <typename Traits>
+        template <typename Params, typename Codes = DEFAULT_CODES>
         class decision_exchange {
+            static constexpr int tree_depth{static_cast<int>(Codes::COUNT)};
         public:
-            using decision_tree_type = typename Traits::decision_manager::decision_tree_type;
-            using decision_params = typename Traits::decision_params;
-            using decision_manager = typename Traits::decision_manager;
-        
-            decision_exchange(const decision_tree_type &decision_tree):
+            using decision_manager = vanilla::common::decision_tree_manager<Params, tree_depth>;
+            using decision_tree_type = typename decision_manager::decision_tree_type;
+            using decision_action = vanilla::common::decision_action<Params>;
+            
+            template <typename T>
+            decision_exchange(T &&decision_tree):
                 decision_tree{decision_tree}, manager{this->decision_tree}
             {}
-            void exchange(const decision_params &params) {
+            void exchange(const Params &params) {
                 //decision_manager manager(decision_tree);
                 manager.execute(params);
             }
