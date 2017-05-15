@@ -69,7 +69,7 @@ BENCHMARK_DEFINE_F(AuditBufferBenchmarkFixture, audit_buffer_benchmark)(benchmar
             return audit::full_record_size(std::forward<decltype(args)>(args)...);
         }, rec);
 
-        std::apply([addr = logbuf.checkout(required_size)] (auto&&... args) {
+        std::apply([addr = logbuf.reserve(required_size)] (auto&&... args) {
             audit::encode_record(addr.get(), std::forward<decltype(args)>(args)...);
         }, rec);
     }
