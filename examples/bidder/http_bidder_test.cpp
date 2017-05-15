@@ -105,25 +105,27 @@ int main(int argc, char *argv[]) {
     using BidRequest = bid_handler_type::auction_request_type;
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
     
-    using decision_traits = vanilla::decision_exchange::default_traits<bid_handler_type::decision_params_type>;
-    vanilla::decision_exchange::decision_exchange<decision_traits> decision_exchange({{
-       {decision_traits::USER_PROFILE, {
+    using decision_traits_type = vanilla::decision_exchange::default_traits<bid_handler_type::decision_params_type>;
+    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<decision_traits_type>;
+    const decision_exchange_type::decision_tree_type decision_tree = {{
+        {decision_traits_type::USER_PROFILE, {
             [&bid_handler](const bid_handler_type::decision_params_type & params) -> bool {
                 BidRequest &req = std::get<1>(params);
                 req.user_info.user_id = "11111";
                 return true;
             }, 
-            decision_traits::AUCTION_ASYNC,
-            decision_traits::decision_action::EXIT
+            decision_traits_type::AUCTION_ASYNC,
+            decision_traits_type::decision_action::EXIT
         }},
-        {decision_traits::AUCTION_ASYNC, {
+        {decision_traits_type::AUCTION_ASYNC, {
             [&bid_handler](const bid_handler_type::decision_params_type & params) -> bool {
                 return bid_handler.handle_auction_async(std::get<0>(params), std::get<1>(params));
             }, 
-            decision_traits::decision_action::EXIT,
-            decision_traits::decision_action::EXIT
+            decision_traits_type::decision_action::EXIT,
+            decision_traits_type::decision_action::EXIT
         }}
-   }});
+   }};
+   decision_exchange_type decision_exchange(decision_tree);
     
     bid_handler    
         .logger([](const std::string &data) {

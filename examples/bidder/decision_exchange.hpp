@@ -23,10 +23,11 @@ namespace vanilla {
         
         template <typename Traits>
         class decision_exchange {
+        public:
             using decision_tree_type = typename Traits::decision_manager::decision_tree_type;
             using decision_params = typename Traits::decision_params;
             using decision_manager = typename Traits::decision_manager;
-        public:
+        
             decision_exchange(const decision_tree_type &decision_tree):
                 decision_tree{decision_tree}, manager{this->decision_tree}
             {}
