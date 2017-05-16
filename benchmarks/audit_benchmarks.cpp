@@ -16,7 +16,7 @@ struct AuditBufferBenchmarkFixture: benchmark::Fixture
         io_service.run();
     }};
 
-    audit::segmented_log_buffer logbuf {io_service, ".", 1 << 27};
+    audit::segmented_log_buffer logbuf {io_service, ".", 1 << 25};
 
     ~AuditBufferBenchmarkFixture()
     {

@@ -28,8 +28,6 @@ namespace asio = boost::asio;
 #include <atomic>
 #include <array>
 
-#include <iostream>
-
 namespace audit {
 
 #if __x86_64__
@@ -95,7 +93,7 @@ struct log_segment {
      *     so special care should be taken by the caller to not.
      */
     size_t reserve(size_t size) {
-        return offset_.fetch_add(size);
+        return offset_.fetch_add(size, std::memory_order_acq_rel);
     }
 private:
     ipx::file_mapping const mapping_;
@@ -126,7 +124,6 @@ struct segmented_log_buffer {
             filename_base_ {dirname + "/memory.bin."},
             filesize_ {filesize},
             segment_deleter_ { io_service_.wrap([] (log_segment* segment) noexcept {
-                std::clog << "releasing " << segment->filename() << std::endl;
                 delete segment;
             }) },
             request_next_segment_ { io_service_.wrap([this] {
@@ -138,7 +135,7 @@ struct segmented_log_buffer {
     }
 
     /**
-     * Reserves a requred space in the buffer, jumping to the next segment if required
+     * Reserves the  requred space in the buffer, jumping to the next segment if required
      */
     std::shared_ptr<char> reserve(size_t required_size) {
         if (unlikely(required_size > filesize_ - 1))
@@ -147,10 +144,10 @@ struct segmented_log_buffer {
         std::shared_ptr<log_segment> segment;
         size_t pos = 0u;
         do {
-            auto segment_idx = segment_idx_.load(std::memory_order_acquire);
-            auto psegment = &segments_[segment_idx % segments_.size()];
+            auto const segment_idx = segment_idx_.load(std::memory_order_acquire);
+            auto const psegment = &segments_[segment_idx % segments_.size()];
 
-            {
+            { // effectively std::atomic_load with custom spinlock
                 guard_t guard {mutex_};
                 segment = *psegment;
             }
@@ -158,10 +155,10 @@ struct segmented_log_buffer {
             if (likely(segment)) {
                 pos = segment->reserve(required_size);
                 auto const last_pos = segment->size() - 1;
-                if (unlikely(pos < last_pos && pos + required_size >= last_pos)) {
+                if (unlikely(pos < last_pos && (pos + required_size >= last_pos))) {
                     // it's this request that crossed the segment capacity
 
-                    {
+                    { // effectively std::atomic_store with custom spinlock
                         guard_t guard {mutex_};
                         psegment->reset();
                     }
@@ -169,12 +166,13 @@ struct segmented_log_buffer {
                     request_next_segment_();
 
                     *(segment->memory() + pos) = 0x19; // End-of-Media
-                    std::clog << "finalized segment " << segment->filename() << std::endl;
                     segment.reset();
 
                     // publish the next segment
-                    ++segment_idx;
-                    segment_idx_.store(segment_idx, std::memory_order_release);
+                    segment_idx_.store(segment_idx + 1, std::memory_order_release);
+                }
+                else if (unlikely(pos >= last_pos)) {
+                    segment.reset();
                 }
             }
         } while (unlikely(!segment));
@@ -193,8 +191,6 @@ private:
             assert(!*psegment);
             psegment->swap(segment);
         }
-
-        std::clog << "prepped segment " << filename << std::endl;
     }
 
     using mutex_t = spin_mutex;
