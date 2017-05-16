@@ -50,9 +50,9 @@ namespace vanilla {
             using log_handler_type = std::function<void (const std::string &)>;
             using error_log_handler_type = std::function<void (const std::string &)>;
             using self_type = exchange_handler<DSL, Request>;
-            using decision_params_type = std::tuple<http::server::reply&, auction_request_type &>;
+//            using decision_params_type = std::tuple<http::server::reply&, auction_request_type &>;
         private:
-            using decision_handler_type = std::function<void (const decision_params_type &)>;
+            using decision_handler_type = std::function<void (http::server::reply&, auction_request_type &)>;
             
             DSL parser;
             auction_handler_type auction_handler;
@@ -168,7 +168,7 @@ namespace vanilla {
                 }
 
                 if(decision_handler) {
-                    decision_handler(std::tie(r, bid_request));
+                    decision_handler(r, bid_request);
                 } else if (handle_auction_async(r, bid_request)) {
                     ;
                 }

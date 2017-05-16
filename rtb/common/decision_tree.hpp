@@ -44,9 +44,9 @@ tm.execute();
 
 namespace vanilla {
     namespace common {
-        template <typename PARAMS>
+        template <typename ...Args>
         struct decision_action {
-            using function_type = std::function<bool(const PARAMS &params)>;
+            using function_type = std::function<bool(Args...)>;
 
             struct node_S {
                 function_type f;
@@ -63,8 +63,9 @@ namespace vanilla {
                 return res ? node.next_true : node.next_false;
             }
 
-            inline int operator()(const PARAMS &params) const {
-                return get(node.f(params));
+            template<typename ...TArgs>
+            inline int operator()(TArgs && ...targs) const {
+                return get(node.f(std::forward<TArgs>(targs)...));
             }
 
             uint32_t row_num{0};
@@ -72,30 +73,33 @@ namespace vanilla {
         };
 
 
-        template<typename PARAMS, std::size_t N>
-        using decision_tree = std::array<decision_action<PARAMS>, N>;
+        template<std::size_t N, typename ...Args>
+        using decision_tree = std::array<decision_action<Args...>, N>;
 
-        template<typename PARAMS, std::size_t N>
+        template<std::size_t N, typename ...Args>
         struct decision_tree_manager {
-            using params_decision_action = decision_action<PARAMS>;
-            using decision_tree_type = decision_tree<PARAMS, N>;
+            using params_decision_action = decision_action<Args...>;
+            using decision_tree_type = decision_tree<N, Args...>;
             decision_tree_manager(decision_tree_type && tree) : tree{std::move(tree)}
             {
             }
             decision_tree_manager(const decision_tree_type & tree) : tree{tree}
             {
             }
-            void execute(const PARAMS &params) const noexcept(false) {
-                next(params, tree.at(0));
+           
+            template<typename ...TArgs>
+            void execute(TArgs && ...args) const noexcept(false) {
+                next(tree.at(0), std::forward<TArgs>(args)...);
             }
 
-            void next(const PARAMS &params, const params_decision_action &action_now) const noexcept(false) {
-                int next_node_idx = action_now(params); //executes and produces action_next
+            template<typename ...TArgs>
+            void next(const params_decision_action &action_now, TArgs && ...args) const noexcept(false) {
+                int next_node_idx = action_now(std::forward<TArgs>(args)...); //executes and produces action_next
                 if (next_node_idx == params_decision_action::CONTINUE) {
-                    next(params, tree.at(action_now.row_num + 1));
+                    next(tree.at(action_now.row_num + 1), std::forward<TArgs>(args)...);
                 }
                 else if (next_node_idx != params_decision_action::EXIT) {
-                    next(params, tree.at(next_node_idx));
+                    next(tree.at(next_node_idx), std::forward<TArgs>(args)...);
                 }
             }
         private:

@@ -1,5 +1,6 @@
 #include <vector>
 #include <random>
+#include <utility>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -30,6 +31,7 @@
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
 #include "decision_exchange.hpp"
+#include "rtb/client/empty_key_value_client.hpp"
 
 
 extern void init_framework_logging(const std::string &) ;
@@ -75,6 +77,8 @@ int main(int argc, char *argv[]) {
             ("bidder.geo_campaign_source", boost::program_options::value<std::string>(&d.geo_campaign_source)->default_value("data/geo_campaign"), "geo_campaign_source file name")
             ("bidder.campaign_data_ipc_name", boost::program_options::value<std::string>(&d.campaign_data_ipc_name)->default_value("vanilla-campaign-data-ipc"), "campaign data ipc name")
             ("bidder.campaign_data_source", boost::program_options::value<std::string>(&d.campaign_data_source)->default_value("data/campaign_data"), "campaign_data_source file name")
+            ("bidder.key_value_host", boost::program_options::value<std::string>(&d.key_value_host)->default_value("0.0.0.0"), "key value storage host")
+            ("bidder.key_value_port", boost::program_options::value<int>(&d.key_value_port)->default_value(0), "key value storage port")
         ;
     });
     
@@ -106,12 +110,37 @@ int main(int argc, char *argv[]) {
     
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
        
-    using decision_codes_type = vanilla::decision_exchange::DEFAULT_CODES;
-    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<bid_handler_type::decision_params_type, decision_codes_type>;
+    enum class request_user_data {USER_DATA, NO_USER_DATA, AUCTION_ASYNC, COUNT};
+    using decision_codes_type = request_user_data;
+    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<decision_codes_type, http::server::reply&, BidRequest&>;
     const decision_exchange_type::decision_tree_type decision_tree = {{
+        {static_cast<int>(decision_codes_type::USER_DATA), {
+            [&bid_handler, &config](http::server::reply &reply, BidRequest &bid_request) -> bool {
+                using kv_type = vanilla::client::empty_key_value_client;
+                thread_local kv_type kv_client;
+                bool is_matched_user = bid_request.user_info.user_id.length();
+                if(!is_matched_user) { 
+                    return true; // bid unmatched
+                }
+                if (!kv_client.connected()) {
+                    kv_client.connect(config.data().key_value_host, config.data().key_value_port);
+                }
+                kv_client.request(bid_request.user_info.user_id, bid_request.user_info.user_data);
+                return true;
+            }, 
+            static_cast<int>(decision_codes_type::AUCTION_ASYNC),
+            static_cast<int>(decision_codes_type::NO_USER_DATA),
+        }},
+        {static_cast<int>(decision_codes_type::NO_USER_DATA), {
+            [&bid_handler, &config](http::server::reply &reply, BidRequest &bid_request) -> bool {
+                reply << http::server::reply::flush("");
+            }, 
+            decision_exchange_type::decision_action::EXIT,
+            decision_exchange_type::decision_action::EXIT
+        }},
         {static_cast<int>(decision_codes_type::AUCTION_ASYNC), {
-            [&bid_handler](const bid_handler_type::decision_params_type & params) -> bool {
-                return bid_handler.handle_auction_async(std::get<0>(params), std::get<1>(params));
+            [&bid_handler](auto && ... args) -> bool {
+                return bid_handler.handle_auction_async(args...);
             }, 
             decision_exchange_type::decision_action::EXIT,
             decision_exchange_type::decision_action::EXIT
@@ -130,8 +159,8 @@ int main(int argc, char *argv[]) {
             thread_local vanilla::ResponseBuilder<BidderConfig> response_builder(caches);
             return response_builder.build(request);
         })
-        .decision([&decision_exchange](const bid_handler_type::decision_params_type & decision_params) {
-            decision_exchange.exchange(decision_params);
+        .decision([&decision_exchange](auto && ... args) {
+            decision_exchange.exchange(args...);
         })
     ;   
     
