@@ -110,41 +110,38 @@ int main(int argc, char *argv[]) {
     
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
        
-    enum class request_user_data {USER_DATA, NO_USER_DATA, AUCTION_ASYNC, COUNT};
+    enum class request_user_data {USER_DATA, NO_BID, AUCTION_ASYNC, COUNT};
     using decision_codes_type = request_user_data;
     using decision_exchange_type = vanilla::decision_exchange::decision_exchange<decision_codes_type, http::server::reply&, BidRequest&>;
+    
+    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
+        using kv_type = vanilla::client::empty_key_value_client;
+        thread_local kv_type kv_client;
+        bool is_matched_user = bid_request.user_info.user_id.length();
+        if (!is_matched_user) {
+            return true; // bid unmatched
+        }
+        if (!kv_client.connected()) {
+            kv_client.connect(config.data().key_value_host, config.data().key_value_port);
+        }
+        kv_client.request(bid_request.user_info.user_id, bid_request.user_info.user_data);
+        return true;
+    };
+    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
+        reply << http::server::reply::flush("");
+    };
+    auto auction_async_f = [&bid_handler](http::server::reply &reply, BidRequest & bid_request) -> bool {
+        return bid_handler.handle_auction_async(reply, bid_request);
+    };
     const decision_exchange_type::decision_tree_type decision_tree = {{
-        {static_cast<int>(decision_codes_type::USER_DATA), {
-            [&bid_handler, &config](http::server::reply &reply, BidRequest &bid_request) -> bool {
-                using kv_type = vanilla::client::empty_key_value_client;
-                thread_local kv_type kv_client;
-                bool is_matched_user = bid_request.user_info.user_id.length();
-                if(!is_matched_user) { 
-                    return true; // bid unmatched
-                }
-                if (!kv_client.connected()) {
-                    kv_client.connect(config.data().key_value_host, config.data().key_value_port);
-                }
-                kv_client.request(bid_request.user_info.user_id, bid_request.user_info.user_data);
-                return true;
-            }, 
-            static_cast<int>(decision_codes_type::AUCTION_ASYNC),
-            static_cast<int>(decision_codes_type::NO_USER_DATA),
-        }},
-        {static_cast<int>(decision_codes_type::NO_USER_DATA), {
-            [&bid_handler, &config](http::server::reply &reply, BidRequest &bid_request) -> bool {
-                reply << http::server::reply::flush("");
-            }, 
-            decision_exchange_type::decision_action::EXIT,
-            decision_exchange_type::decision_action::EXIT
-        }},
-        {static_cast<int>(decision_codes_type::AUCTION_ASYNC), {
-            [&bid_handler](auto && ... args) -> bool {
-                return bid_handler.handle_auction_async(args...);
-            }, 
-            decision_exchange_type::decision_action::EXIT,
-            decision_exchange_type::decision_action::EXIT
-        }}
+        {static_cast<int> (decision_codes_type::USER_DATA),
+            {request_user_data_f, static_cast<int> (decision_codes_type::AUCTION_ASYNC), static_cast<int> (decision_codes_type::NO_BID),}},
+                
+        {static_cast<int> (decision_codes_type::NO_BID),
+            {no_bid_f, decision_exchange_type::decision_action::EXIT, decision_exchange_type::decision_action::EXIT}},
+                
+        {static_cast<int> (decision_codes_type::AUCTION_ASYNC),
+            {auction_async_f, decision_exchange_type::decision_action::EXIT, decision_exchange_type::decision_action::EXIT}}
    }};
    decision_exchange_type decision_exchange(decision_tree);
     

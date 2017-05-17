@@ -18,8 +18,8 @@ namespace vanilla {
         template <typename Codes = DEFAULT_CODES, typename ...Args>
         class decision_exchange {
             static constexpr int tree_depth{static_cast<int>(Codes::COUNT)};
-        public:
             using decision_manager = vanilla::common::decision_tree_manager<tree_depth,Args...>;
+        public:           
             using decision_tree_type = typename decision_manager::decision_tree_type;
             using decision_action = vanilla::common::decision_action<Args...>;
             
