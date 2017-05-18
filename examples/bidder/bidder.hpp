@@ -16,7 +16,7 @@
 
 namespace vanilla {
     template<typename Config = BidderConfig, typename T = std::string>
-    class ResponseBuilder {
+    class Bidder {
         using BidRequest  = openrtb::BidRequest<T>;
         using BidResponse = openrtb::BidResponse<T>;
         using Impression  = openrtb::Impression<T>;
@@ -24,7 +24,7 @@ namespace vanilla {
         using Bid         = openrtb::Bid<T>;
 
     public:
-        ResponseBuilder(BidderCaches<> &caches) :
+        Bidder(BidderCaches<> &caches) :
             selector{caches}, uuid_generator{}
         {
         }

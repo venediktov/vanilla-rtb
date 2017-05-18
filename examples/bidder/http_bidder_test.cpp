@@ -24,7 +24,7 @@
 #include "examples/datacache/geo_entity.hpp"
 #include "examples/datacache/city_country_entity.hpp"
 #include "examples/datacache/ad_entity.hpp"
-#include "response_builder.hpp"
+#include "bidder.hpp"
 
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
@@ -46,9 +46,6 @@ auto random_pick(int max) {
   return dis(gen);
 }
 
-class http_bidder_decisions_manager {
-public:
-};
 int main(int argc, char *argv[]) {
     using namespace std::placeholders;
     using namespace vanilla::exchange;
@@ -135,13 +132,25 @@ int main(int argc, char *argv[]) {
     };
     const decision_exchange_type::decision_tree_type decision_tree = {{
         {static_cast<int> (decision_codes_type::USER_DATA),
-            {request_user_data_f, static_cast<int> (decision_codes_type::AUCTION_ASYNC), static_cast<int> (decision_codes_type::NO_BID),}},
+            {request_user_data_f, 
+                static_cast<int> (decision_codes_type::AUCTION_ASYNC), 
+                static_cast<int> (decision_codes_type::NO_BID)
+            }
+        },
                 
         {static_cast<int> (decision_codes_type::NO_BID),
-            {no_bid_f, decision_exchange_type::decision_action::EXIT, decision_exchange_type::decision_action::EXIT}},
+            {no_bid_f, 
+                decision_exchange_type::decision_action::EXIT, 
+                decision_exchange_type::decision_action::EXIT
+            }
+        },
                 
         {static_cast<int> (decision_codes_type::AUCTION_ASYNC),
-            {auction_async_f, decision_exchange_type::decision_action::EXIT, decision_exchange_type::decision_action::EXIT}}
+            {auction_async_f, 
+                decision_exchange_type::decision_action::EXIT, 
+                decision_exchange_type::decision_action::EXIT
+            }
+       }
    }};
    decision_exchange_type decision_exchange(decision_tree);
     
@@ -153,7 +162,7 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::ResponseBuilder<BidderConfig> response_builder(caches);
+            thread_local vanilla::Bidder<BidderConfig> response_builder(caches);
             return response_builder.build(request);
         })
         .decision([&decision_exchange](auto && ... args) {
