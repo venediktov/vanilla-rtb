@@ -11,9 +11,9 @@
 #include "openrtb.hpp"
 
 namespace vanilla {
-    template <typename UserInfo, typename T=std::string>
+    template <typename DSL, typename UserInfo>
     struct BidRequest {
-        using request_type = openrtb::BidRequest<T>;
+        using request_type = typename DSL::deserialized_type;
         request_type bid_request;
         UserInfo user_info;
         

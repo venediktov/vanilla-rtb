@@ -206,8 +206,8 @@ namespace boost {
             //ar & value.ext //TODO: for this we need template <class Archive> load() and save() 
         }
         
-        template<class Archive, typename UserInfo>
-        void serialize(Archive & ar, vanilla::BidRequest<UserInfo> & value, const unsigned int version) {
+        template<class Archive, typename UserInfo, typename DSL>
+        void serialize(Archive & ar, vanilla::BidRequest<UserInfo, DSL> & value, const unsigned int version) {
             ar & value.bid_request;
             ar & value.user_info;
         }

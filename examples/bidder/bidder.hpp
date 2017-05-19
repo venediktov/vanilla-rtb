@@ -12,24 +12,23 @@
 #include <iostream>
 #include "rtb/common/perf_timer.hpp"
 #include "bidder_selector.hpp"
-#include "examples/multiexchange/user_info.hpp"
 
 namespace vanilla {
-    template<typename Config = BidderConfig, typename T = std::string>
+    template<typename DSL, typename Config = BidderConfig>
     class Bidder {
-        using BidRequest  = openrtb::BidRequest<T>;
-        using BidResponse = openrtb::BidResponse<T>;
-        using Impression  = openrtb::Impression<T>;
-        using SeatBid     = openrtb::SeatBid<T>;
-        using Bid         = openrtb::Bid<T>;
+        using BidRequest  = typename DSL::deserialized_type;
+        using BidResponse = typename DSL::serialized_type;
+        using Impression  = typename DSL::Impression;
+        using SeatBid     = typename DSL::SeatBid;
+        using Bid         = typename DSL::Bid;
 
     public:
-        Bidder(BidderCaches<> &caches) :
+        Bidder(BidderCaches<Config> &caches) :
             selector{caches}, uuid_generator{}
         {
         }
-
-        const BidResponse& build(const vanilla::VanillaRequest &vanilla_request) {
+        template <typename Request>
+        const BidResponse& bid(const Request &vanilla_request) {
             response.clear();
             const BidRequest &request = vanilla_request.bid_request;
             for (auto &imp : request.imp) {

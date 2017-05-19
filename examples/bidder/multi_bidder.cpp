@@ -46,10 +46,10 @@ using RtbBidderCaches = vanilla::BidderCaches<BidderConfig>;
 
 void run(short port, RtbBidderCaches &bidder_caches) {
     using namespace vanilla::messaging;
-    vanilla::Bidder<BidderConfig> response_builder(bidder_caches);
-    communicator<broadcast>().inbound(port).process<vanilla::VanillaRequest>([&response_builder](auto endpoint, vanilla::VanillaRequest vanilla_request) {
+    vanilla::Bidder<DSL::GenericDSL<>, BidderConfig> bidder(bidder_caches);
+    communicator<broadcast>().inbound(port).process<vanilla::VanillaRequest>([&bidder](auto endpoint, vanilla::VanillaRequest vanilla_request) {
         LOG(debug) << "Request from user " << vanilla_request.user_info.user_id;
-        return response_builder.build(vanilla_request);
+        return bidder.bid(vanilla_request);
     }).dispatch();
 }
 

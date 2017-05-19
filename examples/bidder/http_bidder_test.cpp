@@ -32,6 +32,7 @@
 #include "bidder_selector.hpp"
 #include "decision_exchange.hpp"
 #include "rtb/client/empty_key_value_client.hpp"
+#include "examples/multiexchange/user_info.hpp"
 
 
 extern void init_framework_logging(const std::string &) ;
@@ -44,6 +45,10 @@ auto random_pick(int max) {
   std::mt19937 gen(rd());
   std::uniform_int_distribution<> dis(1, max);
   return dis(gen);
+}
+
+namespace bidder_decision_codes {
+        enum {EXIT=-1, USER_DATA=0, NO_BID, AUCTION_ASYNC, SIZE};
 }
 
 int main(int argc, char *argv[]) {
@@ -101,15 +106,11 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     
-
     using bid_handler_type = exchange_handler<DSL::GenericDSL<>, vanilla::VanillaRequest>;
-    using BidRequest = bid_handler_type::auction_request_type;
+    using BidRequest = bid_handler_type::auction_request_type;    
+    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<bidder_decision_codes::SIZE, http::server::reply&, BidRequest&>;
     
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
-       
-    enum class request_user_data {USER_DATA, NO_BID, AUCTION_ASYNC, COUNT};
-    using decision_codes_type = request_user_data;
-    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<decision_codes_type, http::server::reply&, BidRequest&>;
     
     auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
         using kv_type = vanilla::client::empty_key_value_client;
@@ -131,28 +132,11 @@ int main(int argc, char *argv[]) {
         return bid_handler.handle_auction_async(reply, bid_request);
     };
     const decision_exchange_type::decision_tree_type decision_tree = {{
-        {static_cast<int> (decision_codes_type::USER_DATA),
-            {request_user_data_f, 
-                static_cast<int> (decision_codes_type::AUCTION_ASYNC), 
-                static_cast<int> (decision_codes_type::NO_BID)
-            }
-        },
-                
-        {static_cast<int> (decision_codes_type::NO_BID),
-            {no_bid_f, 
-                decision_exchange_type::decision_action::EXIT, 
-                decision_exchange_type::decision_action::EXIT
-            }
-        },
-                
-        {static_cast<int> (decision_codes_type::AUCTION_ASYNC),
-            {auction_async_f, 
-                decision_exchange_type::decision_action::EXIT, 
-                decision_exchange_type::decision_action::EXIT
-            }
-       }
-   }};
-   decision_exchange_type decision_exchange(decision_tree);
+        {bidder_decision_codes::USER_DATA, {request_user_data_f, bidder_decision_codes::AUCTION_ASYNC, bidder_decision_codes::NO_BID}},
+        {bidder_decision_codes::NO_BID, {no_bid_f, bidder_decision_codes::EXIT, bidder_decision_codes::EXIT}},        
+        {bidder_decision_codes::AUCTION_ASYNC, {auction_async_f, bidder_decision_codes::EXIT, bidder_decision_codes::EXIT}}
+    }};
+    decision_exchange_type decision_exchange(decision_tree);
     
     bid_handler    
         .logger([](const std::string &data) {
@@ -162,8 +146,8 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::Bidder<BidderConfig> response_builder(caches);
-            return response_builder.build(request);
+            thread_local vanilla::Bidder<DSL::GenericDSL<>, BidderConfig> bidder(caches);
+            return bidder.bid(request);
         })
         .decision([&decision_exchange](auto && ... args) {
             decision_exchange.exchange(args...);

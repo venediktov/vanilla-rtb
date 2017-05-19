@@ -10,6 +10,7 @@
 
 #include <string>
 #include "rtb/core/bid_request.hpp"
+#include "rtb/DSL/generic_dsl.hpp"
 
 namespace vanilla {
     struct UserInfo {
@@ -17,7 +18,7 @@ namespace vanilla {
         std::string user_data{};
     };
     
-    using VanillaRequest = vanilla::BidRequest<vanilla::UserInfo>;
+    using VanillaRequest = vanilla::BidRequest<DSL::GenericDSL<std::string>, vanilla::UserInfo>;
 }
 
 

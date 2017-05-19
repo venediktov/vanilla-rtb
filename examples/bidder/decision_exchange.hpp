@@ -12,12 +12,9 @@
 
 namespace vanilla {
     namespace decision_exchange {
-  
-        enum class DEFAULT_CODES {AUCTION_ASYNC, COUNT};
-        
-        template <typename Codes = DEFAULT_CODES, typename ...Args>
+        template <unsigned int SIZE, typename ...Args>
         class decision_exchange {
-            static constexpr int tree_depth{static_cast<int>(Codes::COUNT)};
+            static constexpr int tree_depth{static_cast<int>(SIZE)};
             using decision_manager = vanilla::common::decision_tree_manager<tree_depth,Args...>;
         public:           
             using decision_tree_type = typename decision_manager::decision_tree_type;

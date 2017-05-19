@@ -27,21 +27,24 @@ namespace vanilla {
 
     template
     <  
+        typename DSL,
         typename Duration  = std::chrono::milliseconds, 
         typename DeliveryType = vanilla::messaging::broadcast
     > 
     class multibidder_communicator {
+    private:
+            using serialized_type = typename DSL::serialized_type;
     public:
         multibidder_communicator(uint16_t bidders_port, Duration response_timeout) :
             response_timeout(response_timeout) {
             communicator.outbound(bidders_port);
         }
 
-        template<typename T>
-        void process(const vanilla::VanillaRequest &vanilla_request, multibidder_collector<T> &collector) {
+        template<typename Request>
+        void process(const Request &request, multibidder_collector<typename serialized_type::data_type> &collector) {
             communicator
-                .distribute(vanilla_request)
-                .template collect<openrtb::BidResponse<T>>(response_timeout, [&collector](openrtb::BidResponse<T> bid, auto done) { //move ctored by collect()    
+                .distribute(request)
+                .template collect<serialized_type>(response_timeout, [&collector](serialized_type bid, auto done) { //move ctored by collect()    
                     collector.add(std::move(bid));
                     if (collector.done()) {
                         done();

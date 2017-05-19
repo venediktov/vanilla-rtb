@@ -436,6 +436,7 @@ namespace openrtb {
 
     template<typename T>
     struct BidResponse {
+        using data_type = T;
         T id;
         std::vector<SeatBid<T>> seatbid;
         T bidid;
