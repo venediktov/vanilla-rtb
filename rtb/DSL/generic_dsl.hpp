@@ -16,6 +16,9 @@
  * GNU General Public License for more details.
 */
 
+#ifndef RTB_DSL_HPP
+#define RTB_DSL_HPP
+
 #include "core/openrtb.hpp"
 #include "encoders.hpp"
 #include <vector>
@@ -34,15 +37,19 @@ namespace DSL {
         //BidRequest
         using Banner = openrtb::Banner<T>;
         using AdPosition = openrtb::AdPosition;
+    public:        
         using Impression = openrtb::Impression<T>;
+    private:
         using User = openrtb::User<T>;
         using Geo = openrtb::Geo<T>;
         using Site = openrtb::Site<T>;
         using Publisher = openrtb::Publisher<T>;
         using BidRequest = openrtb::BidRequest<T>;
         //BidResponse
+     public:
         using Bid = openrtb::Bid<T>;
         using SeatBid = openrtb::SeatBid<T>;
+     private:
         using NoBidReason = openrtb::NoBidReason;
         using CreativeAttribute= openrtb::CreativeAttribute;
         using BidResponse = openrtb::BidResponse<T>;
@@ -194,3 +201,5 @@ namespace DSL {
     };
 
 } //namespace
+
+#endif

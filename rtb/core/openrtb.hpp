@@ -378,6 +378,8 @@ namespace openrtb {
 
     template<typename T>
     struct BidRequest {
+        using request_type = BidRequest<T>;
+        
         ~BidRequest() {}
         T id;                             ///< Bid request ID
         std::vector<Impression<T>> imp;            ///< List of impressions
@@ -395,6 +397,10 @@ namespace openrtb {
         boost::optional<Regulations> regs; ///< Regulations Object list (OpenRTB 2.2)
         T ext; //jsonv::value ext;                   ///< Protocol extensions
         T unparseable; //jsonv::value unparseable;           ///< Unparseable fields get put here
+        
+        const request_type& request() const {
+            return *this;
+        }
     };
 
 
@@ -430,6 +436,7 @@ namespace openrtb {
 
     template<typename T>
     struct BidResponse {
+        using data_type = T;
         T id;
         std::vector<SeatBid<T>> seatbid;
         T bidid;

@@ -1,5 +1,6 @@
 #include <vector>
 #include <random>
+#include <utility>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -23,11 +24,15 @@
 #include "examples/datacache/geo_entity.hpp"
 #include "examples/datacache/city_country_entity.hpp"
 #include "examples/datacache/ad_entity.hpp"
+#include "bidder.hpp"
 
 #include "rtb/common/perf_timer.hpp"
 #include "config.hpp"
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
+#include "decision_exchange.hpp"
+#include "rtb/client/empty_key_value_client.hpp"
+#include "examples/multiexchange/user_info.hpp"
 
 
 extern void init_framework_logging(const std::string &) ;
@@ -42,13 +47,16 @@ auto random_pick(int max) {
   return dis(gen);
 }
 
+namespace bidder_decision_codes {
+        enum {EXIT=-1, USER_DATA=0, NO_BID, AUCTION_ASYNC, SIZE};
+}
 
 int main(int argc, char *argv[]) {
     using namespace std::placeholders;
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
-    using BidRequest = openrtb::BidRequest<std::string>;
+    //using BidRequest = openrtb::BidRequest<std::string>;
     using BidResponse = openrtb::BidResponse<std::string>;
     using SeatBid = openrtb::SeatBid<std::string>;
     using Bid = openrtb::Bid<std::string>;
@@ -71,6 +79,8 @@ int main(int argc, char *argv[]) {
             ("bidder.geo_campaign_source", boost::program_options::value<std::string>(&d.geo_campaign_source)->default_value("data/geo_campaign"), "geo_campaign_source file name")
             ("bidder.campaign_data_ipc_name", boost::program_options::value<std::string>(&d.campaign_data_ipc_name)->default_value("vanilla-campaign-data-ipc"), "campaign data ipc name")
             ("bidder.campaign_data_source", boost::program_options::value<std::string>(&d.campaign_data_source)->default_value("data/campaign_data"), "campaign_data_source file name")
+            ("bidder.key_value_host", boost::program_options::value<std::string>(&d.key_value_host)->default_value("0.0.0.0"), "key value storage host")
+            ("bidder.key_value_port", boost::program_options::value<int>(&d.key_value_port)->default_value(0), "key value storage port")
         ;
     });
     
@@ -95,7 +105,39 @@ int main(int argc, char *argv[]) {
         LOG(error) << e.what();
         return 0;
     }
-    exchange_handler<DSL::GenericDSL<>> bid_handler(std::chrono::milliseconds(config.data().timeout));
+    
+    using bid_handler_type = exchange_handler<DSL::GenericDSL<>, vanilla::VanillaRequest>;
+    using BidRequest = bid_handler_type::auction_request_type;    
+    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<bidder_decision_codes::SIZE, http::server::reply&, BidRequest&>;
+    
+    bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
+    
+    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
+        using kv_type = vanilla::client::empty_key_value_client;
+        thread_local kv_type kv_client;
+        bool is_matched_user = bid_request.user_info.user_id.length();
+        if (!is_matched_user) {
+            return true; // bid unmatched
+        }
+        if (!kv_client.connected()) {
+            kv_client.connect(config.data().key_value_host, config.data().key_value_port);
+        }
+        kv_client.request(bid_request.user_info.user_id, bid_request.user_info.user_data);
+        return true;
+    };
+    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
+        reply << http::server::reply::flush("");
+    };
+    auto auction_async_f = [&bid_handler](http::server::reply &reply, BidRequest & bid_request) -> bool {
+        return bid_handler.handle_auction_async(reply, bid_request);
+    };
+    const decision_exchange_type::decision_tree_type decision_tree = {{
+        {bidder_decision_codes::USER_DATA, {request_user_data_f, bidder_decision_codes::AUCTION_ASYNC, bidder_decision_codes::NO_BID}},
+        {bidder_decision_codes::NO_BID, {no_bid_f, bidder_decision_codes::EXIT, bidder_decision_codes::EXIT}},        
+        {bidder_decision_codes::AUCTION_ASYNC, {auction_async_f, bidder_decision_codes::EXIT, bidder_decision_codes::EXIT}}
+    }};
+    decision_exchange_type decision_exchange(decision_tree);
+    
     bid_handler    
         .logger([](const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
@@ -103,41 +145,14 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
-
         .auction_async([&](const BidRequest &request) {
-
-            thread_local vanilla::BidderSelector<> selector(caches);
-            BidResponse response;
-            for(auto &imp : request.imp) {
-                if(auto ad = selector.select(request, imp)) {
-                   boost::uuids::uuid bidid = uuid_generator();
-                   response.bidid = boost::uuids::to_string(bidid);
-                   if (request.cur.size()) {
-                       response.cur = request.cur[0];
-                   } else if (imp.bidfloorcur.length()) {
-                       response.cur = imp.bidfloorcur; // Just return back
-                   }
-                   Bid bid;
-                   bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
-                   // Is it the same as response.bidid?
-                   // Wrong filling type
-                   bid.impid = imp.id;
-                   bid.price = ad->max_bid_micros / 1000000.0; // Not micros?
-                   bid.w = ad->width;
-                   bid.h = ad->height;
-                   bid.adm = ad->code;
-                   bid.adid = ad->ad_id;
-                   if (response.seatbid.size() == 0) {
-                      SeatBid seatbid;
-                      seatbid.bid.push_back(bid);
-                      response.seatbid.push_back(seatbid);
-                   } else {
-                      response.seatbid.back().bid.push_back(bid);
-                   }
-                }
-            }
-            return response;
-        });
+            thread_local vanilla::Bidder<DSL::GenericDSL<>, BidderConfig> bidder(caches);
+            return bidder.bid(request);
+        })
+        .decision([&decision_exchange](auto && ... args) {
+            decision_exchange.exchange(args...);
+        })
+    ;   
     
     connection_endpoint ep {std::make_tuple(config.data().host, boost::lexical_cast<std::string>(config.data().port), config.data().root)};
 
