@@ -30,7 +30,7 @@
 #include "config.hpp"
 #include "serialization.hpp"
 #include "bidder_selector.hpp"
-#include "decision_exchange.hpp"
+#include "decision_router.hpp"
 #include "rtb/client/empty_key_value_client.hpp"
 #include "examples/multiexchange/user_info.hpp"
 
