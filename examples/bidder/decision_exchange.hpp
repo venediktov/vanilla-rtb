@@ -1,19 +1,19 @@
 /* 
- * File:   decision_exchange.hpp
+ * File:   decision_router.hpp
  * Author: arseny.bushev@gmail.com
  *
  * Created on 9 мая 2017 г., 17:12
  */
 
-#ifndef DECISION_EXCHANGE_HPP
-#define DECISION_EXCHANGE_HPP
+#ifndef DECISION_ROUTER_HPP
+#define DECISION_ROUTER_HPP
 
 #include <rtb/common/decision_tree.hpp>
 
 namespace vanilla {
-    namespace decision_exchange {
+    namespace decision {
         template <unsigned int SIZE, typename ...Args>
-        class decision_exchange {
+        class router {
             static constexpr int tree_depth{static_cast<int>(SIZE)};
             using decision_manager = vanilla::common::decision_tree_manager<tree_depth,Args...>;
         public:           
@@ -21,12 +21,11 @@ namespace vanilla {
             using decision_action = vanilla::common::decision_action<Args...>;
             
             template <typename T>
-            decision_exchange(T &&decision_tree):
+            router(T &&decision_tree):
                 decision_tree{decision_tree}, manager{this->decision_tree}
             {}  
             template<typename ...TArgs>
-            void exchange(TArgs && ...args) {
-                //decision_manager manager(decision_tree);
+            void execute(TArgs && ...args) {
                 manager.execute(std::forward<TArgs>(args)...);
             }
         private:
@@ -37,5 +36,5 @@ namespace vanilla {
     }
 }
 
-#endif /* DECISION_EXCHANGE_HPP */
+#endif /* DECISION_ROUTER_HPP */
 

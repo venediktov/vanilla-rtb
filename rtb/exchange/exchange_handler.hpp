@@ -37,11 +37,9 @@ namespace vanilla {
         thread_local boost::asio::deadline_timer timer{io_service};
 
 
-        template<typename DSL, typename Request = decltype(DSL().extract_request(std::string())) >
+        template<typename DSL, typename ...Info>
         class exchange_handler {
-            //using auction_request_type = decltype(DSL().extract_request(std::string()));
-        public:        
-            using auction_request_type = Request;
+            using auction_request_type = decltype(DSL().extract_request(std::string()));
             using auction_response_type = typename DSL::serialized_type;
             using wire_response_type = decltype(DSL().create_response(auction_response_type()));
             using parse_error_type = typename DSL::parse_error_type;
@@ -49,9 +47,7 @@ namespace vanilla {
             using auction_async_handler_type = auction_handler_type;
             using log_handler_type = std::function<void (const std::string &)>;
             using error_log_handler_type = std::function<void (const std::string &)>;
-            using self_type = exchange_handler<DSL, Request>;
-//            using decision_params_type = std::tuple<http::server::reply&, auction_request_type &>;
-        private:
+            using self_type = exchange_handler<DSL, Info...>;
             using decision_handler_type = std::function<void (http::server::reply&, auction_request_type &)>;
             
             DSL parser;
@@ -96,49 +92,49 @@ namespace vanilla {
             }
 
             bool handle_auction(http::server::reply& r, const auction_request_type &bid_request) {
-                if (auction_handler) {
-                    std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
-                    auto future = std::async(std::launch::async, [&]() {
-                        auto auction_response = auction_handler(bid_request);
-                        auto wire_response = parser.create_response(auction_response);
-                        return wire_response;
-                    });
-                    if (future.wait_for(timeout) == std::future_status::ready) {
-                        r << to_string(future.get()) << http::server::reply::flush("");
-                    } else {
-                        r << http::server::reply::flush("");
-                    }
-                    return true;
+                if (!auction_handler) {
+                    return false;
                 }
-                return false;
+                std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
+                auto future = std::async(std::launch::async, [&]() {
+                    auto auction_response = auction_handler(bid_request);
+                    auto wire_response = parser.create_response(auction_response);
+                    return wire_response;
+                });
+                if (future.wait_for(timeout) == std::future_status::ready) {
+                    r << to_string(future.get()) << http::server::reply::flush("");
+                } else {
+                    r << http::server::reply::flush("");
+                }
+                return true;
             }
 
             bool handle_auction_async(http::server::reply& r, const auction_request_type &bid_request) {
-                if (auction_async_handler) {
-                    std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
-                    boost::optional<wire_response_type> wire_response;
-                    auto submit_async = [&]() {
-                        auto auction_response = auction_async_handler(bid_request);
-                        wire_response = parser.create_response(auction_response);
-                        io_service.stop();
-                    };
-                    io_service.post(submit_async);
-                    timer.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
-                    timer.async_wait([](const boost::system::error_code & error) {
-                        if (error != boost::asio::error::operation_aborted) {
-                            io_service.stop();
-                        }
-                    });
-                    io_service.reset();
-                    io_service.run();
-                    if (wire_response && timer.expires_from_now().total_milliseconds() > 0) {
-                        r << to_string(*wire_response) << http::server::reply::flush("");
-                    } else {
-                        r << http::server::reply::flush("");
-                    }
-                    return true;
+                if (!auction_async_handler) {
+                    return false;
                 }
-                return false;
+                std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
+                boost::optional<wire_response_type> wire_response;
+                auto submit_async = [&]() {
+                    auto auction_response = auction_async_handler(bid_request);
+                    wire_response = parser.create_response(auction_response);
+                    io_service.stop();
+                };
+                io_service.post(submit_async);
+                timer.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
+                timer.async_wait([](const boost::system::error_code & error) {
+                    if (error != boost::asio::error::operation_aborted) {
+                        io_service.stop();
+                    }
+                });
+                io_service.reset();
+                io_service.run();
+                if (wire_response && timer.expires_from_now().total_milliseconds() > 0) {
+                    r << to_string(*wire_response) << http::server::reply::flush("");
+                } else {
+                    r << http::server::reply::flush("");
+                }
+                return true;
             }
         private:
 
@@ -166,14 +162,12 @@ namespace vanilla {
                 if (!handle_post_common(r, match, bid_request)) {
                     return;
                 }
-
                 if(decision_handler) {
                     decision_handler(r, bid_request);
-                } else if (handle_auction_async(r, bid_request)) {
-                    ;
+                    return;
                 }
-                else if (handle_auction(r, bid_request)) {
-                    ;
+                if (!handle_auction_async(r, bid_request)) {
+                     handle_auction(r, bid_request);
                 }
             }
         };

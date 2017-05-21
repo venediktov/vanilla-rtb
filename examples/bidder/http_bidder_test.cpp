@@ -56,10 +56,9 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
-    //using BidRequest = openrtb::BidRequest<std::string>;
-    using BidResponse = openrtb::BidResponse<std::string>;
-    using SeatBid = openrtb::SeatBid<std::string>;
-    using Bid = openrtb::Bid<std::string>;
+    using DSLT = DSL::GenericDSL<> ;
+    using BidRequest = DSLT::deserialized_type;
+    using BidResponse = DSLT::serialized_type;
     
     BidderConfig config([](bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -106,37 +105,40 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     
-    using bid_handler_type = exchange_handler<DSL::GenericDSL<>, vanilla::VanillaRequest>;
-    using BidRequest = bid_handler_type::auction_request_type;    
-    using decision_exchange_type = vanilla::decision_exchange::decision_exchange<bidder_decision_codes::SIZE, http::server::reply&, BidRequest&>;
+    using bid_handler_type = exchange_handler<DSLT, vanilla::UserInfo>;   
+    using decision_router_type = vanilla::decision::router < bidder_decision_codes::SIZE , 
+                                                                 http::server::reply& , 
+                                                                 BidRequest& ,
+                                                                 vanilla::UserInfo& 
+                                                               >;
     
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
     
-    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
+    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto && info) -> bool {
         using kv_type = vanilla::client::empty_key_value_client;
         thread_local kv_type kv_client;
-        bool is_matched_user = bid_request.user_info.user_id.length();
+        bool is_matched_user = info.user_id.length();
         if (!is_matched_user) {
             return true; // bid unmatched
         }
         if (!kv_client.connected()) {
             kv_client.connect(config.data().key_value_host, config.data().key_value_port);
         }
-        kv_client.request(bid_request.user_info.user_id, bid_request.user_info.user_data);
+        kv_client.request(info.user_id, info.user_data);
         return true;
     };
-    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest & bid_request) -> bool {
+    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto&&) -> bool {
         reply << http::server::reply::flush("");
     };
-    auto auction_async_f = [&bid_handler](http::server::reply &reply, BidRequest & bid_request) -> bool {
+    auto auction_async_f = [&bid_handler](http::server::reply &reply, BidRequest & bid_request, auto&&) -> bool {
         return bid_handler.handle_auction_async(reply, bid_request);
     };
-    const decision_exchange_type::decision_tree_type decision_tree = {{
+    const decision_router_type::decision_tree_type decision_tree = {{
         {bidder_decision_codes::USER_DATA, {request_user_data_f, bidder_decision_codes::AUCTION_ASYNC, bidder_decision_codes::NO_BID}},
         {bidder_decision_codes::NO_BID, {no_bid_f, bidder_decision_codes::EXIT, bidder_decision_codes::EXIT}},        
         {bidder_decision_codes::AUCTION_ASYNC, {auction_async_f, bidder_decision_codes::EXIT, bidder_decision_codes::EXIT}}
     }};
-    decision_exchange_type decision_exchange(decision_tree);
+    decision_router_type decision_router(decision_tree);
     
     bid_handler    
         .logger([](const std::string &data) {
@@ -145,14 +147,14 @@ int main(int argc, char *argv[]) {
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
-        .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::Bidder<DSL::GenericDSL<>, BidderConfig> bidder(caches);
-            return bidder.bid(request);
+        .auction_async([&](const BidRequest &request, auto && ...info) {
+            thread_local vanilla::Bidder<DSLT, BidderConfig> bidder(caches);
+            return bidder.bid(request, info...);
         })
-        .decision([&decision_exchange](auto && ... args) {
-            decision_exchange.exchange(args...);
-        })
-    ;   
+        .decision([&decision_router](auto && ... args) {
+            vanilla::UserInfo info;
+            decision_router.execute(args... , info);
+        });
     
     connection_endpoint ep {std::make_tuple(config.data().host, boost::lexical_cast<std::string>(config.data().port), config.data().root)};
 
