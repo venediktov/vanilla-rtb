@@ -1,0 +1,52 @@
+td select {width: 30%; float: right}
+
+#cpm input {width: 65%}
+
+td input {
+  width: 85%;
+}
+
+#date {
+  color: #2b3541;
+  font-weight: bolder;
+}
+body {
+  padding-top: 500px;
+}
+.row-header {
+  margin: 0px auto;
+  padding: 0px 0px;
+}
+.row-content {
+  margin: 0px auto;
+  padding: 50px 0px;
+  border-bottom: 1px ridge;
+  min-height: 400px;
+}
+.row-footer {
+  margin: 0px auto;
+  padding: 20px 0px;
+  background-color: #AfAfAf;
+}
+header {
+  margin: 0px auto;
+  padding: 70px 30px;
+  background: #2b3541;
+  color: floralwhite;
+}
+
+.navbar {
+  background: #F3E5AB;
+  color: #ffffff;
+}
+
+
+
+body {
+  align: center;
+  padding: 50px 0px 0px 0px;
+  z-index: 0;
+}
+
+
+
