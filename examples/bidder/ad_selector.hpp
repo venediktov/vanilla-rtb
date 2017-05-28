@@ -11,29 +11,31 @@
 #include "core/openrtb.hpp"
 #include "bidder_caches.hpp"
 #include <memory>
+#include <algorithm>
 
 namespace vanilla {
 template<typename Config = BidderConfig>
-class BidderSelector {
+class AdSelector {
     public:
         using SpecBidderCaches = BidderCaches<Config>;
-       
-        struct intersc_cmp {
-            bool operator()(const uint64_t &l, const Ad &r) const {
-                return l < r.ad_id;
-            }
-            bool operator()(const Ad &l, const uint64_t &r) const {
-                return l.ad_id < r;
-            }
-        };
-        BidderSelector(BidderCaches<Config> &bidder_caches):
+        using AdPtr = std::shared_ptr<Ad>;
+        using AdSelectionAlg = std::function<AdPtr(const std::vector<Ad>&)>;
+        using self_type = AdSelector<Config>;
+        
+        AdSelector(BidderCaches<Config> &bidder_caches):
             bidder_caches{bidder_caches}
         {
             retrieved_cached_ads.reserve(500);
         }
+            
+        self_type& alg(const AdSelectionAlg &selection_alg_) {
+            selection_alg = selection_alg_;
+            return *this;
+        }
+        
         template<typename T> 
-        std::shared_ptr<Ad> select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
-            std::shared_ptr <Ad> result;
+        AdPtr select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp) {
+            AdPtr result;
             
             Geo geo;
             if(!getGeo(req, geo) ) {
@@ -57,12 +59,10 @@ class BidderSelector {
                 LOG(debug) << "selected ads " << retrieved_cached_ads.size();
             }
             
-            std::sort(retrieved_cached_ads.begin(), retrieved_cached_ads.end(),
-                [](const Ad &first, const Ad &second) -> bool {
-                return first.max_bid_micros > second.max_bid_micros;
-            });
-            result = std::make_shared<Ad>(retrieved_cached_ads[0]);
-            return result;
+            if(selection_alg) {
+                return selection_alg(retrieved_cached_ads);
+            }
+            return max_bid(retrieved_cached_ads);
         }
         
         bool getGeoCampaigns(uint32_t geo_id) {
@@ -106,10 +106,22 @@ class BidderSelector {
             }
             return retrieved_cached_ads.size() > 0;
         }
+        
+        AdPtr max_bid(const std::vector<Ad>& ads) {
+            if(ads.size() == 0) {
+                return AdPtr();
+            }
+            const std::vector<Ad>::const_iterator result = std::max_element(ads.cbegin(), ads.cend(), [](const Ad &first, const Ad &second) -> bool {
+                return first.max_bid_micros < second.max_bid_micros;
+            });
+            return std::make_shared<Ad>(*result);
+        }
+        
     private:   
         SpecBidderCaches &bidder_caches;
         std::vector<GeoCampaign> geo_campaigns;
         std::vector<Ad> retrieved_cached_ads;
+        AdSelectionAlg selection_alg;
 };
 }
 
