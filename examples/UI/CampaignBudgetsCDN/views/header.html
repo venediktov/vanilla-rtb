@@ -1,0 +1,96 @@
+<nav class="navbar navbar-fixed-top" role="navigation">
+
+    <a target="_blank" href="https://github.com/venediktov/vanilla-rtb"><img style="float: left; margin-bottom: -1px" src="images/vanilla.jpg"></a>
+
+<div id="date" style="float: right; margin-top: 25px; margin-right: 5px">{{date | date:"MMMM dd'th,' yyyy h':'mm a "}}</div>
+</nav>
+
+
+<div class="container">
+    <div class="row row-header">
+        <div class="col-xs-12 col-sm-12">
+            <p style="padding-top: 25px"></p>
+            <div class="alert alert-info">
+
+                <p>Sort Type: {{ sortType }}</p>
+                <p>Sort Reverse: {{ sortReverse }}</p>
+                <p>Search Query: {{ searchBudgets }}</p>
+
+            </div>
+            <div class="col-xs-12" ng-if="!showMenu">
+                <h3>{{message}}</h3>
+            </div>
+            <form>
+                <div class="form-group">
+                    <div class="input-group">
+                        <div class="input-group-addon"><i class="fa fa-search"></i></div>
+                        <input type="text" class="form-control" placeholder="Search Campaign Budgets" ng-model="searchBudgets">
+                    </div>
+                </div>
+            </form>
+            <table class="table table-bordered table-striped">
+
+    <thead>
+      <tr>
+        <td>
+          <a style="padding-right:30px" href="#" ng-click="sortType = 'id'; sortReverse = !sortReverse">
+            ID
+            <span ng-show="sortType == 'id' && !sortReverse" class="fa fa-caret-down"></span>
+            <span ng-show="sortType == 'id' && sortReverse" class="fa fa-caret-up"></span>
+          </a>
+        </td>
+        <td>
+          <a href="#" ng-click="sortType = 'budget'; sortReverse = !sortReverse">
+            Budget
+            <span ng-show="sortType == 'budget' && !sortReverse" class="fa fa-caret-down"></span>
+            <span ng-show="sortType == 'budget' && sortReverse" class="fa fa-caret-up"></span>
+          </a>
+        </td>
+        <!--<td>-->
+          <!--<a href="#" ng-click="sortType = 'cpc'; sortReverse = !sortReverse">-->
+          <!--CPC-->
+            <!--<span ng-show="sortType == 'cpc' && !sortReverse" class="fa fa-caret-down"></span>-->
+            <!--<span ng-show="sortType == 'cpc' && sortReverse" class="fa fa-caret-up"></span>-->
+          <!--</a>-->
+        <!--</td>-->
+        <td>
+          <a style="padding-right:45px" href="#" ng-click="sortType = 'cpm'; sortReverse = !sortReverse">
+          Primary Metric
+            <span ng-show="sortType == 'cpm' && !sortReverse" class="fa fa-caret-down"></span>
+            <span ng-show="sortType == 'cpm' && sortReverse" class="fa fa-caret-up"></span>
+          </a>
+        </td>
+        <td>
+          <a href="#" ng-click="sortType = 'spent'; sortReverse = !sortReverse">
+          SPENTv
+            <span ng-show="sortType == 'spent' && !sortReverse" class="fa fa-caret-down"></span>
+            <span ng-show="sortType == 'spent' && sortReverse" class="fa fa-caret-up"></span>
+          </a>
+        </td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="budget in budgets | orderBy:sortType:sortReverse | filter:searchBudgets">
+        <td><input type="number" ng-model="budget.id"><a><span ng-click="deleteBudget(budget);" style="float: right" class="fa fa-times"></span></a></td>
+        <td><input type="number" ng-model="budget.budget"></td>
+        <!--<td><input type="number" ng-model="budget.cpc"></td>-->
+        <td id="cpm"><input type="number" ng-model="budget.cpm">
+            <select ng-model="selectedMetric" ng-options="x for x in metrics" ></select></td>
+        <td><input type="number" ng-model="budget.spent"></td>
+        <td><a href="#" ng-click="submitBudget(budget)">Update</a></td>
+      </tr>
+    </tbody>
+
+  </table>
+    <p class="text-center text-muted">
+        <a ng-click="addBudget()" href="#">Add a Budget</a>
+    </p>
+    <p class="text-center text-muted">
+        <a ng-click="updateObject()" href="#">Update Campaign Budgets Object on Server</a>
+    </p>
+
+        </div>
+
+    </div>
+
+</div>
