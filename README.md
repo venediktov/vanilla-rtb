@@ -98,12 +98,10 @@ pass it to your make script like this
 - [x] Notification service and Slave-Banker
   * vanilla-rtb/Release/examples/bin$ ./notification_service_test --config etc/config.cfg
   * vanilla-rtb/Release/examples/bin$ ./slavebanker_service_test --config etc/config.cfg
-  
-  
-  - [x] Campaign manager - Budget
+- [x] Campaign manager - Budget
   * vanilla-rtb/Release/examples/bin$ ./campaign_manager_test --config etc/config.cfg
   
   Fire up UI by connecting to manager via browser
   
-  [[https://github.com/venediktov/vanilla-rtb/wiki/images/BudgetCampaignCDN.png|alt=octocat]]
+  ![campaign](https://github.com/venediktov/vanilla-rtb/wiki/images/BudgetCampaignCDN.png)
 
