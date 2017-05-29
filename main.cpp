@@ -19,6 +19,7 @@
 #include "../handlers/crud_dispatcher.hpp"
 #include "request.hpp"
 #include "reply.hpp"
+
  
 int main(int argc, char* argv[])
 {
@@ -57,13 +58,23 @@ int main(int argc, char* argv[])
        
     // READ "/venue_handler/FLO/"
     handler.crud_match(boost::regex("/venue_handler/(\\w+)") )
-        .get([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+        .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
             r << "name: " << match[1]
               << http::server::reply::flush("text") ;
-            std::cout << "GET request=" << match[0] << std::endl;
+            std::cout << "POST request=" << match[0] << std::endl;
         });
        
-    http::server::server<restful_dispatcher_t> s(argv[1], argv[2], handler);
+    // SIMPLE NO REGEX MATCH FOR POST "/venue_handler/RTB"
+    using simple_restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply, std::string, std::string> ;
+    simple_restful_dispatcher_t simple_handler(argv[3]) ;
+    simple_handler.crud_match(std::string("/venue_handler/RTB") )
+        .post([](http::server::reply & r, const http::crud::crud_match<std::string> & match) {
+            r << "OK" << http::server::reply::flush("OK") ;
+            std::cout << "POST request_data=" << match.data << std::endl;
+        });
+
+    //http::server::server<restful_dispatcher_t> s(argv[1], argv[2], simple_handler);
+    http::server::server<simple_restful_dispatcher_t> s(argv[1], argv[2], simple_handler);
  
    
     
