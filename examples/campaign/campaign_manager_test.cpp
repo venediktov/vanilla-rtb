@@ -187,6 +187,10 @@ int main(int argc, char *argv[]) {
                     //r << boost::lexical_cast<std::string>(*d) << "\n";
                   }
                   r << jsonv::to_string(response);
+                  r << http::server::reply::flush("json");
+                  r.headers.push_back(http::server::header("Access-Control-Allow-Origin", "*"));
+                  r.headers.push_back(http::server::header("Access-Control-Allow-Headers", "Cache-Control, Pragma, Origin, Authorization, Content-Type, X-Requested-With"));
+                  r.headers.push_back(http::server::header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE"));
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
