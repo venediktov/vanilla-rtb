@@ -180,10 +180,13 @@ int main(int argc, char *argv[]) {
                       campaign_id = boost::lexical_cast<uint32_t>(value);
                   }
                   read_commands[key](data, campaign_id? *campaign_id : 0 );
-                  r<< CampaignBudget::desc();
+                  //r<< CampaignBudget::desc();
+                  jsonv::value response = jsonv::array();
                   for(auto &d : data) {
-                    r << boost::lexical_cast<std::string>(*d) << "\n";
+                    response.push_back(DSL::CampaignDSL<CampaignBudget>().create_response(*d)) ;
+                    //r << boost::lexical_cast<std::string>(*d) << "\n";
                   }
+                  r << jsonv::to_string(response);
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
