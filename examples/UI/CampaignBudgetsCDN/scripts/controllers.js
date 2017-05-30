@@ -2,7 +2,7 @@
 
 angular.module('budgetsApp')
 
-    .controller('JumboController', ['$scope', 'budgetFactory', function($scope, budgetFactory) {
+    .controller('JumboController', ['$scope', 'budgetFactory', 'budgetIdCall', function($scope, budgetFactory, budgetIdCall) {
 
             $scope.date = new Date();
 
@@ -41,9 +41,9 @@ angular.module('budgetsApp')
 
             $scope.addBudget = function () {
 
-
+                //TODO:  can't really call save , first need to get next number, campaign_id is unique
                 $scope.budgets.push($scope.mybudget);
-                budgetFactory.getBudgets().save($scope.mybudget);
+                budgetIdCall.getBudget().new({id:$scope.mybudget.id}, $scope.mybudget);
 
 
                 // $scope.commentForm.$setPristine();
@@ -60,7 +60,7 @@ angular.module('budgetsApp')
                     return item.id;
                 }).indexOf(Budget.id);
                 ~$scope.removeIndex && $scope.budgets.splice($scope.removeIndex, 1);
-                 budgetFactory.getBudgets().delete(Budget);
+                 budgetIdCall.getBudget().delete({id:Budget.id}, Budget);
 
                 } else {
                     console.log(Budget);
@@ -84,15 +84,10 @@ angular.module('budgetsApp')
 
 
             $scope.submitBudget = function (Budget) {
-
-                $scope.budget = budgetFactory.getBudgets().get({id:Budget.id});
-
-                budgetFactory.getBudgets().update({id:Budget.id},Budget);
-
+                console.log(JSON.stringify(Budget));
+                $scope.budget = budgetIdCall.getBudget().get({id:Budget.id});
+                budgetIdCall.getBudget().update({id:Budget.id},Budget);
             };
-
-
-
 
 
 
