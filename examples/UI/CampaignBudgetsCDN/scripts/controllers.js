@@ -41,7 +41,7 @@ angular.module('budgetsApp')
 
             $scope.addBudget = function () {
 
-                //TODO:  can't really call save , first need to get next number, campaign_id is unique
+                $scope.mybudget.id = $scope.budgets[$scope.budgets.length - 1].id + 1;
                 $scope.budgets.push($scope.mybudget);
                 budgetIdCall.getBudget().new({id:$scope.mybudget.id}, $scope.mybudget);
 
