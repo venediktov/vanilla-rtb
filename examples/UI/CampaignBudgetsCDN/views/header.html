@@ -69,41 +69,24 @@
         </td>
       </tr>
     </thead>
-<<<<<<< HEAD
-        <tbody>
-      <tr ng-repeat="budget in budgets | orderBy:sortType:sortReverse | filter:searchBudgets">
-        <td><input type="number" ng-model="budget.id"><a ng-click="deleteBudget(budget);" class="btn btn-danger"><span style="float: right" class="fa fa-times"></span></a></td>
-=======
     <tbody>
       <tr ng-repeat="budget in budgets | orderBy:sortType:sortReverse | filter:searchBudgets">
         <td><input type="number" ng-model="budget.id"><a><span ng-click="deleteBudget(budget);" style="float: right" class="fa fa-times"></span></a></td>
->>>>>>> upstream/master
         <td><input type="number" ng-model="budget.budget"></td>
         <!--<td><input type="number" ng-model="budget.cpc"></td>-->
         <td id="cpm"><input type="number" ng-model="budget.cpm">
             <select ng-model="selectedMetric" ng-options="x for x in metrics" ></select></td>
         <td><input type="number" ng-model="budget.spent"></td>
-<<<<<<< HEAD
-        <td><a class="btn btn-primary" href="#" ng-click="submitBudget(budget)">Update</a></td>
-=======
         <td><a href="#" ng-click="submitBudget(budget)">Update</a></td>
->>>>>>> upstream/master
       </tr>
     </tbody>
 
   </table>
     <p class="text-center text-muted">
-<<<<<<< HEAD
-        <a class="btn btn-success" ng-click="addBudget()" href="#">Add a Budget</a>
-    </p>
-    <p class="text-center text-muted">
-        <a class="btn btn-default" ng-click="updateObject()" href="#">Update Campaign Budgets Object on Server</a>
-=======
         <a ng-click="addBudget()" href="#">Add a Budget</a>
     </p>
     <p class="text-center text-muted">
         <a ng-click="updateObject()" href="#">Update Campaign Budgets Object on Server</a>
->>>>>>> upstream/master
     </p>
 
         </div>

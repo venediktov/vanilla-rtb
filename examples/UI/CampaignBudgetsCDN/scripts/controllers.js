@@ -2,11 +2,7 @@
 
 angular.module('budgetsApp')
 
-<<<<<<< HEAD
-    .controller('JumboController', ['$scope', 'budgetFactory', function($scope, budgetFactory) {
-=======
     .controller('JumboController', ['$scope', 'budgetFactory', 'budgetIdCall', function($scope, budgetFactory, budgetIdCall) {
->>>>>>> upstream/master
 
             $scope.date = new Date();
 
@@ -45,15 +41,9 @@ angular.module('budgetsApp')
 
             $scope.addBudget = function () {
 
-<<<<<<< HEAD
-
-                $scope.budgets.push($scope.mybudget);
-                budgetFactory.getBudgets().save($scope.mybudget);
-=======
                 $scope.mybudget.id = $scope.budgets[$scope.budgets.length - 1].id + 1;
                 $scope.budgets.push($scope.mybudget);
                 budgetIdCall.getBudget().new({id:$scope.mybudget.id}, $scope.mybudget);
->>>>>>> upstream/master
 
 
                 // $scope.commentForm.$setPristine();
@@ -70,11 +60,7 @@ angular.module('budgetsApp')
                     return item.id;
                 }).indexOf(Budget.id);
                 ~$scope.removeIndex && $scope.budgets.splice($scope.removeIndex, 1);
-<<<<<<< HEAD
-                 budgetFactory.getBudgets().delete(Budget);
-=======
                  budgetIdCall.getBudget().delete({id:Budget.id}, Budget);
->>>>>>> upstream/master
 
                 } else {
                     console.log(Budget);
@@ -98,25 +84,11 @@ angular.module('budgetsApp')
 
 
             $scope.submitBudget = function (Budget) {
-<<<<<<< HEAD
-
-                $scope.budget = budgetFactory.getBudgets().get({id:Budget.id});
-
-                budgetFactory.getBudgets().update({id:Budget.id},Budget);
-
-=======
                 console.log(JSON.stringify(Budget));
                 $scope.budget = budgetIdCall.getBudget().get({id:Budget.id});
                 budgetIdCall.getBudget().update({id:Budget.id},Budget);
->>>>>>> upstream/master
             };
 
 
 
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> upstream/master
         }]);

@@ -14,9 +14,6 @@ angular.module('budgetsApp')
 
                         
         }])
-<<<<<<< HEAD
-
-=======
         .service('budgetIdCall', ['$resource', 'baseURL', function($resource, baseURL) {
                 this.getBudget = function () {
                     return $resource(baseURL+"budget/id/:id", null,
@@ -27,7 +24,6 @@ angular.module('budgetsApp')
                     );
                 };
         }])
->>>>>>> upstream/master
 
 
 ;
