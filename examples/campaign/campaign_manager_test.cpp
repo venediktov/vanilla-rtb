@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
                 }
     });
     dispatcher.crud_match(boost::regex("/campaign/([A-Za-z/]+)(\\d*)"))
-              .get([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+        .get([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Read received event url=" << match[0];
               try {
                   CampaignBudgets data;
@@ -180,15 +180,32 @@ int main(int argc, char *argv[]) {
                       campaign_id = boost::lexical_cast<uint32_t>(value);
                   }
                   read_commands[key](data, campaign_id? *campaign_id : 0 );
-                  r<< CampaignBudget::desc();
-                  for(auto &d : data) {
-                    r << boost::lexical_cast<std::string>(*d) << "\n";
+                  //TODO: put it into DSL
+                  jsonv::value response;
+                  if(campaign_id && !data.empty()) {
+                      response = DSL::CampaignDSL<CampaignBudget>().create_response(*data[0]);
+                  } else  {
+                      response = jsonv::array();
+                      for(auto &d : data) {
+                         response.push_back(DSL::CampaignDSL<CampaignBudget>().create_response(*d)) ;
+                      }
                   }
+                  r << jsonv::to_string(response);
+                  r << http::server::reply::flush("json");
+                  //for testing only , works with POST only and AngularJS still sends OPTIONS with DELETE, PUT
+                  r.headers.push_back(http::server::header("Access-Control-Allow-Origin", "*"));
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }
     });
 
+    dispatcher.crud_match(boost::regex("/campaign/.*(\\.js|\\.html|\\.css|\\.jpg)" ))
+        .get([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              LOG(info) << "Read HOME page received url=" << match[0];
+              http::server::request req;
+              req.uri = match[0];
+              http::server::request_handler(config.get("campaign-manager.root")).handle_request(req,r);
+    });
 
     auto host = config.get("campaign-manager.host");
     auto port = config.get("campaign-manager.port");

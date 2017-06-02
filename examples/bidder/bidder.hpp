@@ -11,7 +11,7 @@
 
 #include <memory>
 #include <iostream>
-#include "bidder_selector.hpp"
+#include "ad_selector.hpp"
 #include "examples/multiexchange/user_info.hpp"
 
 namespace vanilla {
@@ -87,7 +87,7 @@ namespace vanilla {
                 addBid(request, imp, ad);
             }
         }
-        vanilla::BidderSelector<Config> selector;
+        vanilla::AdSelector<Config> selector;
         boost::uuids::random_generator uuid_generator;
         BidResponse response;
     };

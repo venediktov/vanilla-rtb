@@ -14,7 +14,20 @@ angular.module('budgetsApp')
 
                         
         }])
+<<<<<<< HEAD
 
+=======
+        .service('budgetIdCall', ['$resource', 'baseURL', function($resource, baseURL) {
+                this.getBudget = function () {
+                    return $resource(baseURL+"budget/id/:id", null,
+                        {
+                            'update':{method:'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded'}},
+                            'new':{method:'PUT'}
+                        }
+                    );
+                };
+        }])
+>>>>>>> upstream/master
 
 
 ;
