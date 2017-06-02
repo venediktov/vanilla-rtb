@@ -103,5 +103,5 @@ pass it to your make script like this
   
   Fire up UI by connecting to manager via browser
   
-  ![campaign](https://github.com/venediktov/vanilla-rtb/wiki/images/WorkingCampaignCDN.png)
+  ![campaign](https://github.com/venediktov/vanilla-rtb/wiki/images/WorkingBudgetButtons.png)  
 
