@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="budgetsApp">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Campaign Budgets UI</title>
+
+<!-- build:css styles/main.css -->
+    <link href="../bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!--<link href="../bower_components/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">-->
+    <link href="../bower_components/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!--<link href="styles/bootstrap-social.css" rel="stylesheet">-->
+    <link href="styles/mystyles.css" rel="stylesheet">
+<!-- endbuild -->
+
+
+</head>
+
+<body>
+
+
+    <div ui-view="content"></div>
+
+
+<!-- build:js scripts/main.js -->
+    <script src="../bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="../bower_components/angular/angular.min.js"></script>
+    <script src="../bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
+    <script src="../bower_components/angular-resource/angular-resource.min.js"></script>
+    <script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="scripts/app.js"></script>
+    <script src="scripts/controllers.js"></script>
+    <script src="scripts/services.js"></script>
+<!-- endbuild -->
+
+</body>
+
+
+</html>
