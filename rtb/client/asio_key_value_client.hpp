@@ -27,7 +27,7 @@ namespace vanilla {
         class asio_key_value_client {
         public:
             using self_type = asio_key_value_client;
-            using response_handler_type = std::function<void(void) >;
+            using response_handler_type = std::function<void(const std::string&) >;
 
             asio_key_value_client() :
                 client{io}
@@ -46,7 +46,9 @@ namespace vanilla {
                 io.reset();
                 io.run();
 
-                response_handler();
+                if(response_handler) {
+                    response_handler(data);
+                }
             }
 
             void connect(const std::string &host, uint16_t port) {
