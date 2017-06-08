@@ -25,13 +25,13 @@
 namespace DSL {
     using namespace jsonv;
 
-    template<typename T=std::string , typename Mapper = DSL::dsl_mapper<T>, unsigned int Size=128>
-    class GenericDSL : public Mapper  {
+    template<typename T=std::string , template<class> class Mapper = DSL::dsl_mapper, unsigned int Size=128>
+    class GenericDSL : public Mapper<T>  {
             
     public:
-        using deserialized_type = typename Mapper::deserialized_type;
-        using serialized_type = typename Mapper::serialized_type;
-        using parse_error_type = typename Mapper::parse_error_type;
+        using deserialized_type = typename Mapper<T>::deserialized_type;
+        using serialized_type = typename Mapper<T>::serialized_type;
+        using parse_error_type = typename Mapper<T>::parse_error_type;
 
         GenericDSL() {
             request_fmt_  = this->build_request();

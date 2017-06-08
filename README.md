@@ -6,10 +6,10 @@ open-source library utilizing  modern C++11/14  features and latest Boost.
 
 What makes us different from other open-source RTB projects we have seen?
 
-Our stack is fairly small and 
-easy to integrate with [your cmake project](https://github.com/vanilla-rtb/rapid-bidder) 
-, completely decoupled by C++ templates and has minimum dependency on outside vendors.
+Our stack is fairly small and easy to integrate with any cmake project. 
+As a model project please see [https://github.com/vanilla-rtb/rapid-bidder](https://github.com/vanilla-rtb/rapid-bidder)
 
+vanilla-rtb stack is completely decoupled by C++ templates and has minimum dependency on outside vendors.
 
 [vanilla-rtb ecosystem](../../wiki)
 
