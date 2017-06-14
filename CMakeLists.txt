@@ -1,6 +1,8 @@
 # -*- cmake -*-
 
-cmake_minimum_required(VERSION 3.0)
+# the cmake version used in the travis integration build
+# older versions may still work but have not been tested
+cmake_minimum_required(VERSION 3.7.2)
 
 project(vanilla-rtb CXX)
 
