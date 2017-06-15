@@ -43,6 +43,7 @@ namespace DSL {
             jsmn_parser parser;
             jsmntok_t t[Size];
             thread_local jsonv::value encoded;
+            encoded.clear();
             jsmn_init(&parser);
             auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));
             if (r < 0) {

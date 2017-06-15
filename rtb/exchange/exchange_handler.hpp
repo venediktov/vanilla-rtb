@@ -145,9 +145,9 @@ namespace vanilla {
                 }
                 try {
                     bid_request = parser.extract_request(match.data);
-                } catch (const parse_error_type &err) {
+                } catch (const std::exception& err) {
                     if (error_log_handler) {
-                        error_log_handler(to_string(err));
+                        error_log_handler(err.what());
                     }
                     r << http::server::reply::flush("");
                     return false;
