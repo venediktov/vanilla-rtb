@@ -52,7 +52,7 @@ namespace DSL {
             return extract<deserialized_type>(encoded, request_fmt_);
         }
 
-        jsonv::value create_response(const serialized_type & bid_response) {
+        auto create_response(const serialized_type & bid_response) {
             return to_json(bid_response, response_fmt_);
         }
 
