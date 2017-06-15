@@ -6,10 +6,10 @@ open-source library utilizing  modern C++11/14  features and latest Boost.
 
 What makes us different from other open-source RTB projects we have seen?
 
-Our stack is fairly small and 
-easy to integrate with [your cmake project](https://github.com/vanilla-rtb/rapid-bidder) 
-, completely decoupled by C++ templates and has minimum dependency on outside vendors.
+Our stack is fairly small and easy to integrate with any cmake project. 
+As a model project please see [https://github.com/vanilla-rtb/rapid-bidder](https://github.com/vanilla-rtb/rapid-bidder)
 
+vanilla-rtb stack is completely decoupled by C++ templates and has minimum dependency on outside vendors.
 
 [vanilla-rtb ecosystem](../../wiki)
 
@@ -19,6 +19,8 @@ easy to integrate with [your cmake project](https://github.com/vanilla-rtb/rapid
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
+
+Recommended build environment: Linux or macOS, CMake - 3.7.2, GCC - 5.1, Boost - 1.58.
 
 Structure :
 * [/](../../tree/master/) -- the root directory

@@ -1,19 +1,32 @@
 # -*- cmake -*-
 
-cmake_minimum_required(VERSION 2.8)
+# the cmake version used in the travis integration build
+# older versions may still work but have not been tested
+cmake_minimum_required(VERSION 3.7.2)
 
+project(vanilla-rtb CXX)
 
-project(vanilla-rtb)
+SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
 
-if(WIN32)
-else(WIN32)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -ggdb")
-endif(WIN32)
+FIND_PACKAGE(Boost 1.58.0 REQUIRED)
+
+FIND_PACKAGE(Threads)
+
+IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.1")
+    MESSAGE(FATAL_ERROR "The build has not been tested with GCC version < 5.1, to proceed at your own risk comment this message out in the top level CMakeLists.txt")
+ENDIF()
+
+IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb")
+ENDIF()
 
 IF (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     SET ( CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/examples )
 ENDIF()
+
 message("CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}")
 message("CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}")
 message("CMAKE_CURRENT_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}")
@@ -27,9 +40,9 @@ SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 IF (UNIX AND NOT APPLE)
     SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64")
-ELSE (LINUX)
+ELSE (UNIX AND NOT APPLE)
     SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64")
-ENDIF (LINUX)
+ENDIF (UNIX AND NOT APPLE)
 
 # add the automatically determined parts of the RPATH
 # which point to directories outside the build tree to the install RPATH
