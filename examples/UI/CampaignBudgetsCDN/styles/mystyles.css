@@ -1,10 +1,17 @@
-td select {width: 30%; float: right}
+td input {width: 75%}
 
-#cpm input {width: 65%}
+.idWidth input {width: 55px}
 
-td input {
-  width: 85%;
-}
+.budgetWidth input {max-width: 100px;}
+
+.spentWidth input {max-width: 100px}
+
+
+
+
+
+.cpmWidth input {max-width: 100px}
+.cpmWidth select {max-width: 60px; }
 
 #date {
   color: #2b3541;
