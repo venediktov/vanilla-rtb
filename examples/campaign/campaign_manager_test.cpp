@@ -30,8 +30,7 @@
  *                              campaign_budget :
  *                              {
  *                                 "budget":1000000,
- *                                 "cpc":300000,
- *                                 "cpm":20000,
+ *                                 "metric" : { id:1 , name:"CPM" , "value":300000},
  *                                 "id":123,
  *                                 "spent":1000
  *                              },
@@ -76,6 +75,7 @@
 #include "config.hpp"
 #include "campaign_cache.hpp"
 #include "serialization.hpp"
+#include "campaign_budget_mapper.hpp"
 
 
 #include "rtb/core/core.hpp"
@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using CampaignCacheType  = CampaignCache<CampaignManagerConfig>;
     using CampaignBudgets = typename CampaignCacheType::DataCollection;
+    using CampaignBudgetMapper = DSL::campaign_budget_mapper<>;
     
 //    std::string Create;
 //    std::string Read;
@@ -142,7 +143,7 @@ int main(int argc, char *argv[]) {
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Create received cache update event url=" << match[0];
                 try {
-                    auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
+                    auto data = DSL::CampaignDSL<CampaignBudgetMapper>().extract_request(match.data);
                     uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
                     create_commands[match[1]](data, campaign_id);
                 } catch (std::exception const& e) {
@@ -152,7 +153,7 @@ int main(int argc, char *argv[]) {
               .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
                 LOG(info) << "Update received event url=" << match[0];
                 try {
-                    auto data = DSL::CampaignDSL<CampaignBudget>().extract_request(match.data);
+                    auto data = DSL::CampaignDSL<CampaignBudgetMapper>().extract_request(match.data);
                     uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
                     update_commands[match[1]](data,campaign_id);
                 } catch (std::exception const& e) {
@@ -183,11 +184,11 @@ int main(int argc, char *argv[]) {
                   //TODO: put it into DSL
                   jsonv::value response;
                   if(campaign_id && !data.empty()) {
-                      response = DSL::CampaignDSL<CampaignBudget>().create_response(*data[0]);
+                      response = DSL::CampaignDSL<CampaignBudgetMapper>().create_response(*data[0]);
                   } else  {
                       response = jsonv::array();
                       for(auto &d : data) {
-                         response.push_back(DSL::CampaignDSL<CampaignBudget>().create_response(*d)) ;
+                         response.push_back(DSL::CampaignDSL<CampaignBudgetMapper>().create_response(*d)) ;
                       }
                   }
                   r << jsonv::to_string(response);

@@ -47,8 +47,8 @@ struct CampaignBudget {
     uint64_t day_budget_limit{}; //micro dollars
     uint64_t day_budget_spent{}; //micro dollars
     uint64_t day_budget_overdraft{}; //micro dollars
-    uint64_t day_show_limit{}; //TODO: remove
-    uint64_t day_click_limit{}; //TODO: remove
+    //uint64_t day_show_limit{}; //TODO: remove
+    //uint64_t day_click_limit{}; //TODO: remove
     Metric metric{};
     std::string record{};
    

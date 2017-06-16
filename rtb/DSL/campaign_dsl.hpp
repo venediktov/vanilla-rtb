@@ -6,37 +6,26 @@
 namespace DSL {
     using namespace jsonv;
 
-    template<typename Campaign>
-    class CampaignDSL {
+    template<typename Mapper>
+    class CampaignDSL : Mapper {
     public:
-        using deserialized_type = Campaign;
-        using serialized_type = Campaign;
-        using parse_error_type = jsonv::parse_error;
+        using deserialized_type = typename Mapper::deserialized_type;
+        using serialized_type   = typename Mapper::serialized_type;
+        using parse_error_type  = typename Mapper::parse_error_type;
 
  
         CampaignDSL() {
-            formats base_in = formats_builder()
-                .type<Campaign>()
-                .member("id", &Campaign::campaign_id)
-                .member("budget", &Campaign::day_budget_limit)
-                .member("spent", &Campaign::day_budget_spent)
-                .member("cpm", &Campaign::day_show_limit)
-                .member("cpc", &Campaign::day_click_limit)
-                .check_references(formats::defaults())
-                ;
-            request_fmt_ = formats::compose({ base_in, formats::defaults() });
-            //formats base_out = base_in;
-            response_fmt_ = formats::compose({ base_in, formats::defaults() });
-
+            request_fmt_  = this->build_request();
+            response_fmt_ = this->build_response();
         }
 
-        Campaign extract_request(const std::string & campaign_request) {
-            auto encoded = parse(campaign_request);
-            return extract<Campaign>(encoded, request_fmt_);
+        deserialized_type extract_request(const std::string & campaign_entity) {
+            auto encoded = parse(campaign_entity);
+            return extract<deserialized_type>(encoded, request_fmt_);
         }
 
-        jsonv::value create_response(const Campaign & campaign) {
-            return to_json(campaign, response_fmt_);
+        auto create_response(const serialized_type & campaign_response) {
+            return to_json(campaign_response, response_fmt_);
         }
 
     private:

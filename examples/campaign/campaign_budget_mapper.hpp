@@ -25,7 +25,7 @@
 namespace DSL {
     using namespace jsonv;
 
-    template<typename T>
+    template<typename T=void>
     class campaign_budget_mapper {
         using Campaign     = vanilla::CampaignBudget;
         using Metric       = typename vanilla::CampaignBudget::Metric;
@@ -45,8 +45,8 @@ namespace DSL {
                 .member("spent", &Campaign::day_budget_spent)
                 .member("metric", &Campaign::metric)
                 .template type<Metric>()
-                .member("id", &Campaign::type)
-                .member("value", &Campaign::value)
+                .member("id", &Metric::type)
+                .member("value", &Metric::value)
                 .template enum_type<MetricType>("id",
                 {
                     { MetricType::UNDEFINED,  0 },
