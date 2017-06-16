@@ -2,15 +2,11 @@ td input {width: 75%}
 
 .idWidth input {width: 55px}
 
-.budgetWidth input {max-width: 100px;}
+.budgetWidth input {max-width: 100px; min-width: 55px}
 
-.spentWidth input {max-width: 100px}
+.spentWidth input {max-width: 100px; min-width: 55px}
 
-
-
-
-
-.cpmWidth input {max-width: 100px}
+.cpmWidth input {max-width: 100px; min-width: 55px}
 .cpmWidth select {max-width: 60px; }
 
 #date {
