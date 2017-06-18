@@ -74,8 +74,8 @@
         <td><input type="number" ng-model="budget.id"><a ng-click="deleteBudget(budget);" class="btn btn-danger"><span style="float: right" class="fa fa-times"></span></a></td>
         <td><input type="number" ng-model="budget.budget"></td>
         <!--<td><input type="number" ng-model="budget.cpc"></td>-->
-        <td id="cpm"><input type="number" ng-model="budget.cpm">
-            <select ng-model="selectedMetric" ng-options="x for x in metrics" ></select></td>
+        <td id="cpm"><input type="number" ng-model="budget.metric.value">
+            <select ng-model="budget.metric" ng-options="metric as metric.name for metric in metrics track by metric.id" ></select></td>
         <td><input type="number" ng-model="budget.spent"></td>
         <td><a class="btn btn-primary" href="#" ng-click="submitBudget(budget)">Update</a></td>
       </tr>

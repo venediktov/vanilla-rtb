@@ -16,8 +16,12 @@ namespace boost { namespace serialization {
         ar & value.campaign_id;
         ar & value.day_budget_limit;
         ar & value.day_budget_spent;
-        ar & value.day_show_limit;
-        ar & value.day_click_limit;
+        ar & value.metric;
+    }
+    template<class Archive>
+    void serialize(Archive & ar, vanilla::CampaignBudget::Metric & metric, const unsigned int) {
+        ar & metric.type;
+        ar & metric.value;
     }
 }} 
 

@@ -3,7 +3,7 @@
 angular.module('budgetsApp')
 
 
-        .constant("baseURL","http://localhost:11081/campaign/")
+        .constant("baseURL", window.location.origin + "/campaign/")
         .service('budgetFactory', ['$resource', 'baseURL', function($resource, baseURL) {
 
 
