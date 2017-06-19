@@ -31,12 +31,25 @@ namespace types {
 }
 
 struct CampaignBudget {
+
+    enum class MetricType : int8_t {
+        UNDEFINED = 0,
+        CPM = 1,
+        CPC = 2,
+        CPA = 3
+    };
+    struct Metric {
+        MetricType type{};
+        uint64_t value{};
+    };
+
     uint32_t campaign_id{};
     uint64_t day_budget_limit{}; //micro dollars
     uint64_t day_budget_spent{}; //micro dollars
     uint64_t day_budget_overdraft{}; //micro dollars
-    uint64_t day_show_limit{};
-    uint64_t day_click_limit{};
+    //uint64_t day_show_limit{}; //TODO: remove
+    //uint64_t day_click_limit{}; //TODO: remove
+    Metric metric{};
     std::string record{};
    
     void update(types::budget value) {
@@ -50,9 +63,6 @@ struct CampaignBudget {
             day_budget_overdraft += value - min_value; 
         }
     }
-    static std::string desc() {
-        return std::string("campaign_id|day_budget_limit|day_budget_spent|day_show_limit|day_click_limit\n");
-    }
     friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<CampaignBudget> ptr)  {
         os <<  *ptr;
         return os;
@@ -61,8 +71,6 @@ struct CampaignBudget {
         os << value.campaign_id      << "|" 
            << value.day_budget_limit << "|"
            << value.day_budget_spent << "|"
-           << value.day_show_limit   << "|"
-           << value.day_click_limit
         ;
         return os;
     }
@@ -78,9 +86,20 @@ struct CampaignBudget {
         l.campaign_id = atol(fields.at(0).c_str()); 
         l.day_budget_limit = atol(fields.at(1).c_str());
         l.day_budget_spent = atol(fields.at(2).c_str());
-        l.day_show_limit = atol(fields.at(3).c_str());
-        l.day_click_limit = atol(fields.at(4).c_str());
         l.day_budget_overdraft = 0;
+        auto day_show_limit = atol(fields.at(3).c_str());
+        if ( day_show_limit ) {
+            l.metric.type  = MetricType::CPM;
+            l.metric.value = day_show_limit;
+            return is;
+        }
+        auto day_click_limit = atol(fields.at(4).c_str());
+        if ( day_click_limit ) {
+            l.metric.type  = MetricType::CPC;
+            l.metric.value = day_click_limit;
+            return is;
+        }
+
         return is;
     }
    

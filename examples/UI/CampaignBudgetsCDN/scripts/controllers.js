@@ -26,13 +26,13 @@ angular.module('budgetsApp')
                 function(response) {
                                 $scope.message = "Error: "+response.status + ' Could not GET budget resource from the server... Here is a mock campaign budgets object to test around with' + response.statusText;
                                 $scope.budgets = [
-                    { budget: 10000, cpc: 40, cpm: 5000, id: 123, spent: 5000 },
-                    { budget: 200, cpc: 80, cpm: 30000, id: 456, spent: 30000 }
+                    {id: 123, metric : {id:2, value:40}, budget: 10000, spent: 5000},
+                    {id: 456, metric : {id:1, value:80}, budget: 200000, spent: 10000}
                 ];
                             });
 
             //options for Price Metrics:
-            $scope.metrics = ["CPM", "CPC", "CPA"];
+            $scope.metrics = [{id:1, name:"CPM"}, {id:2, name:"CPC"}, {id:3, name:"CPA"}];
 
 
             //code for add a budget button
