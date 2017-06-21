@@ -28,7 +28,7 @@ namespace asio = boost::asio;
 #include <atomic>
 #include <array>
 
-namespace audit {
+namespace auditor {
 
 #if __x86_64__
 inline void zzz() noexcept { asm volatile("pause\n": : :"memory"); }
@@ -64,7 +64,7 @@ struct spin_mutex
     }
 
 private:
-    std::atomic_flag flag_ { ATOMIC_FLAG_INIT };
+    std::atomic_flag flag_ = ATOMIC_FLAG_INIT;
 }; // struct spin_mutex
 
 /**
@@ -123,11 +123,11 @@ struct segmented_log_buffer {
             io_service_ {io_service},
             filename_base_ {dirname + "/memory.bin."},
             filesize_ {filesize},
-            segment_deleter_ { io_service_.wrap([] (log_segment* segment) noexcept {
-                delete segment;
-            }) },
             request_next_segment_ { io_service_.wrap([this] {
                 prep_next_segment();
+            }) },
+            segment_deleter_ { io_service_.wrap([] (log_segment* segment) noexcept {
+                delete segment;
             }) }
     {
         prep_next_segment();
@@ -212,4 +212,4 @@ private:
 
 }; // struct segmented_log_buffer
 
-} // namespace audit
+} // namespace auditor

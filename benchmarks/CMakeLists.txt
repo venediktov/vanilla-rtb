@@ -18,6 +18,10 @@ IF(benchmark_FOUND)
             audit_benchmarks.cpp
             main.cpp)
 
+    TARGET_SOURCES(vanilla-rtb-benchmarks PRIVATE
+        audit_buffer.hpp
+        audit_codec.hpp)
+
     TARGET_LINK_LIBRARIES(vanilla-rtb-benchmarks
             benchmark::benchmark
             vanilla_rtb)

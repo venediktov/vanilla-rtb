@@ -68,9 +68,9 @@ target_link_libraries(
         ${CMAKE_THREAD_LIBS_INIT}
         )
 
-if ( NOT WIN32)
+if (NOT WIN32 AND NOT APPLE)
 set(RT_LIB rt)
-endif(NOT WIN32)
+endif()
 
 target_link_libraries(
         country_cache_test

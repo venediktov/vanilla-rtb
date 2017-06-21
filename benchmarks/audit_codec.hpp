@@ -29,7 +29,32 @@ namespace std { using experimental::string_view; }
 #include <experimental/tuple>
 namespace std { using experimental::apply; }
 
-namespace audit {
+namespace auditor {
+
+#if __cplusplus == 201402L
+namespace details {
+
+/**
+ * @arg Op folding operator
+ * @arg Args folding arguments
+ */
+template <typename Op, typename... Args> inline
+constexpr auto fold(Op&& op, Args&&... args)
+{
+    std::common_type_t<Args...> result {};
+    (void)std::initializer_list<int>{(result = op(result, std::forward<Args>(args)), 0)...};
+    return result;
+}
+static_assert(fold(std::plus<>{}, 1, 2, 3) == 6, "");
+
+template <typename... Args> inline
+constexpr auto foldsum(Args&&... args)
+{
+    return fold(std::plus<> {}, std::forward<Args>(args)...);
+}
+
+} // namespace details
+#endif
 
 struct typemap {
     template <typename Arg> inline
@@ -39,7 +64,7 @@ struct typemap {
 
     template <typename Arg> inline
     static constexpr uint8_t code_of() {
-        constexpr std::array<uint8_t, std::tuple_size<mappings_t>::value> type_codes {'?','B','b','H','h','L','l','Q','q','f','d','S'};
+        constexpr std::array<uint8_t, std::tuple_size<mappings_t>::value> type_codes {{'?','B','b','H','h','L','l','Q','q','f','d','S'}};
         return type_codes[index_of_<Arg>(std::make_index_sequence<std::tuple_size<mappings_t>::value>{})];
     }
 
@@ -48,13 +73,17 @@ private:
 
     template <typename Arg, size_t... Is> inline
     static constexpr uint8_t index_of_(std::index_sequence<Is...>) {
-        static_assert((std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value + ...) == 1); // unique mapping
+#if __cplusplus > 201402L
+        static_assert((std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value + ...) == 1, ""); // unique mapping
         return static_cast<uint8_t>(((std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value * (Is + 1)) + ...) - 1);
+#else
+        return static_cast<uint8_t>(details::foldsum(std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value * (Is + 1)...) - 1);
+#endif
     }
 }; // struct typemap
 
-static_assert(typemap::index_of<uint8_t>() == 1);
-static_assert(typemap::index_of<int32_t>() == 6);
+static_assert(typemap::index_of<uint8_t>() == 1, "");
+static_assert(typemap::index_of<int32_t>() == 6, "");
 
 // ------------------------------------------------------------------------------
 
@@ -82,14 +111,25 @@ constexpr uint32_t blob_size(char const* arg) { return blob_size(std::string_vie
 template <int N> inline
 constexpr uint32_t blob_size(char(&arg)[N]) { return blob_size(std::string_view(arg, N - 1)); }
 
+#if __cplusplus > 201402L
 template<typename... Args> inline
 constexpr uint32_t record_size() { return (field_size<Args>() + ...); }
+#else
+template<typename... Args> inline
+constexpr uint32_t record_size() { return details::foldsum(field_size<Args>()...); }
+#endif
+static_assert(record_size<uint8_t, uint16_t, uint32_t>() == 10, "");
 
 template<typename... Args> inline
 constexpr uint32_t full_record_size(Args&&... args) {
     constexpr uint32_t fixed_part_size = record_size<Args...>();
 
-    const auto blobs_part_size = (blob_size(std::forward<Args>(args)) + ...);
+    const auto blobs_part_size =
+#if __cplusplus > 201402L
+        (blob_size(std::forward<Args>(args)) + ...);
+#else
+        details::foldsum(blob_size(std::forward<Args>(args))...);
+#endif
 
     return 1 /* Start-of-Heading */ + sizeof(fixed_part_size) + fixed_part_size + blobs_part_size;
 }
@@ -112,7 +152,6 @@ uint32_t encode_field(char* buf, uint32_t& blob_offset, std::string_view arg) {
     *(buf++) = typemap::code_of<std::string_view>();
 
     memcpy(buf, reinterpret_cast<char const*>(&blob_offset), sizeof(blob_offset));
-    buf += sizeof(blob_offset);
     blob_offset += blob_size(arg);
 
     return 1 /* type tag */ + sizeof(blob_offset);
@@ -136,7 +175,6 @@ uint32_t encode_blob(char* blob_buf, std::string_view arg) {
     blob_buf += sizeof(blob_len);
 
     memcpy(blob_buf, arg.data(), blob_len);
-    blob_buf += blob_len;
 
     return blob_size(arg);
 }
@@ -158,6 +196,7 @@ auto encode_record(char* buf, Args&&... args) {
 
     uint32_t rel_blob_offset = 0u;
 
+#if __cplusplus > 201402L
     char* rbeg = buf;
     ((buf += encode_field(buf, rel_blob_offset, std::forward<Args>(args))), ...);
     uint32_t rec_size = buf - rbeg;
@@ -166,9 +205,16 @@ auto encode_record(char* buf, Args&&... args) {
     ((buf += encode_blob(buf, std::forward<Args>(args))), ...);
     uint32_t blobs_part_size = buf - bbeg;
     assert(blobs_part_size == (blob_size(std::forward<Args>(args)) + ...));
-
+#else
+    char* rbeg = buf;
+    (void)std::initializer_list<int>{((buf += encode_field(buf, rel_blob_offset, std::forward<Args>(args))), 0)...};
+    uint32_t rec_size = buf - rbeg;
+    
+    char* bbeg = buf;
+    (void)std::initializer_list<int>{((buf += encode_blob(buf, std::forward<Args>(args))), 0)...};
+    uint32_t blobs_part_size = buf - bbeg;
+#endif
     assert(rel_blob_offset == blobs_part_size);
-
     assert(rec_size == fixed_part_size);
 
     return 1 /* Start-of-Heading */ + sizeof(fixed_part_size) + fixed_part_size + blobs_part_size;
@@ -237,4 +283,4 @@ void decode_field(char const*& buf, char const* blob_buf, Fn&& fn) {
     }
 }
 
-} // namespace audit
+} // namespace auditor

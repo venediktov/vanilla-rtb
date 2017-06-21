@@ -16,7 +16,7 @@ struct AuditBufferBenchmarkFixture: benchmark::Fixture
         io_service.run();
     }};
 
-    audit::segmented_log_buffer logbuf {io_service, ".", 1 << 25};
+    auditor::segmented_log_buffer logbuf {io_service, ".", 1 << 25};
 
     ~AuditBufferBenchmarkFixture()
     {
@@ -33,7 +33,7 @@ static auto memory = std::array<char, 65536>{};
 void audit_encoder_benchmark(benchmark::State& state)
 {
     auto const encoder = [](auto&&... args) {
-        return audit::encode_record(memory.data(), std::forward<decltype(args)>(args)...);
+        return auditor::encode_record(memory.data(), std::forward<decltype(args)>(args)...);
     };
 
     while (state.KeepRunning())
@@ -50,7 +50,7 @@ BENCHMARK(audit_encoder_benchmark);
 void audit_size_calc_benchmark(benchmark::State& state)
 {
     auto const size_calculator = [](auto&&... args) {
-        return audit::full_record_size(std::forward<decltype(args)>(args)...);
+        return auditor::full_record_size(std::forward<decltype(args)>(args)...);
     };
 
     while (state.KeepRunning())
@@ -66,11 +66,11 @@ BENCHMARK_DEFINE_F(AuditBufferBenchmarkFixture, audit_buffer_benchmark)(benchmar
     while (state.KeepRunning())
     {
         uint32_t const required_size = std::apply([] (auto&&... args) {
-            return audit::full_record_size(std::forward<decltype(args)>(args)...);
+            return auditor::full_record_size(std::forward<decltype(args)>(args)...);
         }, rec);
 
         std::apply([addr = logbuf.reserve(required_size)] (auto&&... args) {
-            audit::encode_record(addr.get(), std::forward<decltype(args)>(args)...);
+            auditor::encode_record(addr.get(), std::forward<decltype(args)>(args)...);
         }, rec);
     }
 }
