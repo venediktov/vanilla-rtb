@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
  
     using string_view = std::string;
     using BidRequest = openrtb::BidRequest<string_view>;
-    using BidResponse = openrtb::BidResponse<string_view>;
+    //using BidResponse = openrtb::BidResponse<string_view>;
 
     vanilla::multiexchange::multiexchange_config config([&](multi_exchange_handler_config_data &d, po::options_description &desc){
         desc.add_options()
