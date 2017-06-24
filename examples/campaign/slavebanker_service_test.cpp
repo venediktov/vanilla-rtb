@@ -32,7 +32,7 @@ void run(short port, Cache &cache) {
 
 int main(int argc, char** argv) {
     using CampaignCacheType  = CampaignCache<SlaveBankerConfig>;
-    using CampaignBudgets = typename CampaignCacheType::DataCollection;
+    //using CampaignBudgets = typename CampaignCacheType::DataCollection;
     namespace po = boost::program_options;   
     vanilla::config::config<slavebanker_service_config_data> config([](slavebanker_service_config_data &d, po::options_description &desc){
         desc.add_options()

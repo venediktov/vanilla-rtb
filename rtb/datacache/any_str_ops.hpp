@@ -41,7 +41,7 @@ namespace ufw {
         bool operator () (X&& l, Y&& r) const { return op_(view(l), view(r)); }
 
     private:
-        Op const op_;
+        Op op_;
 
         using char_t = char;
         using char_traits_t = std::char_traits<char_t>;

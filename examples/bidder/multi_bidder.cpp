@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     
-    using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+    //using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     namespace po = boost::program_options;   
     
     BidderConfig config([](bidder_config_data &d, po::options_description &desc){

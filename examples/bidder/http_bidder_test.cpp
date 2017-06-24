@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using DSLT = DSL::GenericDSL<> ;
     using BidRequest = DSLT::deserialized_type;
-    using BidResponse = DSLT::serialized_type;
+    //using BidResponse = DSLT::serialized_type;
     
     BidderConfig config([](bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
     
-    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto && info) -> bool {
+    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto && info) {
         using kv_type = vanilla::client::empty_key_value_client;
         thread_local kv_type kv_client;
         bool is_matched_user = info.user_id.length();
@@ -127,10 +127,11 @@ int main(int argc, char *argv[]) {
         kv_client.request(info.user_id, info.user_data);
         return true;
     };
-    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto&&) -> bool {
+    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto&&) {
         reply << http::server::reply::flush("");
+        return true;
     };
-    auto auction_async_f = [&bid_handler](http::server::reply &reply, BidRequest & bid_request, auto&&) -> bool {
+    auto auction_async_f = [&bid_handler](http::server::reply &reply, BidRequest & bid_request, auto&&) {
         return bid_handler.handle_auction_async(reply, bid_request);
     };
     const decision_router_type::decision_tree_type decision_tree = {{
