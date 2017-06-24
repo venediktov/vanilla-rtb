@@ -1,5 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
-SET(CMAKE_CXX_STANDARD 14)
+#SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1z")
 
 IF(benchmark_DIR)
     FIND_PACKAGE(benchmark PATHS "${benchmark_DIR}" QUIET)
@@ -14,7 +15,12 @@ IF(benchmark_FOUND)
             vanilla-rtb-benchmarks
             rtb_dsl_benchmarks.cpp
             rtb_cache_benchmarks.cpp
+            audit_benchmarks.cpp
             main.cpp)
+
+    TARGET_SOURCES(vanilla-rtb-benchmarks PRIVATE
+        audit_buffer.hpp
+        audit_codec.hpp)
 
     TARGET_LINK_LIBRARIES(vanilla-rtb-benchmarks
             benchmark::benchmark

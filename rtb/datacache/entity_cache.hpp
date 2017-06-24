@@ -232,7 +232,6 @@ public:
     template<typename Serializable>
     bool retrieve(std::vector<std::shared_ptr<Serializable>> &entries) {
         bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex);
-        bool is_found = false;
         auto p = std::make_pair(_container_ptr->begin(), _container_ptr->end());
         std::transform ( p.first, p.second, std::back_inserter(entries), [] ( const Data_t &data ) {
             std::shared_ptr<Serializable> impl_ptr { std::make_shared<Serializable>() } ;

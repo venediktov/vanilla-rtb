@@ -38,7 +38,7 @@ std::string serialize( Serializable && data ) {
     std::stringstream ss(std::ios_base::out|std::ios_base::binary);
     boost::archive::binary_oarchive oarch(ss);
     oarch << std::forward<Serializable>(data);
-    return std::move(ss.str()) ;
+    return ss.str() ;
 }
 
 template<>

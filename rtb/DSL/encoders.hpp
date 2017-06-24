@@ -15,8 +15,9 @@
 
 namespace  encoders {
     
-static int encode(const char *js, jsmntok_t *t, size_t count, jsonv::value &value) {
-    int i, j, k;
+static inline
+int encode(const char *js, jsmntok_t *t, size_t count, jsonv::value &value) {
+    int i, j;
     if (count == 0) {
         return 0;
     }

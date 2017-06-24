@@ -48,6 +48,7 @@ struct GeoCampaign {
     }
     friend std::ostream &operator<<(std::ostream & os, const  std::vector<GeoCampaign> & value)  {
         std::copy(std::begin(value), std::end(value), std::ostream_iterator<GeoCampaign>(os, " "));
+        return os;
     }
     friend std::istream &operator>>(std::istream &is, GeoCampaign &data) {
         std::string record;

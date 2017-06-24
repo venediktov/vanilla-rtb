@@ -74,6 +74,15 @@ Structure :
 - [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
 - [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 
+### Mac OS X (Xcode) \:
+For the reliable results it is suggested to have the build directory out of source tree.
+The process involves creating a build directory, generating an `Xcode` project in that directory with `CMake`,
+opening the project file generated in the build directory with `Xcode`, and lastly, adjusting project
+settings as requried and kicking off the build.
+
+To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
+
+In theory it should be possible to build on `Mac OS X` the same way as on `Linux` with `cmake -G "Unix Makefiles"`, but no one has tried it yet. If you have - please consider updating this readme file with an instruction note.
 
 ### For faster builds invoking multiple make processes  , find number of cores on your system
 Linux command \: 
