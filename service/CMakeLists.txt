@@ -39,6 +39,7 @@ if (Boost_LIBRARIES)
 endif()
 
 install(TARGETS crud_service
+  ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
 )
 
