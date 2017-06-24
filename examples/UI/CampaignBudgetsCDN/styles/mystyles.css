@@ -1,13 +1,13 @@
-td input {width: 75%}
+td input {width: 100%}
 
-.idWidth input {width: 55px}
+.idWidth input {min-width: 55px}
 
-.budgetWidth input {max-width: 100px; min-width: 55px}
+/*.budgetWidth input {max-width: 100px; min-width: 55px}*/
 
-.spentWidth input {max-width: 100px; min-width: 55px}
+/*.spentWidth input {max-width: 100px; min-width: 55px}*/
 
-.cpmWidth input {max-width: 100px; min-width: 55px}
-.cpmWidth select {max-width: 60px; }
+/*.cpmWidth input {max-width: 100px; min-width: 55px}*/
+.cpmWidth select {max-width: 75px; min-width: 75px }
 
 #date {
   color: #2b3541;
