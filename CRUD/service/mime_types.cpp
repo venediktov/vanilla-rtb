@@ -7,27 +7,15 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
+// Modified by: Vladimir Venediktov 
+// Introducing constexpr for mapping see mime_types.hpp
+//
 
 #include "mime_types.hpp"
 
 namespace http {
 namespace server {
 namespace mime_types {
-
-struct mapping
-{
-  const char* extension;
-  const char* mime_type;
-} mappings[] =
-{
-  { "gif", "image/gif" },
-  { "htm", "text/html" },
-  { "html", "text/html" },
-  { "jpg", "image/jpeg" },
-  { "png", "image/png" },
-  { "json", "application/json"},
-  { "css", "text/css"}
-};
 
 std::string extension_to_type(const std::string& extension)
 {
