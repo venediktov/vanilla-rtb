@@ -22,6 +22,17 @@
 #include <cstdint>
 #include <iostream>
 #include "rtb/common/split_string.hpp"
+#if BOOST_VERSION <= 106000
+#include <boost/utility/string_ref.hpp>
+namespace boost {
+    using string_view = string_ref;
+}
+#else
+#include <boost/utility/string_view.hpp>
+#endif
+#include <boost/lexical_cast.hpp>
+
+
 
 namespace vanilla {
     
@@ -78,28 +89,17 @@ struct CampaignBudget {
         if ( !std::getline(is, l.record) ){
             return is;
         }
-        std::vector<std::string> fields;
+        std::vector<boost::string_view> fields;
         vanilla::common::split_string(fields, l.record, "\t");
         if(fields.size() < 5) {
             return is;
         }
-        l.campaign_id = atol(fields.at(0).c_str()); 
-        l.day_budget_limit = atol(fields.at(1).c_str());
-        l.day_budget_spent = atol(fields.at(2).c_str());
+        l.campaign_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
+        l.day_budget_limit = boost::lexical_cast<uint64_t>(fields.at(1).begin(), fields.at(1).size());
+        l.day_budget_spent = boost::lexical_cast<uint64_t>(fields.at(2).begin(), fields.at(2).size());
         l.day_budget_overdraft = 0;
-        auto day_show_limit = atol(fields.at(3).c_str());
-        if ( day_show_limit ) {
-            l.metric.type  = MetricType::CPM;
-            l.metric.value = day_show_limit;
-            return is;
-        }
-        auto day_click_limit = atol(fields.at(4).c_str());
-        if ( day_click_limit ) {
-            l.metric.type  = MetricType::CPC;
-            l.metric.value = day_click_limit;
-            return is;
-        }
-
+        l.metric.type = static_cast<MetricType>(boost::lexical_cast<uint32_t>(fields.at(3).begin(), fields.at(3).size()));
+        l.metric.value = boost::lexical_cast<uint64_t>(fields.at(4).begin(), fields.at(4).size());
         return is;
     }
    
