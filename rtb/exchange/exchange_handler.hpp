@@ -49,6 +49,8 @@ namespace vanilla {
             using error_log_handler_type = std::function<void (const std::string &)>;
             using self_type = exchange_handler<DSL, Info...>;
             using decision_handler_type = std::function<void (http::server::reply&, auction_request_type &)>;
+            using response_handler_type = std::function<void (http::server::reply&)>;
+            using if_response_handler_type = std::function<response_handler_type (auction_response_type &)>;
             
             DSL parser;
             auction_handler_type auction_handler;
@@ -56,6 +58,7 @@ namespace vanilla {
             log_handler_type log_handler;
             error_log_handler_type error_log_handler;
             decision_handler_type decision_handler;
+            if_response_handler_type if_response_handler;
             
             const std::chrono::milliseconds tmax;
 
@@ -91,6 +94,11 @@ namespace vanilla {
                 return *this;
             }
 
+            self_type & if_response(const if_response_handler_type &handler) {
+                if_response_handler = handler;
+                return *this;
+            }
+
             bool handle_auction(http::server::reply& r, const auction_request_type &bid_request) {
                 if (!auction_handler) {
                     return false;
@@ -115,8 +123,9 @@ namespace vanilla {
                 }
                 std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
                 boost::optional<wire_response_type> wire_response;
+                auction_response_type auction_response;
                 auto submit_async = [&]() {
-                    auto auction_response = auction_async_handler(bid_request);
+                    auction_response = auction_async_handler(bid_request);
                     wire_response = parser.create_response(auction_response);
                     io_service.stop();
                 };
@@ -130,9 +139,18 @@ namespace vanilla {
                 io_service.reset();
                 io_service.run();
                 if (wire_response && timer.expires_from_now().total_milliseconds() > 0) {
-                    r << to_string(*wire_response) << http::server::reply::flush("");
+                    if(if_response_handler) {
+                       auto custom_reply = if_response_handler(auction_response);
+                       if ( custom_reply ) {
+                          custom_reply(r);
+                       } else {
+                          r << to_string(*wire_response) << http::server::reply::flush("json");
+                       }
+                    } else {
+                       r << to_string(*wire_response) << http::server::reply::flush("json");
+                    }
                 } else {
-                    r << http::server::reply::flush("");
+                    r << http::server::reply::flush("json");
                 }
                 return true;
             }
