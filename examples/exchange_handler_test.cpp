@@ -72,6 +72,11 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v1 error " << data ;
     })
+    .if_response([](const auto &bid_response) {
+      if ( bid_response.seatbid.size() == 0 ) {//no bid HTTP 204
+          return [](http::server::reply &r) { r = http::server::reply::stock_reply(http::server::reply::no_content);} ;
+      }//else returns empty std::function<>
+    })
     .auction_async([](const auto &request) {
         //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
         return  BidResponse();

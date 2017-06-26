@@ -241,16 +241,18 @@ std::string to_string(reply::status_type status)
 
 } // namespace stock_replies
 
-reply reply::stock_reply(reply::status_type status)
+reply reply::stock_reply(reply::status_type status, const char* mime)
 {
   reply rep;
   rep.status = status;
-  rep.content = stock_replies::to_string(status);
-  rep.headers.resize(2);
-  rep.headers[0].name = "Content-Length";
-  rep.headers[0].value = std::to_string(rep.content.size());
-  rep.headers[1].name = "Content-Type";
-  rep.headers[1].value = "text/html";
+  if ( status != reply::no_content) {
+    rep.content = stock_replies::to_string(status);
+    rep.headers.resize(2);
+    rep.headers[0].name = "Content-Length";
+    rep.headers[0].value = std::to_string(rep.content.size());
+    rep.headers[1].name = "Content-Type";
+    rep.headers[1].value = mime;
+  }
   return rep;
 }
 
@@ -258,16 +260,11 @@ reply & operator<<(reply &r , const std::string &value) {
     r.content.append(value) ;
     return r;
 }
- 
+
 reply & operator<<(reply &r , const reply::flush &f) {
-    r.status = reply::ok;
-    r.headers.resize(2); 
-    r.headers[0].name = "Content-Length";
-    r.headers[0].value = std::to_string(r.content.size());
-    r.headers[1].name = "Content-Type";
-    r.headers[1].value = mime_types::extension_to_type(f);
-    return r;
+   return reply::flush_impl(r,reply::ok,f);
 }
+
 
 } // namespace server
 } // namespace http
