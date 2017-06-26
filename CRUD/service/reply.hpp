@@ -18,6 +18,7 @@
 #include <boost/asio.hpp>
 #include <boost/serialization/strong_typedef.hpp>
 #include "header.hpp"
+#include "mime_types.hpp"
 
 namespace http {
 namespace server {
@@ -59,7 +60,20 @@ struct reply
   std::vector<boost::asio::const_buffer> to_buffers();
 
   /// Get a stock reply.
-  static reply stock_reply(status_type status);
+  static reply stock_reply(status_type status, const char* mime = mime_types::HTML);
+
+  /// flush function to be used by reply & operator<<(reply &r , const reply::flush &) 
+  template<typename FlushT>
+  static reply & flush_impl(reply &r, reply::status_type status, FlushT && f) {
+    r.status = status;
+    r.headers.resize(2);
+    r.headers[0].name = "Content-Length";
+    r.headers[0].value = std::to_string(r.content.size());
+    r.headers[1].name = "Content-Type";
+    r.headers[1].value = mime_types::extension_to_type(std::forward<FlushT>(f));
+    return r;
+  }
+
 };
 
 reply & operator<<(reply &r , const std::string &value) ;

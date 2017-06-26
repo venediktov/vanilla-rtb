@@ -69,7 +69,8 @@ int main(int argc, char* argv[])
     simple_restful_dispatcher_t simple_handler(argv[3]) ;
     simple_handler.crud_match(std::string("/venue_handler/RTB") )
         .post([](http::server::reply & r, const http::crud::crud_match<std::string> & match) {
-            r << "OK" << http::server::reply::flush("OK") ;
+            r << "{}" << http::server::reply::flush("json") ;
+            //r = http::server::reply::stock_reply(http::server::reply::no_content, http::server::mime_types::JSON) ;
             std::cout << "POST request_data=" << match.data << std::endl;
         });
 
