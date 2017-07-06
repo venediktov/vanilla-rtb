@@ -40,8 +40,11 @@ angular.module('budgetsApp')
             $scope.mybudget = {id: 0, cpc: 0, cpm: 0, budget: 0, spent: 0};
 
             $scope.addBudget = function () {
-
-                $scope.mybudget.id = $scope.budgets[$scope.budgets.length - 1].id + 1;
+                try {
+                    $scope.mybudget.id = $scope.budgets[$scope.budgets.length - 1].id + 1;
+                } catch(e) {
+                    $scope.mybudget.id = 1;
+                }
                 $scope.budgets.push($scope.mybudget);
                 budgetIdCall.getBudget().new({id:$scope.mybudget.id}, $scope.mybudget);
 
