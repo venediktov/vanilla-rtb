@@ -82,7 +82,16 @@ settings as requried and kicking off the build.
 
 To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
 
-In theory it should be possible to build on `Mac OS X` the same way as on `Linux` with `cmake -G "Unix Makefiles"`, but no one has tried it yet. If you have - please consider updating this readme file with an instruction note.
+### Mac OS X ( XCode command line tools)
+xcode-select --install
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew doctor
+brew install cmake
+brew install boost
+mkdir Release
+cd Release
+cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+make -j4 install
 
 ### For faster builds invoking multiple make processes  , find number of cores on your system
 Linux command \: 
