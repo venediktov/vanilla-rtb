@@ -60,13 +60,13 @@ Structure :
 $vanilla-rtb> mkdir Release
 $vanilla-rtb> cd Release
 $vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-$vanilla-rtb> gmake VERBOSE=1
+$vanilla-rtb> gmake -j4 install
 # creating  Debug build
 $vanilla-rtb> cd ..
 $vanilla-rtb> mkdir Debug
 $vanilla-rtb> cd Debug
 $vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
-$vanilla-rtb> gmake VERBOSE=1
+$vanilla-rtb> gmake -j4 install
 ```
 
 ### Windows \:
