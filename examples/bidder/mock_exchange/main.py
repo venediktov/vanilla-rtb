@@ -14,16 +14,10 @@ import urllib
 import urllib2
 from httplib import BadStatusLine
 from socket import timeout
+import requests
 import threading
-import threading
+import sys
 
-class RequestsHandler(urllib2.HTTPHandler):
-    def http_response(self, req, response):
-        print "url: %s" % (response.geturl(),)
-        print "info: %s" % (response.info(),)
-        for l in response:
-            print l
-        return response
 def request(url, file_name):
     headers = {
         "User-Agent": "application/json"
@@ -54,25 +48,26 @@ def request(url, file_name):
     return len(response_data)
 
 def run_request(count, thread_name):
-    files = ["empty.json", "data.json"]
+    #files = ["empty.json", "data.json"]
+    session = requests.Session()
+    data_file = open('data.json', 'rb')
+    json_data = data_file.read()
     idx = 0
-    while True:
+    for x in xrange (0, count):
         idx += 1
-        if idx >= len(files):
-            idx = 0
-        if request("http://localhost:9081/bid/123", files[idx]):
-            #print "%s %d +" % (thread_name, x)
-            pass
-        else:
-            #print "%s %d -" % (thread_name, x)
-            pass
+        #if idx >= len(files):
+        #    idx = 0
+        try:
+            r = session.post("http://localhost:9081/bid/123", data=json_data, timeout=0.1)
+        except requests.exceptions.Timeout:
+            print('Oops. Timeout occured')
+    data_file.close()
         
             
-
 concurrency = 5
 threads = []
 for c in xrange(0, concurrency):
-    threads.append(threading.Thread(target=run_request, args=(10000, "t%d" % c)))
+    threads.append(threading.Thread(target=run_request, args=(100000, "t%d" % c)))
 for t in threads:
     t.start()
 for t in threads:
