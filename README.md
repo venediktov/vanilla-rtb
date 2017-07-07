@@ -55,25 +55,31 @@ Structure :
 ### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
 ### Linux \:
-- [x] mkdir Release
-- [x] cd Release
-- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-- [x] gmake VERBOSE=1
-- [x] cd ..
-- [x] mkdir Debug
-- [x] cd Debug
-- [x] cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
-- [x] gmake VERBOSE=1
+
+```bash
+$vanilla-rtb> mkdir Release
+$vanilla-rtb> cd Release
+$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+$vanilla-rtb> gmake VERBOSE=1
+# creating  Debug build
+$vanilla-rtb> cd ..
+$vanilla-rtb> mkdir Debug
+$vanilla-rtb> cd Debug
+$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
+$vanilla-rtb> gmake VERBOSE=1
+```
 
 ### Windows \:
 *same steps as above for linux , only difference is depending on your environment 
   either Visual Studio or NMake project can be used*
-  
-- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
-- [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
-- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
-- [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
-
+```bash
+######### for NMake ####################
+cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
+cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
+######### for Visual Studio ############
+cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
+cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
+```
 ### Mac OS X (Xcode) \:
 For the reliable results it is suggested to have the build directory out of source tree.
 The process involves creating a build directory, generating an `Xcode` project in that directory with `CMake`,
