@@ -43,7 +43,7 @@ Structure :
 * [CMakeLists.txt] - cmake file
 
 >The stack of vanilla-rtb includes other C++11 projects and is referencing them via gh-subree.
->To update to the latest version of boost-process , boost-dll , json-voorhees or CRUD  use the following commands \:
+>To update to the latest version of boost-process , boost-dll , json-voorhees or CRUD we use the following commands \:
 
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash
 * git subtree pull --prefix boost-process git@github.com:BorisSchaeling/boost-process.git master --squash
@@ -57,16 +57,16 @@ Structure :
 ### Linux \:
 
 ```bash
-$vanilla-rtb> mkdir Release
-$vanilla-rtb> cd Release
-$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-$vanilla-rtb> gmake -j4 install
-# creating  Debug build
-$vanilla-rtb> cd ..
-$vanilla-rtb> mkdir Debug
-$vanilla-rtb> cd Debug
-$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
-$vanilla-rtb> gmake -j4 install
+ mkdir Release
+ cd Release
+ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+ gmake -j4 install
+####### Creating  Debug build #######
+ cd ..
+ mkdir Debug
+ cd Debug
+ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
+ gmake -j4 install
 ```
 
 ### Windows \:
@@ -74,10 +74,14 @@ $vanilla-rtb> gmake -j4 install
   either Visual Studio or NMake project can be used*
 ```bash
 ######### for NMake ####################
+cd Release
 cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
+cd ../Debug
 cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
 ######### for Visual Studio ############
+cd Release
 cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
+cd ../Debug
 cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 ```
 ### Mac OS X (Xcode) \:
@@ -88,7 +92,7 @@ settings as requried and kicking off the build.
 
 To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
 
-### Mac OS X ( XCode command line tools)
+### Mac OS X (command line tools)
 ```bash
 xcode-select --install
 ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
