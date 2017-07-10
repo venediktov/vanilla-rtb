@@ -55,25 +55,31 @@ Structure :
 ### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
 ### Linux \:
-- [x] mkdir Release
-- [x] cd Release
-- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-- [x] gmake VERBOSE=1
-- [x] cd ..
-- [x] mkdir Debug
-- [x] cd Debug
-- [x] cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
-- [x] gmake VERBOSE=1
+
+```bash
+$vanilla-rtb> mkdir Release
+$vanilla-rtb> cd Release
+$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+$vanilla-rtb> gmake -j4 install
+# creating  Debug build
+$vanilla-rtb> cd ..
+$vanilla-rtb> mkdir Debug
+$vanilla-rtb> cd Debug
+$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
+$vanilla-rtb> gmake -j4 install
+```
 
 ### Windows \:
 *same steps as above for linux , only difference is depending on your environment 
   either Visual Studio or NMake project can be used*
-  
-- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
-- [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
-- [x] cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
-- [x] cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
-
+```bash
+######### for NMake ####################
+cmake -DCMAKE_BUILD_TYPE=Release .. -G "NMake Makefiles"
+cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "NMake Makefiles"
+######### for Visual Studio ############
+cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
+cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
+```
 ### Mac OS X (Xcode) \:
 For the reliable results it is suggested to have the build directory out of source tree.
 The process involves creating a build directory, generating an `Xcode` project in that directory with `CMake`,
@@ -82,7 +88,18 @@ settings as requried and kicking off the build.
 
 To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
 
-In theory it should be possible to build on `Mac OS X` the same way as on `Linux` with `cmake -G "Unix Makefiles"`, but no one has tried it yet. If you have - please consider updating this readme file with an instruction note.
+### Mac OS X ( XCode command line tools)
+```bash
+xcode-select --install
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+brew doctor
+brew install cmake
+brew install boost
+mkdir Release
+cd Release
+cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+make -j4 install
+```
 
 ### For faster builds invoking multiple make processes  , find number of cores on your system
 Linux command \: 

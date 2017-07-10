@@ -40,8 +40,11 @@ SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 IF (UNIX AND NOT APPLE)
     SET(CMAKE_INSTALL_RPATH "$ORIGIN/../lib:$ORIGIN/../lib64")
+#ELSE ( APPLE )
+#     set(CMAKE_INSTALL_NAME_DIR "@rpath")
+#     set(CMAKE_INSTALL_RPATH "@executable_path/../lib;@excutable_path/../lib64;@loader_path")
 ELSE (UNIX AND NOT APPLE)
-    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib:${CMAKE_INSTALL_PREFIX}/lib64")
+    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CMAKE_INSTALL_PREFIX}/lib64")
 ENDIF (UNIX AND NOT APPLE)
 
 # add the automatically determined parts of the RPATH
@@ -50,7 +53,7 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 #Install CRUD libraries
 #file(GLOB CRUD_LIB ${CMAKE_CURRENT_BINARY_DIR}/CRUD/service/*.so)
-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CRUD/service/libcrud_service.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+#INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CRUD/service/libcrud_service.so DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 add_subdirectory(jsonv)
 add_subdirectory(CRUD)
