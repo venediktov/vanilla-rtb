@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 #encoding: UTF-8
 
 # 
@@ -31,7 +31,7 @@ class Exchange:
                 self.exchange_data.append(data_file.read())  
                 
     def run(self):
-        for c in xrange(0, self.concurrency):
+        for c in range(0, self.concurrency):
             self.threads.append(threading.Thread(target=self.run_thread))
         for t in self.threads:
             t.start()
@@ -68,7 +68,7 @@ class Exchange:
 parser = argparse.ArgumentParser(description="""Mock exchange""")
 parser.add_argument('--limit', help='total requests number, 0 for endless requests (default 0)', default=0)
 parser.add_argument('--url', help='exchange url (default http://localhost:9081/bid/123)', default="http://localhost:9081/bid/123")
-parser.add_argument('--requests', help='Stored bid requests "file1 [file2] ... [fileN]"')
+parser.add_argument('--requests', help='Stored bid requests "file1 [file2] ... [fileN] (default data.json)"', default="data.json")
 parser.add_argument('--timeout', help='request timeout (default 0.1 sec)', default=0.1)
 parser.add_argument('--concurrency', help='threads to execute (default 5)', default=5)
 args = parser.parse_args()
