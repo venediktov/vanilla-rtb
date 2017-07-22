@@ -28,14 +28,15 @@ Structure :
    * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost release since version 1.61
    * [CRUD/](../../tree/master/CRUD/) -- C++11 high performance HTTP-restful handlers based on boost.ASIO and CRUD API
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
-   * [parsers/](../../tree/master/jsonv/) -- fast zero copy, zero memory allocation parsers
+   * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
    * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
       * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast targeting lookups
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
-    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
+   * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
+   * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
       * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
