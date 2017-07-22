@@ -58,16 +58,16 @@ Structure :
 ### Linux \:
 
 ```bash
-$vanilla-rtb> mkdir Release
-$vanilla-rtb> cd Release
-$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-$vanilla-rtb> gmake -j4 install
+$ mkdir Release
+$ cd Release
+$ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+$ make -j4 install
 # creating  Debug build
-$vanilla-rtb> cd ..
-$vanilla-rtb> mkdir Debug
-$vanilla-rtb> cd Debug
-$vanilla-rtb> cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
-$vanilla-rtb> gmake -j4 install
+$ cd ..
+$ mkdir Debug
+$ cd Debug
+$ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
+$ make -j4 install
 ```
 
 ### Windows \:
@@ -91,15 +91,15 @@ To generate an `Xcode` project invoke cmake from an empty build directory with c
 
 ### Mac OS X ( XCode command line tools)
 ```bash
-xcode-select --install
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew doctor
-brew install cmake
-brew install boost
-mkdir Release
-cd Release
-cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-make -j4 install
+$ xcode-select --install
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ brew doctor
+$ brew install cmake
+$ brew install boost
+$ mkdir Release
+$ cd Release
+$ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+$ make -j4 install
 ```
 
 ### For faster builds invoking multiple make processes  , find number of cores on your system
@@ -110,7 +110,7 @@ Linux command \:
 
 pass it to your make script like this
 
-**gmake -j4 install**
+**make -j4 install**
 
 ### Running examples\:
 - [x] HTTP-Bidder
