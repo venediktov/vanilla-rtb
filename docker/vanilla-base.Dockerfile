@@ -1,5 +1,5 @@
 FROM debian:stretch
-LABEL Description="VanillaRTB Base" Vendor="VanillaRTB" Maintainer="mrbald@github"
+LABEL Description="VanillaRTB Base" Vendor="ForkBid" Maintainer="mrbald@github"
 RUN apt-get update && apt-get install -y apt-utils
 RUN apt-get install -y\
  libboost-atomic1.62.0\
