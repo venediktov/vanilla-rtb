@@ -102,15 +102,30 @@ $ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
 $ make -j4 install
 ```
 
-### For faster builds invoking multiple make processes  , find number of cores on your system
-Linux command \: 
-* nproc
+### Parallel Builds
+When building on Linux and Mac OS X with Make it's possible to automatically adjust the concurreny of the build using `nproc` command line tool that returns number of CPUs available to the Make execution context\: 
 
-4
+```
+$ make -j $(nproc) ... 
+```
 
-pass it to your make script like this
+It's also possible to specifying the target _Load Average_ with `-l` flag to prevent machine overloading\:
 
-**make -j4 install**
+```
+$ make -l $(nproc) ...
+```
+
+And lastly, on Linux, it's possible to run the build with the _BATCH_ scheduling mode (throughput oriented) as\:
+
+```
+$ chrt --batch 0 make ...
+```
+
+All above considered the ultimate Make invocation combo on Linux would be something like\:
+
+```
+$ chrt --batch 0 make -j$(nproc) -l$(nproc)
+```
 
 ### Running examples\:
 - [x] HTTP-Bidder
