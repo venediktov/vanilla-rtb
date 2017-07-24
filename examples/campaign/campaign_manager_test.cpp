@@ -76,9 +76,8 @@
 #include "campaign_cache.hpp"
 #include "serialization.hpp"
 #include "campaign_budget_mapper.hpp"
-
-
 #include "rtb/core/core.hpp"
+#include "rtb/core/banker.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 
@@ -117,6 +116,7 @@ int main(int argc, char *argv[]) {
     init_framework_logging(config.data().log_file_name);
 
     CampaignCacheType  cache(config);
+    core::Banker<BudgetManager> banker;
     try {
         cache.load();
     }
@@ -146,6 +146,9 @@ int main(int argc, char *argv[]) {
                     auto data = DSL::CampaignDSL<CampaignBudgetMapper>().extract_request(match.data);
                     uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
                     create_commands[match[1]](data, campaign_id);
+                    //TODO: remove when done with testing
+                    auto value = banker.authorize(cache, campaign_id);
+                    LOG(info) << "Authorized bid for campaign_id=" << campaign_id << " is =" << value;
                 } catch (std::exception const& e) {
                     LOG(error) << e.what();
                 }
@@ -156,6 +159,9 @@ int main(int argc, char *argv[]) {
                     auto data = DSL::CampaignDSL<CampaignBudgetMapper>().extract_request(match.data);
                     uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);
                     update_commands[match[1]](data,campaign_id);
+                    //TODO: remove when done with testing
+                    auto value = banker.authorize(cache, campaign_id);
+                    LOG(info) << "Authorized bid for campaign_id=" << campaign_id << " is =" << value;
                 } catch (std::exception const& e) {
                     LOG(error) << e.what();
                 }

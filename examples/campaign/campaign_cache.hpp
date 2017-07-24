@@ -105,6 +105,22 @@ struct CampaignBudget {
    
 };
 
+struct BudgetManager {
+    uint64_t authorize (const CampaignBudget &budget) {
+        if ( budget.day_budget_limit >= budget.day_budget_spent) {
+            return 0; //no bid HTTP/204 or empty seatbid
+        }
+        switch(budget.metric.type) {
+            case CampaignBudget::MetricType::CPM :
+                return std::min(budget.day_budget_limit - budget.day_budget_spent, budget.metric.value / 1000) ; //value is in micro $ 
+            case CampaignBudget::MetricType::CPC :
+                return std::min(budget.day_budget_limit - budget.day_budget_spent, budget.metric.value); // value is in micro $
+            default :
+                return 1000; //0.01$
+        }
+    }
+};
+
 template <typename Config = CampaignManagerConfig,
           typename Memory = typename mpclmi::ipc::Shared,
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container>::char_allocator >
@@ -119,26 +135,19 @@ class CampaignCache {
         CampaignCache(const Config &config):
             config{config}, cache(config.data().ipc_name)
         {}
-        
+        //this interface used by vanilla::core::Banker    
+        auto retrieve(uint32_t campaign_id) {
+            CampaignBudget budget;
+            cache.template retrieve<CampaignTag>(budget, campaign_id);
+            return budget;
+        }
+        //this interface used by campaign_manager_test.cpp
         bool retrieve(DataCollection &data, uint32_t campaign_id) {
-            bool result = false;
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "campaign_id");
-                result = cache.template retrieve<CampaignTag>(data, campaign_id);
-            }
-            LOG(debug) << sp->str();
-            return result;
+            return cache.template retrieve<CampaignTag>(data, campaign_id);
         }
         bool retrieve(DataCollection &data) {
-            bool result = false;
-            auto sp = std::make_shared<std::stringstream>();
-            {
-                perf_timer<std::stringstream> timer(sp, "all_compaign_ids");
-                result = cache.template retrieve(data);
-            }
-            LOG(debug) << sp->str();
-            return result;
+            data.reserve(500);
+            return cache.template retrieve(data);
         }
         bool insert(const CampaignBudget &budget, uint32_t campaign_id) {
             return cache.insert(Keys{ campaign_id }, budget);
