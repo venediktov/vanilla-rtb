@@ -116,7 +116,7 @@ struct BudgetManager {
             case CampaignBudget::MetricType::CPC :
                 return std::min(budget.day_budget_limit - budget.day_budget_spent, budget.metric.value); // value is in micro $
             default :
-                return 1000; //0.01$
+                return 0; //TODO: when CPA implemeted review and maybe throw exception
         }
     }
 };
