@@ -28,14 +28,15 @@ Structure :
    * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost release since version 1.61
    * [CRUD/](../../tree/master/CRUD/) -- C++11 high performance HTTP-restful handlers based on boost.ASIO and CRUD API
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
-   * [parsers/](../../tree/master/jsonv/) -- fast zero copy, zero memory allocation parsers
+   * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
    * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
       * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast targeting lookups
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
-    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
+   * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
+   * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
       * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
@@ -57,16 +58,17 @@ Structure :
 ### Linux \:
 
 ```bash
- mkdir Release
- cd Release
- cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
- gmake -j4 install
+$ mkdir Release
+$ cd Release
+$ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+$ make -j4 install
 ####### Creating  Debug build #######
- cd ..
- mkdir Debug
- cd Debug
- cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
- gmake -j4 install
+$ cd ..
+$ mkdir Debug
+$ cd Debug
+$ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
+$ make -j4 install
+>>>>>>> 2400c62010e390bcb221332993d9a7df45536398
 ```
 
 ### Windows \:
@@ -94,15 +96,15 @@ To generate an `Xcode` project invoke cmake from an empty build directory with c
 
 ### Mac OS X (command line tools)
 ```bash
-xcode-select --install
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew doctor
-brew install cmake
-brew install boost
-mkdir Release
-cd Release
-cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
-make -j4 install
+$ xcode-select --install
+$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ brew doctor
+$ brew install cmake
+$ brew install boost
+$ mkdir Release
+$ cd Release
+$ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
+$ make -j4 install
 ```
 
 ### For faster builds invoking multiple make processes  , find number of cores on your system
@@ -113,7 +115,7 @@ Linux command \:
 
 pass it to your make script like this
 
-**gmake -j4 install**
+**make -j4 install**
 
 ### Running examples\:
 - [x] HTTP-Bidder
