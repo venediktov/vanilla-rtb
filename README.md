@@ -68,7 +68,6 @@ $ mkdir Debug
 $ cd Debug
 $ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
 $ make -j4 install
->>>>>>> 2400c62010e390bcb221332993d9a7df45536398
 ```
 
 ### Windows \:
