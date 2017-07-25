@@ -70,8 +70,7 @@ namespace vanilla {
             bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
             // Is it the same as response.bidid?
             bid.impid = imp.id;
-            auto budget_bid = selector.authorize(ad->campaign_id);
-            bid.price = std::min(ad->max_bid_micros / 1000000, budget_bid) ; // Not micros?
+            bid.price = std::min(ad->max_bid_micros / 1000000, ad->auth_bid_micros ? *ad->auth_bid_micros : 0) ; // Not micros?
             bid.w = ad->width;
             bid.h = ad->height;
             bid.adm = ad->code;

@@ -105,6 +105,13 @@ class AdSelector {
                 if (!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                     continue;
                 }
+                auto budget_bid = authorize(campaign.campaign_id);
+                std::transform(std::begin(retrieved_cached_ads),
+                               std::begin(retrieved_cached_ads), 
+                               std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
+                                   ad.auth_bid_micros = budget_bid;
+                                   return ad;
+                               });
             }
             return retrieved_cached_ads.size() > 0;
         }
