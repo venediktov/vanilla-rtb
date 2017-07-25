@@ -1,3 +1,4 @@
+#if 0 //DEPRECATED 
 /* 
  * File:   campaign_data.hpp
  * Author: arseny.bushev@gmail.com
@@ -157,3 +158,4 @@ class CampaignDataEntity {
 
 #endif /* CAMPAIGN_DATA_HPP */
 
+#endif

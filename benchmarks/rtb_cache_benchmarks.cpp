@@ -14,7 +14,7 @@ namespace po = boost::program_options;
 #include "../examples/bidder/ad.hpp"
 #include "../examples/bidder/geo.hpp"
 #include "../examples/bidder/geo_ad.hpp"
-#include "../examples/bidder/campaign_data.hpp"
+//#include "../examples/bidder/campaign_data.hpp"
 #include "../examples/bidder/geo_campaign.hpp"
 #include "../examples/loader/config.hpp"
 #include "../examples/bidder/bidder_caches.hpp"
@@ -30,11 +30,11 @@ struct CacheBenchmarkFixture: benchmark::Fixture
     std::unique_ptr<GeoDataEntity<CacheLoadConfig>> geo_cache_;
     std::unique_ptr<AdDataEntity<CacheLoadConfig>> ad_cache_;
     std::unique_ptr<GeoAdDataEntity<CacheLoadConfig>> geo_ad_cache_;
-    std::unique_ptr<CampaignDataEntity<CacheLoadConfig>> campaign_cache_;
+//    std::unique_ptr<CampaignDataEntity<CacheLoadConfig>> campaign_cache_;
     std::unique_ptr<GeoCampaignEntity<CacheLoadConfig>> geo_campaign_cache_;
 
     GeoAdDataEntity<CacheLoadConfig>::DataVect geoAds_;
-    CampaignDataEntity<CacheLoadConfig>::CampaignDataCollection campaignData_;
+//    CampaignDataEntity<CacheLoadConfig>::CampaignDataCollection campaignData_;
     GeoCampaignEntity<CacheLoadConfig>::GeoCampaignCollection geoCampaigns_;
 
     CacheBenchmarkFixture():
@@ -52,8 +52,8 @@ struct CacheBenchmarkFixture: benchmark::Fixture
                 ("datacache.geo_ipc_name", boost::program_options::value<std::string>(&d.geo_ipc_name)->default_value("vanilla-geo-ipc"), "geo ipc name")        
                 ("bidder.geo_campaign_ipc_name", boost::program_options::value<std::string>(&d.geo_campaign_ipc_name)->default_value("vanilla-geo-campaign-ipc"), "geo campaign ipc name")
                 ("bidder.geo_campaign_source", boost::program_options::value<std::string>(&d.geo_campaign_source)->default_value("bidder/data/geo_campaign"), "geo_campaign_source file name")
-                ("bidder.campaign_data_ipc_name", boost::program_options::value<std::string>(&d.campaign_data_ipc_name)->default_value("vanilla-campaign-data-ipc"), "campaign data ipc name")
-                ("bidder.campaign_data_source", boost::program_options::value<std::string>(&d.campaign_data_source)->default_value("bidder/data/campaign_data"), "campaign_data_source file name")
+//                ("bidder.campaign_data_ipc_name", boost::program_options::value<std::string>(&d.campaign_data_ipc_name)->default_value("vanilla-campaign-data-ipc"), "campaign data ipc name")
+//                ("bidder.campaign_data_source", boost::program_options::value<std::string>(&d.campaign_data_source)->default_value("bidder/data/campaign_data"), "campaign_data_source file name")
             ;
         })
     {
@@ -64,9 +64,9 @@ struct CacheBenchmarkFixture: benchmark::Fixture
         ad_cache_ = std::make_unique<AdDataEntity<CacheLoadConfig>>(config_);
         geo_ad_cache_ = std::make_unique<GeoAdDataEntity<CacheLoadConfig>>(config_);
         geo_ad_cache_->retrieve(geoAds_, 564);
-        campaign_cache_ = std::make_unique<CampaignDataEntity<CacheLoadConfig>>(config_);
-        campaign_cache_->retrieve(campaignData_, 36);
-        LOG(debug) << "campaign: " << campaignData_;
+//        campaign_cache_ = std::make_unique<CampaignDataEntity<CacheLoadConfig>>(config_);
+//        campaign_cache_->retrieve(campaignData_, 36);
+//        LOG(debug) << "campaign: " << campaignData_;
         geo_campaign_cache_ = std::make_unique<GeoCampaignEntity<CacheLoadConfig>>(config_);
         geo_campaign_cache_->retrieve(geoCampaigns_, 564);
         LOG(debug) << "geo_campaign: " << geoCampaigns_;
@@ -162,29 +162,29 @@ BENCHMARK_DEFINE_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark)(benchmark:
 
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, geo_ad_serialize_benchmark);
 
-BENCHMARK_DEFINE_F(CacheBenchmarkFixture, campaign_load_benchmark)(benchmark::State& state)
-{
-    while (state.KeepRunning())
-    {
+//BENCHMARK_DEFINE_F(CacheBenchmarkFixture, campaign_load_benchmark)(benchmark::State& state)
+//{
+//    while (state.KeepRunning())
+//    {
         //benchmark::DoNotOptimize()
-        std::make_unique<CampaignDataEntity<CacheLoadConfig>>(config_)->load();
-    }
-
+//        std::make_unique<CampaignDataEntity<CacheLoadConfig>>(config_)->load();
+//    }
+//
     //state.SetBytesProcessed(static_cast<int64_t>(state.iterations()) * input.size());
-}
+//}
 
-BENCHMARK_REGISTER_F(CacheBenchmarkFixture, campaign_load_benchmark);
+//BENCHMARK_REGISTER_F(CacheBenchmarkFixture, campaign_load_benchmark);
 
-BENCHMARK_DEFINE_F(CacheBenchmarkFixture, campaign_retrieve_benchmark)(benchmark::State& state)
-{
-    uint32_t const campaign_id = 36;
-    CampaignDataEntity<CacheLoadConfig>::CampaignDataCollection campaignData;
-    while (state.KeepRunning())
-    {
-        campaignData.clear();
-        benchmark::DoNotOptimize(campaign_cache_->retrieve(campaignData, campaign_id));
-    }
-}
+//BENCHMARK_DEFINE_F(CacheBenchmarkFixture, campaign_retrieve_benchmark)(benchmark::State& state)
+//{
+//    uint32_t const campaign_id = 36;
+//    CampaignDataEntity<CacheLoadConfig>::CampaignDataCollection campaignData;
+//    while (state.KeepRunning())
+//    {
+//        campaignData.clear();
+//        benchmark::DoNotOptimize(campaign_cache_->retrieve(campaignData, campaign_id));
+//    }
+//}
 
 BENCHMARK_REGISTER_F(CacheBenchmarkFixture, campaign_retrieve_benchmark);
 

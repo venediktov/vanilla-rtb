@@ -8,7 +8,9 @@
 #ifndef BIDDER_SELECTOR_HPP
 #define BIDDER_SELECTOR_HPP
 
-#include "core/openrtb.hpp"
+#include "rtb/core/openrtb.hpp"
+#include "rtb/core/banker.hpp"
+#include "examples/campaign/campaign_cache.hpp"
 #include "bidder_caches.hpp"
 #include <memory>
 #include <algorithm>
@@ -117,11 +119,17 @@ class AdSelector {
             return std::make_shared<Ad>(*result);
         }
         
+        template<typename CampaignId>
+        auto  authorize(CampaignId && campaign_id) {
+            return banker.authorize(bidder_caches.budget_cache, campaign_id);
+        }
+        
     private:   
         SpecBidderCaches &bidder_caches;
         std::vector<GeoCampaign> geo_campaigns;
         std::vector<Ad> retrieved_cached_ads;
         AdSelectionAlg selection_alg;
+        vanilla::core::Banker<vanilla::BudgetManager> banker;
 };
 }
 

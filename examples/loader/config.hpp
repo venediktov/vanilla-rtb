@@ -13,8 +13,8 @@ struct cache_loader_config_data {
     std::string geo_ipc_name;   
     std::string geo_campaign_ipc_name;
     std::string geo_campaign_source;
-    std::string campaign_data_source;
-    std::string campaign_data_ipc_name;
+    std::string campaign_budget_source;
+    std::string ipc_name;
 };
 using CacheLoadConfig = vanilla::config::config<cache_loader_config_data>;
 
