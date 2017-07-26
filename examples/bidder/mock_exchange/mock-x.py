@@ -14,6 +14,7 @@ import signal
 from time import sleep
 import argparse
 import random 
+import sys
 
 class Exchange:
     def __init__(self, args):
@@ -30,7 +31,7 @@ class Exchange:
             with open(f, 'r') as data_file:
                 self.exchange_data.append(data_file.read())  
         self.geo = [s.split(':') for s in str(args.geo).split(' ')]
-        self.size = map(lambda s: [int(x) for x in s.split(':')], str(args.size).split())
+        self.size = list(map(lambda s: [int(x) for x in s.split(':')], str(args.size).split()))
         
                 
     def run(self):
