@@ -58,8 +58,6 @@ struct CampaignBudget {
     uint64_t day_budget_limit{}; //micro dollars
     uint64_t day_budget_spent{}; //micro dollars
     uint64_t day_budget_overdraft{}; //micro dollars
-    //uint64_t day_show_limit{}; //TODO: remove
-    //uint64_t day_click_limit{}; //TODO: remove
     Metric metric{};
     std::string record{};
    
@@ -107,7 +105,7 @@ struct CampaignBudget {
 
 struct BudgetManager {
     uint64_t authorize (const CampaignBudget &budget) {
-        if ( budget.day_budget_limit >= budget.day_budget_spent) {
+        if ( budget.day_budget_spent >= budget.day_budget_limit ) {
             return 0; //no bid HTTP/204 or empty seatbid
         }
         switch(budget.metric.type) {

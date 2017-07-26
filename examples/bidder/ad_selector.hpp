@@ -102,14 +102,15 @@ class AdSelector {
         bool getCampaignAds(const std::vector<GeoCampaign> &campaigns, const openrtb::Impression<T> &imp) {
             retrieved_cached_ads.clear();
             for (auto &campaign : campaigns) {
+                auto offset = retrieved_cached_ads.size();
                 if (!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                     continue;
                 }
                 auto budget_bid = authorize(campaign.campaign_id);
-                std::transform(std::begin(retrieved_cached_ads),
-                               std::begin(retrieved_cached_ads), 
-                               std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
-                                   ad.auth_bid_micros = budget_bid;
+                std::transform(std::begin(retrieved_cached_ads) + offset,
+                               std::end(retrieved_cached_ads), 
+                               std::begin(retrieved_cached_ads) + offset, [budget_bid](Ad & ad){
+                                   ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
                                    return ad;
                                });
             }
