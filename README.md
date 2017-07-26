@@ -153,7 +153,7 @@ $ chrt --batch 0 make -j$(nproc) -l$(nproc)
   * for simple exchange please run
   * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py
   * for various geo and size rotation please run
-  * vanilla-rtb/Release/examples/bin/mock_exchange$ python3 mock-x.py --geo "Russia:Moscow USA:NY USA:Washington USA:Chicago" --size '100:300 240:400 420:280'
+  * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py --geo "Russia:Moscow USA:NY USA:Washington USA:Chicago" --size '100:300 240:400 420:280'
   * for more info please run 
   * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py --help
   
