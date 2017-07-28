@@ -77,17 +77,20 @@ class Exchange:
     def stop(self):
         self.exchange = False
 
-parser = argparse.ArgumentParser(description="""Mock exchange""")
-parser.add_argument('--limit', help='total requests number, 0 for endless requests (default 0)', default=0)
-parser.add_argument('--url', help='exchange url (default http://localhost:9081/bid/123)', default="http://localhost:9081/bid/123")
-parser.add_argument('--requests', help='Stored bid requests "file1 [file2] ... [fileN] (default data.json.template)"', default="data.json.template")
-parser.add_argument('--timeout', help='request timeout (default 0.1 sec)', default=0.1)
-parser.add_argument('--concurrency', help='threads to execute (default 5)', default=5)
-parser.add_argument('--geo', help='geo - country1:city1 [country2:city2] ...[countryN:cityN] (default Russia:Moscow)', default="Russia:Moscow")
-parser.add_argument('--size', help='size - widthN:heightN [widthN:heightN] ... [widthN:heightN] (default 100:300)', default="100:300")
-args = parser.parse_args()
+def main():
+    parser = argparse.ArgumentParser(description="""Mock exchange""")
+    parser.add_argument('--limit', help='total requests number, 0 for endless requests (default 0)', default=0)
+    parser.add_argument('--url', help='exchange url (default http://localhost:9081/bid/123)', default="http://localhost:9081/bid/123")
+    parser.add_argument('--requests', help='Stored bid requests "file1 [file2] ... [fileN] (default data.json.template)"', default="data.json.template")
+    parser.add_argument('--timeout', help='request timeout (default 0.1 sec)', default=0.1)
+    parser.add_argument('--concurrency', help='threads to execute (default 5)', default=5)
+    parser.add_argument('--geo', help='geo - country1:city1 [country2:city2] ...[countryN:cityN] (default Russia:Moscow)', default="Russia:Moscow")
+    parser.add_argument('--size', help='size - widthN:heightN [widthN:heightN] ... [widthN:heightN] (default 100:300)', default="100:300")
+    args = parser.parse_args()
 
-exchange = Exchange(args) 
-signal.signal(signal.SIGINT, lambda s, f: exchange.stop())            
-exchange.run()
+    exchange = Exchange(args) 
+    signal.signal(signal.SIGINT, lambda s, f: exchange.stop())            
+    exchange.run()
 
+if __name__ == "__main__":
+    main()
