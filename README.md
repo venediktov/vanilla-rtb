@@ -148,8 +148,16 @@ $ chrt --batch 0 make -j$(nproc) -l$(nproc)
   * vanilla-rtb/Release/examples/bin$ ./slavebanker_service_test --config etc/config.cfg
 - [x] Campaign manager - Budget
   * vanilla-rtb/Release/examples/bin$ ./campaign_manager_test --config etc/config.cfg
+- [x] Mock exchange - emulating bid requests
+  * To run mock exchange you need any python, and python "requests" library installed.
+  * for simple exchange please run
+  * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py
+  * for various geo and size rotation please run
+  * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py --geo "Russia:Moscow USA:NY USA:Washington USA:Chicago" --size '100:300 240:400 420:280'
+  * for more info please run 
+  * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py --help
   
-  Fire up UI by connecting to manager via browser
-  
+- [x] Fire up UI by connecting to manager via browser http:://localhost:11081/campaign/index.html
+
   ![campaign](https://github.com/venediktov/vanilla-rtb/wiki/images/WorkingBudgetButtons.png)  
 
