@@ -15,7 +15,14 @@
 
 /***** FOR BOOST ANY IMPLEMENTATION *****/
 #include <boost/any.hpp>
+#if BOOST_VERSION <= 106000
+#include <boost/utility/string_ref.hpp>
+namespace boost {
+    using string_view = string_ref;
+}
+#else
 #include <boost/utility/string_view.hpp>
+#endif
 #include <vector>
 #include <map>
 
@@ -106,18 +113,18 @@ int encode(const char *js, jsmntok_t *t, size_t count, boost::any &value) {
             if ( k.empty() || v.empty()) {
                 continue;
             }
-            boost::any_cast<std::map<boost::string_view, boost::any>>(value).insert({std::move(boost::any_cast<boost::string_view>(k)),std::move(v)});
+            boost::any_cast<std::map<boost::string_view, boost::any>&>(value).insert({std::move(boost::any_cast<boost::string_view>(k)),std::move(v)});
         }
         return j + 1;
     } else if (t->type == JSMN_ARRAY) {
         j = 0;
         value = std::vector<boost::any>();
-        boost::any_cast<std::vector<boost::any>>(value).reserve(t->size);
+        boost::any_cast<std::vector<boost::any>&>(value).reserve(t->size);
         for (i = 0; i < t->size; ++i) {
             boost::any v;
             j += encode(js, t+1+j, count-j, v);
             if ( !v.empty()) {
-                boost::any_cast<std::vector<boost::any>>(value).push_back(std::move(v));
+                boost::any_cast<std::vector<boost::any>&>(value).push_back(std::move(v));
             }
         }
         return j + 1;
