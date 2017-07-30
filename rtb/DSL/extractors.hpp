@@ -20,6 +20,7 @@
 #pragma once 
 
 #include "rtb/core/openrtb.hpp"
+#include "rtb/core/core.hpp"
 #include <boost/optional.hpp>
 #include <algorithm>
 
@@ -97,7 +98,7 @@ static openrtb::BidRequest<T> extract( boost::any & value ) {
        request.user = extractors<decltype(request.user)>::extract(m["user"]);
        request.site = extractors<decltype(request.site)>::extract(m["site"]);
     } catch (const std::exception &e) {
-       std::cout << "openrtb::BidRequest<T> extract exception " << e.what() << std::endl;
+       LOG(debug) << "openrtb::BidRequest<T> extract exception " << e.what() ;
     }
     return request;
 }
@@ -120,7 +121,7 @@ extractors<openrtb::Impression<T>>::extract( boost::any & value ) {
        auto &bidfloorcur = boost::any_cast<boost::string_view &>(m["bidfloorcur"]);
        imp.bidfloorcur   = decltype(imp.bidfloorcur)(bidfloorcur.data(), bidfloorcur.size());
     } catch (const std::exception &e) {
-       std::cout << "openrtb::Impression<T> extract exception " << e.what() << std::endl;
+       LOG(debug) << "openrtb::Impression<T> extract exception " << e.what() ;
     }
     return imp;
 }
@@ -177,7 +178,7 @@ extractors<boost::optional<openrtb::Banner<T>>>::extract( boost::any & value ) {
        banner.h = boost::any_cast<int64_t>(m["h"]);
        banner.w = boost::any_cast<int64_t>(m["w"]);
     } catch (const std::exception &e) {
-       std::cout << "openrtb::Banner<T> extract exception " << e.what() << ", banner.h.type=" << m["h"].type().name() << std::endl;
+       LOG(debug) << "openrtb::Banner<T> extract exception " << e.what() ;
     }
 
     return boost::make_optional(banner);
