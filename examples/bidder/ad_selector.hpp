@@ -122,7 +122,8 @@ class AdSelector {
                 return AdPtr();
             }
             const std::vector<Ad>::const_iterator result = std::max_element(ads.cbegin(), ads.cend(), [](const Ad &first, const Ad &second) -> bool {
-                return first.max_bid_micros < second.max_bid_micros;
+                return first.auth_bid_micros && second.auth_bid_micros ? 
+                       first.auth_bid_micros <second.auth_bid_micros : first.max_bid_micros < second.max_bid_micros;
             });
             return std::make_shared<Ad>(*result);
         }

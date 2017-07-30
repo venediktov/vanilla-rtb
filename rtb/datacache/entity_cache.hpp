@@ -91,7 +91,7 @@ struct retriever<Tag,std::vector<std::shared_ptr<Serializable>>> {
     }
 };
  
-template<typename Memory, template <class> class Container, size_t MEMORY_SIZE = 67108864 >
+template<typename Memory, template <class,class...> class Container, size_t MEMORY_SIZE = 67108864, typename ...T>
 class entity_cache
 {
 public:
@@ -101,7 +101,7 @@ public:
     using segment_ptr_t =  boost::scoped_ptr<segment_t>  ;
     using char_allocator = boost::interprocess::allocator<char, segment_manager_t>  ;
     using char_string = boost::interprocess::basic_string<char, std::char_traits<char>, char_allocator>   ;
-    using Container_t = Container<char_allocator> ;
+    using Container_t = Container<char_allocator,T...> ;
     using Data_t = typename Container_t::value_type;
        
     entity_cache(const std::string &name) : 
@@ -162,9 +162,9 @@ public:
     }
  
     template<typename Key, typename Serializable>
-    bool insert( Key && key, Serializable &&data) {
+    auto insert( Key && key, Serializable &&data) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
-        bool is_success {false};
+        decltype(insert_data(key, data)) is_success ;
         try {
             is_success = insert_data(std::forward<Key>(key), std::forward<Serializable>(data));
         } catch (const bad_alloc_exception_t &e) {
@@ -270,11 +270,11 @@ private:
     }
  
     template<typename Key, typename Serializable>
-    bool insert_data(Key && key, Serializable &&data) {
+    auto insert_data(Key && key, Serializable &&data) {
         Memory::attach([this](){attach();});
         Data_t item(_segment_ptr->get_segment_manager());
         item.store(std::forward<Key>(key), std::forward<Serializable>(data));
-        return _container_ptr->insert(item).second;
+        return _container_ptr->insert(item);
     }
  
     template<typename Key, typename Serializable, typename Index, typename Iterator>

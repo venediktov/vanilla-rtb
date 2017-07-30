@@ -11,7 +11,7 @@
 #include "config.hpp"
 #include "core/tagged_tuple.hpp"
 #include "common/perf_timer.hpp"
-#include "datacache/campaign_entity.hpp"
+#include "examples/datacache/campaign_entity.hpp"
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
 #include <boost/serialization/strong_typedef.hpp>
@@ -59,7 +59,6 @@ struct CampaignBudget {
     uint64_t day_budget_spent{}; //micro dollars
     uint64_t day_budget_overdraft{}; //micro dollars
     Metric metric{};
-    std::string record{};
    
     void update(types::budget value) {
         day_budget_limit = value;
@@ -84,11 +83,12 @@ struct CampaignBudget {
         return os;
     }
     friend std::istream &operator>>(std::istream &is, CampaignBudget &l) {
-        if ( !std::getline(is, l.record) ){
+        std::string record;
+        if ( !std::getline(is, record) ){
             return is;
         }
         std::vector<boost::string_view> fields;
-        vanilla::common::split_string(fields, l.record, "\t");
+        vanilla::common::split_string(fields, record, "\t");
         if(fields.size() < 5) {
             return is;
         }
@@ -121,13 +121,16 @@ struct BudgetManager {
 
 template <typename Config = CampaignManagerConfig,
           typename Memory = typename mpclmi::ipc::Shared,
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container>::char_allocator >
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container, 67108864, CampaignBudget>::char_allocator >
 class CampaignCache {
-        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_container> ; 
+        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_container, 67108864, CampaignBudget> ; 
         using Keys = vanilla::tagged_tuple< 
-            typename ipc::data::campaign_entity<Alloc>::campaign_id_tag,   uint32_t
+            typename ipc::data::campaign_entity<Alloc,CampaignBudget>::campaign_id_tag,   uint32_t
         >;
-        using CampaignTag = typename ipc::data::campaign_entity<Alloc>::campaign_id_tag;
+        using CampaignTag = typename ipc::data::campaign_entity<Alloc,CampaignBudget>::campaign_id_tag;
+        using insert_handler_type = std::function<bool (const CampaignBudget *budget, uint32_t campaign_id)>;
+        using remove_handler_type = std::function<bool (uint32_t campaign_id)>;
+    public:
     public:
         using DataCollection = std::vector<std::shared_ptr <CampaignBudget> >;
         CampaignCache(const Config &config):
@@ -147,8 +150,17 @@ class CampaignCache {
             data.reserve(500);
             return cache.template retrieve(data);
         }
+        
         bool insert(const CampaignBudget &budget, uint32_t campaign_id) {
-            return cache.insert(Keys{ campaign_id }, budget);
+            auto inserted = cache.insert(Keys{ campaign_id }, budget);
+            if (insert_handler) {
+                //when data stored  not ipc::data::campaign_entity but  CampaignBudget 
+                //This is a hook to update Ad.budget which can be pointer to cached budget
+                //Ad.budget can also be boost::optional<CampaignBudget> basically a copy 
+                //from the current entity_cache.retrieve implementation: see below for details
+                //insert_handler(&*inserted.first, campaign_id);
+            }
+            return inserted.second;
         }
         bool update(const CampaignBudget &budget, uint32_t campaign_id) {
             return cache.template update<CampaignTag>(Keys{ campaign_id }, budget, campaign_id);
@@ -157,6 +169,9 @@ class CampaignCache {
             return cache.template update<CampaignTag>(Keys{ new_campaign_id }, budget, old_campaign_id);
         }
         bool remove(uint32_t campaign_id) {
+            if ( remove_handler ) {
+               remove_handler(campaign_id);
+            }
             cache.template remove<CampaignTag>(campaign_id);
             return true;
         }
@@ -177,9 +192,17 @@ class CampaignCache {
             }
             LOG(debug) << sp->str();
         }
+        void on_insert(insert_handler_type handler) { 
+            insert_handler = handler;
+        }
+        void on_remove(remove_handler_type handler) { 
+            remove_handler = handler;
+        }
     private:
         const Config &config;
         Cache cache;
+        insert_handler_type insert_handler;
+        remove_handler_type remove_handler;
 };
 
 
