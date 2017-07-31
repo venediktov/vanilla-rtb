@@ -75,7 +75,7 @@ static boost::optional<openrtb::Geo<T>> extract( boost::any & value );
 
 template<typename T>
 struct extractors<boost::optional<openrtb::Site<T>>> {
-static openrtb::Site<T> extract( boost::any & value ); 
+static boost::optional<openrtb::Site<T>> extract( boost::any & value ); 
 };
 
 template<typename T>
@@ -155,16 +155,16 @@ extractors<boost::optional<openrtb::Geo<T>>>::extract( boost::any & value ) {
 
 
 template<typename T>
-openrtb::Site<T> 
+boost::optional<openrtb::Site<T>> 
 extractors<boost::optional<openrtb::Site<T>>>::extract( boost::any & value ) {
-    openrtb::Site<T> site;
     if ( value.empty() ) {
-        return site;
+        return boost::optional< openrtb::Site<T>>();
     }
+    openrtb::Site<T> site;
     auto &m  = boost::any_cast<std::map<boost::string_view , boost::any> &>(value);
     auto &id = boost::any_cast<boost::string_view &>(m["id"]);
     site.id  = decltype(site.id)(id.data(), id.size()); 
-    return site;
+    return boost::make_optional(site);
 }
 
 template<typename T>
