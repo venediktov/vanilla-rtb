@@ -98,7 +98,7 @@ static openrtb::BidRequest<T> extract( boost::any & value ) {
        request.user = extractors<decltype(request.user)>::extract(m["user"]);
        request.site = extractors<decltype(request.site)>::extract(m["site"]);
     } catch (const std::exception &e) {
-       LOG(debug) << "openrtb::BidRequest<T> extract exception " << e.what() ;
+       LOG(error) << "openrtb::BidRequest<T> extract exception " << e.what() ;
     }
     return request;
 }
@@ -121,7 +121,7 @@ extractors<openrtb::Impression<T>>::extract( boost::any & value ) {
        auto &bidfloorcur = boost::any_cast<boost::string_view &>(m["bidfloorcur"]);
        imp.bidfloorcur   = decltype(imp.bidfloorcur)(bidfloorcur.data(), bidfloorcur.size());
     } catch (const std::exception &e) {
-       LOG(debug) << "openrtb::Impression<T> extract exception " << e.what() ;
+       LOG(error) << "openrtb::Impression<T> extract exception " << e.what() ;
     }
     return imp;
 }
@@ -161,6 +161,9 @@ extractors<boost::optional<openrtb::Site<T>>>::extract( boost::any & value ) {
     if ( value.empty() ) {
         return site;
     }
+    auto &m  = boost::any_cast<std::map<boost::string_view , boost::any> &>(value);
+    auto &id = boost::any_cast<boost::string_view &>(m["id"]);
+    site.id  = decltype(site.id)(id.data(), id.size()); 
     return site;
 }
 
@@ -175,10 +178,11 @@ extractors<boost::optional<openrtb::Banner<T>>>::extract( boost::any & value ) {
     try {
        //banner.h = boost::any_cast<decltype(banner.h)>(m["h"]);
        //banner.w = boost::any_cast<decltype(banner.w)>(m["w"]);
-       banner.h = boost::any_cast<int64_t>(m["h"]);
-       banner.w = boost::any_cast<int64_t>(m["w"]);
+       banner.h   = boost::any_cast<int64_t>(m["h"]);
+       banner.w   = boost::any_cast<int64_t>(m["w"]);
+       banner.pos = static_cast<decltype(banner.pos)>(boost::any_cast<int64_t>(m["pos"]));
     } catch (const std::exception &e) {
-       LOG(debug) << "openrtb::Banner<T> extract exception " << e.what() ;
+       LOG(error) << "openrtb::Banner<T> extract exception " << e.what() ;
     }
 
     return boost::make_optional(banner);
