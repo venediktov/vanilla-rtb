@@ -18,8 +18,8 @@ struct bidder_config_data {
     std::string geo_ipc_name;
     std::string geo_campaign_ipc_name;
     std::string geo_campaign_source;
-    std::string campaign_data_source;
-    std::string campaign_data_ipc_name;
+    std::string campaign_budget_source;
+    std::string ipc_name;
     std::string key_value_host;
     int key_value_port;
     int timeout;
@@ -35,7 +35,7 @@ struct bidder_config_data {
         geo_ad_source{}, geo_ad_ipc_name{},
         geo_source{}, geo_ipc_name{}, geo_campaign_ipc_name{},
         geo_campaign_source{},
-        campaign_data_source{}, campaign_data_ipc_name{},
+        campaign_budget_source{}, ipc_name{},
         key_value_host{}, key_value_port{}, 
         timeout{}, concurrency{},
         port{}, host{}, root{}, num_of_bidders{}

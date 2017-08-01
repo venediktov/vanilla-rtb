@@ -127,7 +127,7 @@ class GeoCampaignEntity {
             cache.clear();
             
             std::for_each(std::istream_iterator<GeoCampaign>(in), std::istream_iterator<GeoCampaign>(), [this](const GeoCampaign &data) {
-                if (!this->cache.insert(Keys{data.geo_id}, data)) {
+                if (!this->cache.insert(Keys{data.geo_id}, data).second) {
                     LOG(debug) << "Failed to insert geo_campaign=" << data;
                 }
             });

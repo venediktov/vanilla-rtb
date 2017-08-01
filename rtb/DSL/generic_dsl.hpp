@@ -27,7 +27,8 @@ namespace DSL {
 
     template<typename T=std::string , template<class> class Mapper = DSL::dsl_mapper, unsigned int Size=128>
     class GenericDSL : public Mapper<T>  {
-            
+        
+        using encoded_type =  typename Mapper<T>::encoded_type;
     public:
         using deserialized_type = typename Mapper<T>::deserialized_type;
         using serialized_type = typename Mapper<T>::serialized_type;
@@ -42,15 +43,15 @@ namespace DSL {
         deserialized_type extract_request(const string_view_type & bid_request) {
             jsmn_parser parser;
             jsmntok_t t[Size];
-            thread_local jsonv::value encoded;
-            encoded.clear();
+            thread_local encoded_type encoded;
+            Mapper<T>::clear(encoded);
             jsmn_init(&parser);
             auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));
             if (r < 0) {
                 throw std::runtime_error("DSL::jsmn_parse exception");
             }
             encoders::encode(bid_request.c_str(), &t[0], parser.toknext, encoded);
-            return extract<deserialized_type>(encoded, request_fmt_);
+            return Mapper<T>::template extract<deserialized_type>(encoded, request_fmt_);
         }
 
         auto create_response(const serialized_type & bid_response) {
@@ -58,8 +59,8 @@ namespace DSL {
         }
 
     private:
-        formats request_fmt_;
-        formats response_fmt_;
+        decltype(static_cast<Mapper<T> *>(nullptr)->build_request()) request_fmt_;
+        decltype(static_cast<Mapper<T> *>(nullptr)->build_request()) response_fmt_;
     };
 
 } //namespace

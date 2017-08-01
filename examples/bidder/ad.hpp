@@ -28,6 +28,7 @@ namespace boost {
 #include <boost/utility/string_view.hpp>
 #endif
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 
 struct Ad {
     uint64_t ad_id;
@@ -36,6 +37,7 @@ struct Ad {
     uint16_t height;
     uint16_t position;
     uint64_t max_bid_micros;
+    boost::optional<uint64_t> auth_bid_micros;
     std::string code;
     
     Ad(uint64_t ad_id, uint32_t campaign_id, uint16_t width, uint16_t height, uint16_t position, uint64_t max_bid_micros, std::string code) : 

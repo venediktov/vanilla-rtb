@@ -83,7 +83,7 @@ class GeoDataEntity {
             
             std::for_each(std::istream_iterator<Geo>(in), std::istream_iterator<Geo>(), [&](const Geo &geo){
                 using namespace boost::algorithm;
-                if(!cache.insert(Keys{to_lower_copy(geo.city), to_lower_copy(geo.country)}, geo)) {
+                if(!cache.insert(Keys{to_lower_copy(geo.city), to_lower_copy(geo.country)}, geo).second) {
                     //LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " failed!";
                 }
                 else {

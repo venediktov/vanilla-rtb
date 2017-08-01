@@ -53,7 +53,8 @@ namespace DSL {
         using NoBidReason = openrtb::NoBidReason;
         using CreativeAttribute= openrtb::CreativeAttribute;
         using BidResponse = openrtb::BidResponse<T>;
-            
+     protected:
+        using encoded_type =  jsonv::value; 
         
     public:
         formats build_request() 
@@ -179,7 +180,15 @@ namespace DSL {
             return formats::compose({ base_out, formats::defaults() });
 
         }
-
+        template<typename Deserialized>
+        Deserialized extract(const jsonv::value & encoded, const formats & fmts) {
+            return jsonv::extract<Deserialized>(encoded, fmts);
+        }
+        
+        void clear(encoded_type &encoded) {
+            encoded.clear();
+        }
+        
     };
 
 } //namespace

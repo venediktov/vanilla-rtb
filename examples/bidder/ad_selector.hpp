@@ -8,7 +8,9 @@
 #ifndef BIDDER_SELECTOR_HPP
 #define BIDDER_SELECTOR_HPP
 
-#include "core/openrtb.hpp"
+#include "rtb/core/openrtb.hpp"
+#include "rtb/core/banker.hpp"
+#include "examples/campaign/campaign_cache.hpp"
 #include "bidder_caches.hpp"
 #include <memory>
 #include <algorithm>
@@ -100,9 +102,17 @@ class AdSelector {
         bool getCampaignAds(const std::vector<GeoCampaign> &campaigns, const openrtb::Impression<T> &imp) {
             retrieved_cached_ads.clear();
             for (auto &campaign : campaigns) {
+                auto offset = retrieved_cached_ads.size();
                 if (!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                     continue;
                 }
+                auto budget_bid = authorize(campaign.campaign_id);
+                std::transform(std::begin(retrieved_cached_ads) + offset,
+                               std::end(retrieved_cached_ads), 
+                               std::begin(retrieved_cached_ads) + offset, [budget_bid](Ad & ad){
+                                   ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
+                                   return ad;
+                               });
             }
             return retrieved_cached_ads.size() > 0;
         }
@@ -112,9 +122,15 @@ class AdSelector {
                 return AdPtr();
             }
             const std::vector<Ad>::const_iterator result = std::max_element(ads.cbegin(), ads.cend(), [](const Ad &first, const Ad &second) -> bool {
-                return first.max_bid_micros < second.max_bid_micros;
+                return first.auth_bid_micros && second.auth_bid_micros ? 
+                       first.auth_bid_micros <second.auth_bid_micros : first.max_bid_micros < second.max_bid_micros;
             });
             return std::make_shared<Ad>(*result);
+        }
+        
+        template<typename CampaignId>
+        auto  authorize(CampaignId && campaign_id) {
+            return banker.authorize(bidder_caches.budget_cache, campaign_id);
         }
         
     private:   
@@ -122,6 +138,7 @@ class AdSelector {
         std::vector<GeoCampaign> geo_campaigns;
         std::vector<Ad> retrieved_cached_ads;
         AdSelectionAlg selection_alg;
+        vanilla::core::Banker<vanilla::BudgetManager> banker;
 };
 }
 

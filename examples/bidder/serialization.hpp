@@ -16,6 +16,7 @@
 #include "ad.hpp"
 #include "geo_ad.hpp"
 #include "geo.hpp"
+#include "examples/campaign/serialization.hpp"
 
 //Non-Intrusive boost serialization implementation
 namespace boost { namespace serialization {
@@ -45,11 +46,6 @@ namespace boost { namespace serialization {
     void serialize(Archive & ar, GeoCampaign & value, const unsigned int version) {
         ar & value.geo_id;
         ar & value.campaign_id;
-    }
-    template<class Archive>
-    void serialize(Archive & ar, CampaignData & value, const unsigned int version) {
-        ar & value.campaign_id;
-        ar & value.ad_id;
     }
 }} 
 

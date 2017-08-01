@@ -92,7 +92,7 @@ class GeoAdDataEntity {
         cache.clear();
  
         std::for_each(std::istream_iterator<GeoAd>(in), std::istream_iterator<GeoAd>(), [&](const GeoAd &geo_ad) {
-           if (!cache.insert(Keys{geo_ad.geo_id}, geo_ad) ) {
+           if (!cache.insert(Keys{geo_ad.geo_id}, geo_ad).second ) {
               LOG(debug) << "Failed to insert geo_ad=" << geo_ad;
            }
         });
