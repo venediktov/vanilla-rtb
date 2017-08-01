@@ -31,8 +31,8 @@ class Exchange:
             with open(f, 'r') as data_file:
                 self.exchange_data.append(data_file.read())  
         self.geo = [s.split(':') for s in str(args.geo).split(' ')]
-
         self.size = list(map(lambda s: [int(x) for x in s.split(':')], str(args.size).split()))        
+        
                 
     def run(self):
         for c in range(0, self.concurrency):
@@ -77,7 +77,6 @@ class Exchange:
     def stop(self):
         self.exchange = False
 
-
 def main():
     parser = argparse.ArgumentParser(description="""Mock exchange""")
     parser.add_argument('--limit', help='total requests number, 0 for endless requests (default 0)', default=0)
@@ -92,7 +91,6 @@ def main():
     exchange = Exchange(args) 
     signal.signal(signal.SIGINT, lambda s, f: exchange.stop())            
     exchange.run()
-
 
 if __name__ == "__main__":
     main()
