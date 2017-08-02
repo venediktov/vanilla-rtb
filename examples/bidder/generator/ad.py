@@ -4,6 +4,7 @@ import sys
 
 max_campaigns = 100
 
+required = {'geo': ['Moscow', 'Russia'], 'size': [300, 100], 'campaigns': []}
 geo = []
 file = open("../data/world_cities.csv", "r")
 idx = 1
@@ -33,7 +34,7 @@ size = [
 
 position = [0, 1, 2]
 max_bid = [1, 1000]
-codes = ["""<script>alert("code1!");</script>""", """<script>alert("code2!");</script>"""]
+code = """<script>alert(" ad %d!");</script>"""
 
 file = open("../data/geo_campaign", "w")
 for geo_id, city, country in geo:
@@ -41,12 +42,14 @@ for geo_id, city, country in geo:
     start_pos = random.randint(1, max_campaigns-max_targetings)
     for i in range(start_pos, start_pos+max_targetings+1):
         file.write("%d\t%d\n" % (geo_id, i))
+    if city == required['geo'][0] and country == required['geo'][1]:
+        for i in range(start_pos, start_pos+max_targetings+1):
+            required['campaigns'].append(i) 
 file.close()
 
 
 max_ad = 1
 max_ads_in_campaign = 30
-
 file = open("../data/ads", "w")
 for campaign_id in range(1, max_campaigns+1):    
     ads_in_campaign = random.randint(1, max_ads_in_campaign)
@@ -60,7 +63,18 @@ for campaign_id in range(1, max_campaigns+1):
             rand_size[0][1],
             random.choice(position),
             random.randint(max_bid[0], max_bid[1]),
-            random.choice(codes)
+            code % (ad_id)
+        ))
+    if campaign_id in required['campaigns']:
+        ads_in_campaign += 1
+        file.write("%u\t%u\t%u\t%u\t%u\t%u\t%s\n" % (
+            max_ad+ads_in_campaign, 
+            campaign_id,
+            required['size'][0],
+            required['size'][1],
+            random.choice(position),
+            random.randint(max_bid[0], max_bid[1]),
+            code % (max_ad+ads_in_campaign)
         ))
     max_ad+=ads_in_campaign+1
 file.close()

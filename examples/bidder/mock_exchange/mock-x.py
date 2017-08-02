@@ -31,7 +31,7 @@ class Exchange:
             with open(f, 'r') as data_file:
                 self.exchange_data.append(data_file.read())  
         self.geo = [s.split(':') for s in str(args.geo).split(' ')]
-        self.size = list(map(lambda s: [int(x) for x in s.split(':')], str(args.size).split()))
+        self.size = list(map(lambda s: [int(x) for x in s.split(':')], str(args.size).split()))        
         
                 
     def run(self):
@@ -94,3 +94,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
