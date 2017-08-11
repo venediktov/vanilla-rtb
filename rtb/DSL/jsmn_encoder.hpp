@@ -1,0 +1,8 @@
+//
+// Created by vlad1819 on 8/9/17.
+//
+
+#ifndef VANILLA_RTB_JSMN_ENCODER_HPP
+#define VANILLA_RTB_JSMN_ENCODER_HPP
+
+#endif //VANILLA_RTB_JSMN_ENCODER_HPP
