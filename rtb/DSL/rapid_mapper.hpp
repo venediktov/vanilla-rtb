@@ -1,5 +1,5 @@
 /* 
- * File:   any_mapper.hpp
+ * File:   rapid_mapper.hpp
  * Author: Vladimir Venediktov vvenedict@gmail.com
  * Copyright (c) 2016-2018 Venediktes Gruppe, LLC
  *
@@ -17,41 +17,33 @@
 */
 
 #pragma once
-#ifndef RTB_DSL_ANY_MAPPER_HPP
-#define RTB_DSL_ANY_MAPPER_HPP
+#ifndef RTB_DSL_RAPID_MAPPER_HPP
+#define RTB_DSL_RAPID_MAPPER_HPP
 
-#include <boost/any.hpp>
 #include "extractors.hpp"
 #include "dsl_mapper.hpp" //temporary dependency for reply formats
+#include "rapidjson/document.h"
 
 namespace DSL {
         
     template<typename T>
-    class any_mapper : dsl_mapper<T> {
-
+    class rapid_mapper : dsl_mapper<T> {
     protected:
-        using encoded_type =  boost::any;
+        using encoded_type =  rapidjson::Document;
     public :
         using deserialized_type = openrtb::BidRequest<T>;
         using serialized_type = openrtb::BidResponse<T>;
-        using parse_error_type = boost::bad_any_cast;
+        using parse_error_type = std::exception;
         
         using Impression = openrtb::Impression<T>;
         using Bid = openrtb::Bid<T>;
         using SeatBid = openrtb::SeatBid<T>;
-        
+
         template<typename Deserialized, typename string_view_type>
-        Deserialized extract(const string_view_type & bid_request) {
-            jsmn_parser parser;
-            jsmntok_t t[128];
+        Deserialized extract(const string_view_type &bid_request) {
             thread_local encoded_type encoded;
             clear(encoded);
-            jsmn_init(&parser);
-            auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));
-            if (r < 0) {
-                throw std::runtime_error("DSL::jsmn_parse exception");
-            }
-            encoders::encode(bid_request.c_str(), &t[0], parser.toknext, encoded);
+            encoded.Parse(bid_request.c_str());
             return extractors<Deserialized>::extract(encoded);
         }
 
@@ -60,14 +52,13 @@ namespace DSL {
             return dsl_mapper<T>::template serialize(bid_response);
         }
         
-
         void clear(encoded_type &encoded) {
-            boost::any tmp;
-            boost::swap(encoded,tmp);
+            encoded_type tmp;
+            std::swap(encoded,tmp);
         }
     };
 }
 
 
-#endif /* RTB_DSL_ANY_MAPPER_HPP */
+#endif /* RTB_DSL_RAPID_MAPPER_HPP */
 

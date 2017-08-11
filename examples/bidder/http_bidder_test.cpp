@@ -17,6 +17,7 @@
 #include "rtb/exchange/exchange_server.hpp"
 #include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/DSL/any_mapper.hpp"
+#include "rtb/DSL/rapid_mapper.hpp"
 #include "rtb/config/config.hpp"
 #include "rtb/core/tagged_tuple.hpp"
 #include "rtb/datacache/entity_cache.hpp"
@@ -59,7 +60,7 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
-    using DSLT = DSL::GenericDSL<std::string, DSL::any_mapper> ;
+    using DSLT = DSL::GenericDSL<std::string, DSL::rapid_mapper> ;
     using BidRequest = DSLT::deserialized_type;
     //using BidResponse = DSLT::serialized_type;
     
