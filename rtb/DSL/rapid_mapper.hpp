@@ -21,13 +21,14 @@
 #define RTB_DSL_RAPID_MAPPER_HPP
 
 #include "extractors.hpp"
-#include "dsl_mapper.hpp" //temporary dependency for reply formats
+#include "rapid_serializer.hpp"
 #include "rapidjson/document.h"
+#include "rapidjson/writer.h" // for stringify JSON
 
 namespace DSL {
         
     template<typename T>
-    class rapid_mapper : dsl_mapper<T> {
+    class rapid_mapper {
     protected:
         using encoded_type =  rapidjson::Document;
     public :
@@ -47,9 +48,12 @@ namespace DSL {
             return extractors<Deserialized>::extract(encoded);
         }
 
-        template<typename string_view_type>
-        auto serialize(const string_view_type &bid_response) {
-            return dsl_mapper<T>::template serialize(bid_response);
+        template<typename Serialized>
+        auto serialize(const Serialized &bid_response) {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            serializer<Serialized>::template serialize(bid_response, writer);
+            return std::string(sb.GetString(),sb.GetSize());
         }
         
         void clear(encoded_type &encoded) {
