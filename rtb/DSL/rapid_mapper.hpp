@@ -23,7 +23,7 @@
 #include "extractors.hpp"
 #include "rapid_serializer.hpp"
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h" // for stringify JSON
+#include "rapidjson/writer.h"
 
 namespace DSL {
         

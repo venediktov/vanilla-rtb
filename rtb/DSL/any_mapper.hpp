@@ -22,12 +22,14 @@
 
 #include <boost/any.hpp>
 #include "extractors.hpp"
-#include "dsl_mapper.hpp" //temporary dependency for reply formats
+#include "rapid_serializer.hpp"
+#include "rapidjson/writer.h"
+
 
 namespace DSL {
         
     template<typename T>
-    class any_mapper : dsl_mapper<T> {
+    class any_mapper {
 
     protected:
         using encoded_type =  boost::any;
@@ -55,9 +57,12 @@ namespace DSL {
             return extractors<Deserialized>::extract(encoded);
         }
 
-        template<typename string_view_type>
-        auto serialize(const string_view_type &bid_response) {
-            return dsl_mapper<T>::template serialize(bid_response);
+        template<typename Serialized>
+        auto serialize(const Serialized &bid_response) {
+            rapidjson::StringBuffer sb;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(sb);
+            serializer<Serialized>::template serialize(bid_response, writer);
+            return std::string(sb.GetString(),sb.GetSize());
         }
         
 

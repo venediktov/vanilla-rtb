@@ -34,23 +34,19 @@ namespace DSL {
         using deserialized_type = openrtb::BidRequest<T>;
         using serialized_type = openrtb::BidResponse<T>;
         using parse_error_type = jsonv::parse_error;
-    private:    
+    private:
         //BidRequest
         using Banner = openrtb::Banner<T>;
         using AdPosition = openrtb::AdPosition;
-    public:        
         using Impression = openrtb::Impression<T>;
-    private:
         using User = openrtb::User<T>;
         using Geo = openrtb::Geo<T>;
         using Site = openrtb::Site<T>;
         using Publisher = openrtb::Publisher<T>;
         using BidRequest = openrtb::BidRequest<T>;
         //BidResponse
-     public:
         using Bid = openrtb::Bid<T>;
         using SeatBid = openrtb::SeatBid<T>;
-     private:
         using NoBidReason = openrtb::NoBidReason;
         using CreativeAttribute= openrtb::CreativeAttribute;
         using BidResponse = openrtb::BidResponse<T>;
@@ -199,8 +195,8 @@ namespace DSL {
             encoders::encode(bid_request.c_str(), &t[0], parser.toknext, encoded);
             return jsonv::extract<Deserialized>(encoded, request_fmt_);
         }
-        template<typename string_view_type>
-        auto serialize(const string_view_type &bid_response) {
+        template<typename Serialized>
+        auto serialize(const Serialized &bid_response) {
             return to_string(to_json(bid_response, response_fmt_));
         }
 

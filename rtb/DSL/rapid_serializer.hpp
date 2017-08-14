@@ -113,7 +113,7 @@ static void serialize(const int value, Writer &writer) {
 template<>
 struct serializer<double> {
 template<typename Writer>
-static void serialize(const int value, Writer &writer) {
+static void serialize(const double value, Writer &writer) {
     writer.Double(value);
 }
 };
