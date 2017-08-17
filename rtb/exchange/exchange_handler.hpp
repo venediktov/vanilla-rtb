@@ -110,7 +110,7 @@ namespace vanilla {
                     return wire_response;
                 });
                 if (future.wait_for(timeout) == std::future_status::ready) {
-                    r << to_string(future.get()) << http::server::reply::flush("");
+                    r << future.get() << http::server::reply::flush("");
                 } else {
                     r << http::server::reply::flush("");
                 }
@@ -138,16 +138,16 @@ namespace vanilla {
                 });
                 io_service.reset();
                 io_service.run();
-                if (wire_response && timer.expires_from_now().total_milliseconds() > 0) {
+               if (wire_response && timer.expires_from_now().total_milliseconds() > 0) {
                     if(if_response_handler) {
                        auto custom_reply = if_response_handler(auction_response);
                        if ( custom_reply ) {
                           custom_reply(r);
                        } else {
-                          r << to_string(*wire_response) << http::server::reply::flush("json");
+                           r << *wire_response << http::server::reply::flush("json");
                        }
                     } else {
-                       r << to_string(*wire_response) << http::server::reply::flush("json");
+                        r << *wire_response << http::server::reply::flush("json");
                     }
                 } else {
                     r << http::server::reply::flush("json");

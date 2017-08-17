@@ -34,9 +34,6 @@ namespace vanilla {
     class Bidder {
         using BidRequest  = typename DSL::deserialized_type;
         using BidResponse = typename DSL::serialized_type;
-        using Impression  = typename DSL::Impression;
-        using SeatBid     = typename DSL::SeatBid;
-        using Bid         = typename DSL::Bid;
 
     public:
         Bidder(BidderCaches<Config> &caches) :
@@ -52,8 +49,9 @@ namespace vanilla {
             return response;
         }
     private:
-        
-        inline void addCurrency(const BidRequest& request, const Impression& imp) {
+
+        template<typename Impression>
+        void addCurrency(const BidRequest& request, const Impression& imp) {
             if (request.cur.size()) {
                 response.cur = request.cur[0];
             } else if (imp.bidfloorcur.length()) {
@@ -61,11 +59,12 @@ namespace vanilla {
             }
         }
 
-        inline void addBid(const BidRequest& request, const Impression& imp, const std::shared_ptr<Ad> &ad) {
+        template<typename Impression>
+        void addBid(const BidRequest& request, const Impression& imp, const std::shared_ptr<Ad> &ad) {
             if (response.seatbid.size() == 0) {
-                response.seatbid.emplace_back(SeatBid());
+                response.seatbid.emplace_back();
             }
-            Bid bid;
+            typename std::remove_reference<decltype(BidResponse().seatbid[0].bid[0])>::type bid;
             boost::uuids::uuid bidid = uuid_generator();
             bid.id = boost::uuids::to_string(bidid); // TODO check documentation 
             // Is it the same as response.bidid?
@@ -74,11 +73,12 @@ namespace vanilla {
             bid.w = ad->width;
             bid.h = ad->height;
             bid.adm = ad->code;
-            bid.adid = ad->ad_id;
+            bid.adid = std::to_string(ad->ad_id); //for T = std::string , for T = string_view must use thread_local storage
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
-        inline void buildImpResponse(const BidRequest& request, const Impression& imp) {
+        template<typename Impression>
+        void buildImpResponse(const BidRequest& request, const Impression& imp) {
             if (auto ad = selector.select(request, imp)) {
                 boost::uuids::uuid bidid = uuid_generator();
                 response.bidid = boost::uuids::to_string(bidid);

@@ -20,6 +20,7 @@
 #ifndef RTB_DSL_MAPPER_HPP
 #define RTB_DSL_MAPPER_HPP
 
+#include "jsonv/all.hpp"
 #include "core/openrtb.hpp"
 #include <vector>
 #include <boost/optional.hpp>
@@ -27,36 +28,35 @@
 namespace DSL {
     using namespace jsonv;
 
-    template<typename T>
+    template<typename T, unsigned int Size=128>
     class dsl_mapper {
     public:
         using deserialized_type = openrtb::BidRequest<T>;
         using serialized_type = openrtb::BidResponse<T>;
         using parse_error_type = jsonv::parse_error;
-    private:    
+    private:
         //BidRequest
         using Banner = openrtb::Banner<T>;
         using AdPosition = openrtb::AdPosition;
-    public:        
         using Impression = openrtb::Impression<T>;
-    private:
         using User = openrtb::User<T>;
         using Geo = openrtb::Geo<T>;
         using Site = openrtb::Site<T>;
         using Publisher = openrtb::Publisher<T>;
         using BidRequest = openrtb::BidRequest<T>;
         //BidResponse
-     public:
         using Bid = openrtb::Bid<T>;
         using SeatBid = openrtb::SeatBid<T>;
-     private:
         using NoBidReason = openrtb::NoBidReason;
         using CreativeAttribute= openrtb::CreativeAttribute;
         using BidResponse = openrtb::BidResponse<T>;
-     protected:
-        using encoded_type =  jsonv::value; 
-        
-    public:
+
+    protected:
+        using encoded_type =  jsonv::value;
+
+        dsl_mapper() : request_fmt_{build_request()}, response_fmt_{build_response()}
+        {}
+
         formats build_request() 
         {
             formats base_in = formats_builder()
@@ -180,14 +180,31 @@ namespace DSL {
             return formats::compose({ base_out, formats::defaults() });
 
         }
-        template<typename Deserialized>
-        Deserialized extract(const jsonv::value & encoded, const formats & fmts) {
-            return jsonv::extract<Deserialized>(encoded, fmts);
+
+        template<typename Deserialized, typename string_view_type>
+        Deserialized extract(const string_view_type &bid_request) {
+            jsmn_parser parser;
+            jsmntok_t t[Size];
+            thread_local encoded_type encoded;
+            clear(encoded);
+            jsmn_init(&parser);
+            auto r = jsmn_parse(&parser, bid_request.c_str(), bid_request.length(), t, sizeof(t)/sizeof(t[0]));
+            if (r < 0) {
+                throw std::runtime_error("DSL::jsmn_parse exception");
+            }
+            encoders::encode(bid_request.c_str(), &t[0], parser.toknext, encoded);
+            return jsonv::extract<Deserialized>(encoded, request_fmt_);
         }
-        
+        template<typename Serialized>
+        auto serialize(const Serialized &bid_response) {
+            return to_string(to_json(bid_response, response_fmt_));
+        }
+
         void clear(encoded_type &encoded) {
             encoded.clear();
         }
+        formats request_fmt_;
+        formats response_fmt_;
         
     };
 

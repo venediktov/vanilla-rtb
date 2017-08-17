@@ -132,22 +132,32 @@ $ chrt --batch 0 make -j$(nproc) -l$(nproc)
 ```
 
 ### Running examples\:
+#### Testing simple case - single bidder bound to ip/port
 - [x] HTTP-Bidder
   * vanilla-rtb/Release/examples/bin$ ./http_bidder_test --config etc/config.cfg
-- [x] Cache loader
-  * vanilla-rtb/Release/examples/bin$ ./cache_loader_test --config etc/config.cfg
-- [x] Exchange Handler with HTTP handler or Exchange Handler distributing to multi-bidders via communicator 
+- [x] test with curl and apache benchmark
+  * vanilla-rtb/Release/examples/bin$ ./curl.sh --bidder
+  * vanilla-rtb/Release/examples/bin$ ./ab.sh -n30000 -c10 --bidder
+#### Testing different json mappers to openrtb::BidRequest  available in vanilla-rtb stack
+- [x] Start Exchange Handler with HTTP handler
+  * vanilla-rtb/Release/examples/bin$ ./exchange_handler_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./ab.sh -n30000 -c10 --auction
+  * vanilla-rtb/Release/examples/bin$ ./ab.sh -n30000 -c10 --auction-any
+   * vanilla-rtb/Release/examples/bin$ ./ab.sh -n30000 -c10 --auction-rapid
+#### Testing mock-bidders e.g. no bid multi bidders via communicator pattern ( work in progress )
+- [x] Start Exchange Handler distributing to multi-bidders via communicator 
   * vanilla-rtb/Release/examples/bin$ ./exchange_handler_test --config etc/config.cfg
 - [x] Mock-bidders starting multiple in one swoop,  currently configured as 5 bidders in config
   * vanilla-rtb/Release/examples/bin$ ./mock_bidder_test --config etc/config.cfg
-- [x] multi-bidders starting multiple in one swoop,  currently configured as 3 bidders in config and exchange
+  * vanilla-rtb/Release/examples/bin$ ./ab.sh -n30000 -c10 --mock-bidders
+#### Testing  multi bidders via communicator pattern ( work in progress )
+- [x] multi-bidders starting multiple in one swoop (currently configured as 3 bidders in config ) and starting exchange handler
   * vanilla-rtb/Release/examples/bin$ ./multi_bidder --config etc/config.cfg
   * vanilla-rtb/Release/examples/bin$ ./multi_exchange_handler --config etc/config.cfg
-- [x] Notification service and Slave-Banker
-  * vanilla-rtb/Release/examples/bin$ ./notification_service_test --config etc/config.cfg
-  * vanilla-rtb/Release/examples/bin$ ./slavebanker_service_test --config etc/config.cfg
-- [x] Campaign manager - Budget
-  * vanilla-rtb/Release/examples/bin$ ./campaign_manager_test --config etc/config.cfg
+#### Testing cache loader of ad campaigns and ad budgets  ( needs to be extended to get cache update events from outside )
+- [x] Cache loader
+  * vanilla-rtb/Release/examples/bin$ ./cache_loader_test --config etc/config.cfg
+#### Testing Mock exchange writen in python
 - [x] Mock exchange - emulating bid requests
   * To run mock exchange you need any python, and python "requests" library installed.
   * for simple exchange please run
@@ -157,7 +167,14 @@ $ chrt --batch 0 make -j$(nproc) -l$(nproc)
   * for more info please run 
   * vanilla-rtb/Release/examples/bin/mock_exchange$ python mock-x.py --help
   
-- [x] Fire up UI by connecting to manager via browser http:://localhost:11081/campaign/index.html
+#### Testing campaign manager paired with Win-notification service
+- [x] Campaign manager - Budget
+  * vanilla-rtb/Release/examples/bin$ ./campaign_manager_test --config etc/config.cfg
+- [x] Notification service and Slave-Banker
+  * vanilla-rtb/Release/examples/bin$ ./notification_service_test --config etc/config.cfg
+  * vanilla-rtb/Release/examples/bin$ ./slavebanker_service_test --config etc/config.cfg
+  
+- [x] To add/delete/modify campign budgets fire up UI by connecting to manager via browser http:://localhost:11081/campaign/index.html
 
   ![campaign](https://github.com/venediktov/vanilla-rtb/wiki/images/WorkingBudgetButtons.png)  
 

@@ -8,6 +8,8 @@
 #include "exchange/exchange_server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "rtb/DSL/generic_dsl.hpp"
+#include "rtb/DSL/any_mapper.hpp"
+#include "rtb/DSL/rapid_mapper.hpp"
 #include "rtb/config/config.hpp"
 #include "rtb/messaging/serialization.hpp"
 #include "rtb/messaging/communicator.hpp"
@@ -35,7 +37,9 @@ int main(int argc, char *argv[]) {
     using namespace vanilla::exchange;
     using namespace std::chrono_literals;
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
-    using DSLT = DSL::GenericDSL<jsonv::string_view> ;
+    using DSLT  = DSL::GenericDSL<jsonv::string_view> ;
+    using DSLTA = DSL::GenericDSL<jsonv::string_view, DSL::any_mapper> ;
+    using DSLTR = DSL::GenericDSL<jsonv::string_view, DSL::rapid_mapper> ;
     using BidRequest = DSLT::deserialized_type;
     using BidResponse = DSLT::serialized_type;
    
@@ -63,7 +67,8 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
     boost::uuids::random_generator uuid_generator{};
-    
+   
+    // ab.sh -n30000 -c10 --auction 
     exchange_handler<DSLT> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
     .logger([](const std::string &data) {
@@ -79,6 +84,40 @@ int main(int argc, char *argv[]) {
     })
     .auction_async([](const auto &request) {
         //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
+        return  BidResponse();
+    });
+    
+    // ab.sh -n30000 -c10 --auction-any 
+    exchange_handler<DSLTA> openrtb_handler_any(std::chrono::milliseconds(config.data().handler_timeout_v1));
+    openrtb_handler    
+    .logger([](const std::string &data) {
+    })
+    .error_logger([](const std::string &data) {
+        LOG(debug) << "request v1 error " << data ;
+    })
+    .if_response([](const auto &bid_response) {
+      if ( bid_response.seatbid.size() == 0 ) {//no bid HTTP 204
+          return [](http::server::reply &r) { r = http::server::reply::stock_reply(http::server::reply::no_content);} ;
+      }//else returns empty std::function<>
+    })
+    .auction_async([](const auto &request) {
+        return  BidResponse();
+    });
+    
+    // ab.sh -n30000 -c10 --auction-rapid
+    exchange_handler<DSLTR> openrtb_handler_rapid(std::chrono::milliseconds(config.data().handler_timeout_v1));
+    openrtb_handler    
+    .logger([](const std::string &data) {
+    })
+    .error_logger([](const std::string &data) {
+        LOG(debug) << "request v1 error " << data ;
+    })
+    .if_response([](const auto &bid_response) {
+      if ( bid_response.seatbid.size() == 0 ) {//no bid HTTP 204
+          return [](http::server::reply &r) { r = http::server::reply::stock_reply(http::server::reply::no_content);} ;
+      }//else returns empty std::function<>
+    })
+    .auction_async([](const auto &request) {
         return  BidResponse();
     });
 
@@ -130,6 +169,14 @@ int main(int argc, char *argv[]) {
     dispatcher.crud_match(boost::regex("/openrtb_handler/auction/(\\d+)"))
               .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
                   openrtb_handler.handle_post(r,match);
+              });
+    dispatcher.crud_match(boost::regex("/openrtb_handler/auction-any/(\\d+)"))
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                  openrtb_handler_any.handle_post(r,match);
+              });
+    dispatcher.crud_match(boost::regex("/openrtb_handler/auction-rapid/(\\d+)"))
+              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+                  openrtb_handler_rapid.handle_post(r,match);
               });
     dispatcher.crud_match(boost::regex("/openrtb_handler/(v2[.][2-4])/auction/(\\d+)"))
               .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
