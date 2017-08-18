@@ -59,6 +59,21 @@ $ docker login
 $ docker run --net=host -it --name vanilla-devbox vanillartb/vanilla-dev:latest
 $ docker run --net=host -it --name vanilla-prodbox vanillartb/vanilla-prod:latest
 ```
+
+#### You should get following container shell prompt when running our docker dev and prod containers 
+
+```bash
+root@default:~/pkg/vanilla-rtb/snapshot/bin#
+```
+
+#### vanilla-devbox has following directory structure besides OS and other dependencies installed 
+
+```
+/root/build - directory used to build vanilla-rtb binaries ( staging directory )
+/root/pkg - directory where cmake had installed binaries from staging directory 
+/root/code - directory holding source fetched from vanilla-rtb  github repository used in the build
+```
+
 # Running in prod with Redis
 ```bash
 $ docker run --net=host --name vanilla-redis -d redis
