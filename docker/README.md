@@ -55,7 +55,8 @@ $ docker push vanillartb/vanilla-prod:latest
 # Running 
 
 ```bash
-$ docker run --net=host -it --name vanilla-devbox vanillartb/vanilla-dev:0.0.1
+$ docker login
+$ docker run --net=host -it --name vanilla-devbox vanillartb/vanilla-dev:latest
 $ docker run --net=host -it --name vanilla-prodbox vanillartb/vanilla-prod:latest
 ```
 # Running in prod with Redis
