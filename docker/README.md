@@ -10,7 +10,7 @@ VanillaRTB Docker images have two layers (optionally three) of hierarchy:
 * #2.x (extends #1.3) - Specialized container preconfigured to run particular VanillaRTB component or subsystem
 
 ## Creating and Updating 
-###( instructions for vanilla-rtb stack contributors only !!!! )
+### ( instructions for vanilla-rtb stack contributors only !!!! )
 
 Base package:
 
