@@ -24,8 +24,6 @@ Recommended build environment: Linux or macOS, CMake - 3.7.2, GCC - 5.1, Boost -
 
 Structure :
 * [/](../../tree/master/) -- the root directory
-   * [boost-process/](../../tree/master/boost-process/) -- C++11 planned for official boost release version 1.64
-   * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost release since version 1.61
    * [CRUD/](../../tree/master/CRUD/) -- C++11 high performance HTTP-restful handlers based on boost.ASIO and CRUD API
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
    * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
@@ -44,11 +42,9 @@ Structure :
 * [CMakeLists.txt] - cmake file
 
 >The stack of vanilla-rtb includes other C++11 projects and is referencing them via gh-subree.
->To update to the latest version of boost-process , boost-dll , json-voorhees or CRUD we use the following commands \:
+>To update to the latest version of json-voorhees or CRUD we use the following commands \:
 
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash
-* git subtree pull --prefix boost-process git@github.com:BorisSchaeling/boost-process.git master --squash
-* git subtree pull --prefix boost-dll git@github.com:apolukhin/Boost.DLL.git master --squash
 * git subtree pull --prefix CRUD git@github.com:venediktov/CRUD.git  master --squash
 
 
