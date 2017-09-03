@@ -31,6 +31,7 @@ Structure :
    * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
    * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
+   * [rapidjson/](../../tree/master/rapidjson/) -- fast zero copy, zero memory allocation parsers
    * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
@@ -41,7 +42,7 @@ Structure :
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
       * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
-      * [datacache/](../../tree/master/examples/campaign) -- IPC cache implementation based on rtb/datacache model 
+      * [datacache/](../../tree/master/examples/datacache) -- IPC cache implementation based on rtb/datacache model 
       * [UI/](../../tree/master/examples/UI) -- HTML and javascript for campaign budget management
       
 * [CMakeLists.txt] - cmake file
