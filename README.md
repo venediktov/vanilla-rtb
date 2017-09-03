@@ -112,6 +112,9 @@ $ make -j4 install
 
 ### Mac OS X ( with llvm ) \:
 ```bash
+$ brew doctor
+$ brew install cmake
+$ brew install boost
 $ brew install --with-clang llvm
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_RANLIB=/usr/local/opt/llvm/bin/llvm-ranlib -DCMAKE_AR=/usr/local/opt/llvm/bin/llvm-ar .. -G "Unix Makefiles"
 ```
