@@ -15,7 +15,9 @@ vanilla-rtb stack is completely decoupled by C++ templates and has minimum depen
 
 [Multi-bidder-model-with-communicator-for-Win-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-notifications)
 
-[relatively high - 50K QPS](../../wiki/QPS-test)
+[best performance compared to other stacks -  50K QPS](../../wiki/QPS-test)
+
+[runs on the cloud with docker - see instructions](../../tree/master/docker/)
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
@@ -24,20 +26,23 @@ Recommended build environment: Linux or macOS, CMake - 3.7.2, GCC - 5.1, Boost -
 
 Structure :
 * [/](../../tree/master/) -- the root directory
+   * [benchmarks/](../../tree/master/benchmarks/) -- optionaly built benchmarks for IPC caches, json parsers and low overhead IPC audit logger
    * [CRUD/](../../tree/master/CRUD/) -- C++11 high performance HTTP-restful handlers based on boost.ASIO and CRUD API
+   * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
    * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
    * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
-      * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast targeting lookups
+      * [datacache/](../../tree/master/rtb/datacache/) -- IPC cache generic classes for fast targeting and other lookups
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
-   * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
       * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
+      * [datacache/](../../tree/master/examples/campaign) -- IPC cache implementation based on rtb/datacache model 
+      * [UI/](../../tree/master/examples/UI) -- HTML and javascript for campaign budget management
       
 * [CMakeLists.txt] - cmake file
 
