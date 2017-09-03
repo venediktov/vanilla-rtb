@@ -56,7 +56,7 @@ Structure :
 
 ### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
-### Linux \:
+### Linux \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
 
 ```bash
 $ mkdir Release
@@ -71,7 +71,7 @@ $ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
 $ make -j4 install
 ```
 
-### Windows \:
+### Windows \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
 *same steps as above for linux , only difference is depending on your environment 
   either Visual Studio or NMake project can be used*
 ```bash
@@ -86,7 +86,7 @@ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
 cd ../Debug
 cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 ```
-### Mac OS X (Xcode) \:
+### Mac OS X (Xcode) \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
 For the reliable results it is suggested to have the build directory out of source tree.
 The process involves creating a build directory, generating an `Xcode` project in that directory with `CMake`,
 opening the project file generated in the build directory with `Xcode`, and lastly, adjusting project
@@ -94,7 +94,7 @@ settings as requried and kicking off the build.
 
 To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
 
-### Mac OS X (command line tools)
+### Mac OS X (command line tools) \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
 ```bash
 $ xcode-select --install
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
