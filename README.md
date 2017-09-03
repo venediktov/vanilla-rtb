@@ -56,7 +56,9 @@ Structure :
 
 ### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
-### Linux \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
+[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
+
+### Linux \:
 
 ```bash
 $ mkdir Release
@@ -71,7 +73,7 @@ $ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
 $ make -j4 install
 ```
 
-### Windows \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
+### Windows \:
 *same steps as above for linux , only difference is depending on your environment 
   either Visual Studio or NMake project can be used*
 ```bash
@@ -94,7 +96,7 @@ settings as requried and kicking off the build.
 
 To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
 
-### Mac OS X (command line tools) \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
+### Mac OS X (command line tools) \:
 ```bash
 $ xcode-select --install
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
