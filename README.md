@@ -17,7 +17,7 @@ vanilla-rtb stack is completely decoupled by C++ templates and has minimum depen
 
 [best performance compared to other stacks -  50K QPS](../../wiki/QPS-test)
 
-[runs on the cloud with docker - see instructions](../../tree/master/docker/)
+[runs on cloud with docker - see instructions](../../tree/master/docker/)
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
@@ -110,6 +110,11 @@ $ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
 $ make -j4 install
 ```
 
+### Mac OS X ( with llvm ) \:
+```bash
+$ brew install --with-clang llvm
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_RANLIB=/usr/local/opt/llvm/bin/llvm-ranlib -DCMAKE_AR=/usr/local/opt/llvm/bin/llvm-ar .. -G "Unix Makefiles"
+```
 ### Parallel Builds
 When building on Linux and Mac OS X with Make it's possible to automatically adjust the concurreny of the build using `nproc` command line tool that returns number of CPUs available to the Make execution context\: 
 
