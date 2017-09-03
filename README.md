@@ -37,7 +37,7 @@ Structure :
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
       * [datacache/](../../tree/master/rtb/datacache/) -- IPC cache generic classes for fast targeting and other lookups
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
-      * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
+      * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv , boost::any and rapidjson
    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
