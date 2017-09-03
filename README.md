@@ -88,7 +88,7 @@ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Visual Studio 14 2015"
 cd ../Debug
 cmake -DCMAKE_BUILD_TYPE=Debug   .. -G "Visual Studio 14 2015"
 ```
-### Mac OS X (Xcode) \:[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
+### Mac OS X (Xcode) \:
 For the reliable results it is suggested to have the build directory out of source tree.
 The process involves creating a build directory, generating an `Xcode` project in that directory with `CMake`,
 opening the project file generated in the build directory with `Xcode`, and lastly, adjusting project
