@@ -15,45 +15,49 @@ vanilla-rtb stack is completely decoupled by C++ templates and has minimum depen
 
 [Multi-bidder-model-with-communicator-for-Win-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-notifications)
 
-[relatively high - 50K QPS](../../wiki/QPS-test)
+[best performance compared to other stacks -  50K QPS](../../wiki/QPS-test)
+
+[runs on cloud with docker - see instructions](../../tree/master/docker/)
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
 
-Recommended build environment: Linux or macOS, CMake - 3.7.2, GCC - 5.1, Boost - 1.60.
+Recommended build environment: Linux or macOS, CMake >= 3.7.2, GCC >= 5.1, Boost >= 1.60
 
 Structure :
 * [/](../../tree/master/) -- the root directory
-   * [boost-process/](../../tree/master/boost-process/) -- C++11 planned for official boost release version 1.64
-   * [boost-dll/](../../tree/master/boost-dll/) -- C++11 in official boost release since version 1.61
+   * [benchmarks/](../../tree/master/benchmarks/) -- optionaly built benchmarks for IPC caches, json parsers and low overhead IPC audit logger
    * [CRUD/](../../tree/master/CRUD/) -- C++11 high performance HTTP-restful handlers based on boost.ASIO and CRUD API
+   * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
    * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
+   * [rapidjson/](../../tree/master/rapidjson/) -- fast zero copy, zero memory allocation parsers
    * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
-      * [datacache/](../../tree/master/rtb/datacache/) -- IPC data store for fast targeting lookups
+      * [datacache/](../../tree/master/rtb/datacache/) -- IPC cache generic classes for fast targeting and other lookups
       * [exchange/](../../tree/master/rtb/exchange) -- exchange handlers implementation
-      * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv
-   * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
+      * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv , boost::any and rapidjson
    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
       * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
+      * [datacache/](../../tree/master/examples/datacache) -- IPC cache implementation based on rtb/datacache model 
+      * [UI/](../../tree/master/examples/UI) -- HTML and javascript for campaign budget management
       
 * [CMakeLists.txt] - cmake file
 
 >The stack of vanilla-rtb includes other C++11 projects and is referencing them via gh-subree.
->To update to the latest version of boost-process , boost-dll , json-voorhees or CRUD we use the following commands \:
+>To update to the latest version of json-voorhees or CRUD we use the following commands \:
 
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash
-* git subtree pull --prefix boost-process git@github.com:BorisSchaeling/boost-process.git master --squash
-* git subtree pull --prefix boost-dll git@github.com:apolukhin/Boost.DLL.git master --squash
 * git subtree pull --prefix CRUD git@github.com:venediktov/CRUD.git  master --squash
 
 
 
 ### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
+
+[(installing dependencies before building vanilla stack)](../../wiki/Installing-dependencies)
 
 ### Linux \:
 
@@ -93,7 +97,7 @@ settings as requried and kicking off the build.
 
 To generate an `Xcode` project invoke cmake from an empty build directory with command line similar to `cmake -G Xcode -DCMAKE_BUILD_TYPE=Release`.
 
-### Mac OS X (command line tools)
+### Mac OS X (command line tools) \:
 ```bash
 $ xcode-select --install
 $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -106,6 +110,14 @@ $ cmake -DCMAKE_BUILD_TYPE=Release .. -G "Unix Makefiles"
 $ make -j4 install
 ```
 
+### Mac OS X ( with llvm ) \:
+```bash
+$ brew doctor
+$ brew install cmake
+$ brew install boost
+$ brew install --with-clang llvm
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_RANLIB=/usr/local/opt/llvm/bin/llvm-ranlib -DCMAKE_AR=/usr/local/opt/llvm/bin/llvm-ar .. -G "Unix Makefiles"
+```
 ### Parallel Builds
 When building on Linux and Mac OS X with Make it's possible to automatically adjust the concurreny of the build using `nproc` command line tool that returns number of CPUs available to the Make execution context\: 
 
