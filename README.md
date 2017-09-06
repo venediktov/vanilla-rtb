@@ -31,7 +31,7 @@ Structure :
    * [docker/](../../tree/master/docker/) -- vanilla docker files and instructions on how to build and run 
    * [jsonv/](../../tree/master/jsonv/) -- DSL mapper of json encoded objects to C++ structures
    * [parsers/](../../tree/master/parsers/) -- fast zero copy, zero memory allocation parsers
-   * [rapidjson/](../../tree/master/rapidjson/) -- fast zero copy, zero memory allocation parsers
+   * [rapidjson/](../../tree/master/rapidjson/) -- very fast json tokenizer including SAX / DOM API but requires more memory 
    * [rtb/](../../tree/master/rtb/) -- RTB framework
       * [core/](../../tree/master/rtb/core/) -- generic structures shared in the project ( RTB specific )
       * [common/](../../tree/master/rtb/common) -- generic RTB agnostic structures 
@@ -116,7 +116,9 @@ $ brew doctor
 $ brew install cmake
 $ brew install boost
 $ brew install --with-clang llvm
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_RANLIB=/usr/local/opt/llvm/bin/llvm-ranlib -DCMAKE_AR=/usr/local/opt/llvm/bin/llvm-ar .. -G "Unix Makefiles"
+$ mkdir Release
+$ cd Release
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_RANLIB=/usr/local/opt/llvm/bin/llvm-ranlib -DCMAKE_AR=/usr/local/opt/llvm/bin/llvm-ar .. -G "Unix Makefiles"
 ```
 ### Parallel Builds
 When building on Linux and Mac OS X with Make it's possible to automatically adjust the concurreny of the build using `nproc` command line tool that returns number of CPUs available to the Make execution context\: 
