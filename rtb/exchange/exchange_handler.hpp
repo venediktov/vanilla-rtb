@@ -105,14 +105,22 @@ namespace vanilla {
                 }
                 std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
                 auto future = std::async(std::launch::async, [&]() {
-                    auto auction_response = auction_handler(bid_request);
-                    auto wire_response = parser.create_response(auction_response);
-                    return wire_response;
+                    boost::optional<auction_response_type> auction_response = auction_handler(bid_request);
+                    return auction_response;
                 });
                 if (future.wait_for(timeout) == std::future_status::ready) {
-                    r << future.get() << http::server::reply::flush("");
+                    auto auction_response = future.get();
+                    if(if_response_handler) {
+                        auto custom_reply = if_response_handler(*auction_response);
+                        if (custom_reply) {
+                            custom_reply(r);
+                            return true;
+                        }
+                    }
+                    auto wire_response = parser.create_response(*auction_response);
+                    r << wire_response << http::server::reply::flush("json");
                 } else {
-                    r << http::server::reply::flush("");
+                    r << http::server::reply::flush("json");
                 }
                 return true;
             }
@@ -122,11 +130,9 @@ namespace vanilla {
                     return false;
                 }
                 std::chrono::milliseconds timeout{bid_request.request().tmax ? bid_request.request().tmax : tmax.count()};
-                boost::optional<wire_response_type> wire_response;
-                auction_response_type auction_response;
+                boost::optional<auction_response_type> auction_response;
                 auto submit_async = [&]() {
                     auction_response = auction_async_handler(bid_request);
-                    wire_response = parser.create_response(auction_response);
                     io_service.stop();
                 };
                 io_service.post(submit_async);
@@ -138,17 +144,16 @@ namespace vanilla {
                 });
                 io_service.reset();
                 io_service.run();
-               if (wire_response && timer.expires_from_now().total_milliseconds() > 0) {
+                if (auction_response && timer.expires_from_now().total_milliseconds() > 0) {
                     if(if_response_handler) {
-                       auto custom_reply = if_response_handler(auction_response);
-                       if ( custom_reply ) {
-                          custom_reply(r);
-                       } else {
-                           r << *wire_response << http::server::reply::flush("json");
-                       }
-                    } else {
-                        r << *wire_response << http::server::reply::flush("json");
+                        auto custom_reply = if_response_handler(*auction_response);
+                        if (custom_reply) {
+                            custom_reply(r);
+                            return true;
+                        }
                     }
+                    auto wire_response = parser.create_response(*auction_response);
+                    r << wire_response << http::server::reply::flush("json");
                 } else {
                     r << http::server::reply::flush("json");
                 }
