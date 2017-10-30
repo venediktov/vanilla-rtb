@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     
     // ab.sh -n30000 -c10 --auction-any 
     exchange_handler<DSLTA> openrtb_handler_any(std::chrono::milliseconds(config.data().handler_timeout_v1));
-    openrtb_handler    
+    openrtb_handler_any
     .logger([](const std::string &data) {
     })
     .error_logger([](const std::string &data) {
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     
     // ab.sh -n30000 -c10 --auction-rapid
     exchange_handler<DSLTR> openrtb_handler_rapid(std::chrono::milliseconds(config.data().handler_timeout_v1));
-    openrtb_handler    
+    openrtb_handler_rapid
     .logger([](const std::string &data) {
     })
     .error_logger([](const std::string &data) {
