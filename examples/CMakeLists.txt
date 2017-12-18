@@ -107,6 +107,8 @@ add_subdirectory(bidder)
 add_subdirectory(loader)
 add_subdirectory(campaign)
 add_subdirectory(multiexchange)
+add_subdirectory(ico_campaign_bidder)
+add_subdirectory(ico_campaign_loader)
 
 #Install all json files from our examples
 file(GLOB_RECURSE JSON_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.json)
