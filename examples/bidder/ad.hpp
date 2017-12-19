@@ -19,6 +19,7 @@
 #include "config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"
+#include "examples/datacache/ad_entity.hpp"
 #if BOOST_VERSION <= 106000
 #include <boost/utility/string_ref.hpp>
 namespace boost {

@@ -9,14 +9,10 @@
 #include "config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"
-#if BOOST_VERSION <= 106000
-#include <boost/utility/string_ref.hpp>
-namespace boost {
-    using string_view = string_ref;
-}
-#else
-#include <boost/utility/string_view.hpp>
-#endif
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include <boost/lexical_cast.hpp>
 #include <iterator>
 
@@ -104,7 +100,7 @@ boost::multi_index_container<
 
 }}
 
-template <typename Config = vanilla::config::config<ico_bidder_config_data>,
+template <typename Config=vanilla::config::config<ico_bidder_config_data>,
           typename Memory = typename mpclmi::ipc::Shared,
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::ico_campaign_container>::char_allocator >
 class ICOCampaignEntity {

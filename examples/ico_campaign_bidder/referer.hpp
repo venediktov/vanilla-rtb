@@ -4,8 +4,8 @@
  */
 
 #pragma once
-#ifndef ICO_REFERER_HPP
-#define ICO_REFERER_HPP
+#ifndef REFERER_HPP
+#define REFERER_HPP
 
 #include <string>
 #include <cstdint>
@@ -13,21 +13,22 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/interprocess/containers/string.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/composite_key.hpp>
 #include "core/tagged_tuple.hpp"
 #include "config.hpp"
 
 struct Referer {
-    uint32_t ref_id;
     std::string url;
-    std::string country;
-    std::string record;
-    
-    Referer(uint32_t ref_id, std::string url) : 
-        geo_id{geo_id}, url{std::move(url)}, record{}
+    uint32_t ref_id;
+
+    Referer(std::string url, uint32_t ref_id) : url{std::move(url)}, ref_id{ref_id}
     {}
         
-    Referer():
-        ref_id{}, record{}
+    Referer(): url{}
     {}
         
     friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<Referer> &referer) {
@@ -41,66 +42,111 @@ struct Referer {
         return os;
     }
     friend std::istream &operator>>(std::istream &is, Referer &l) {
-        if ( !std::getline(is, l.record) ){
+        std::string record;
+        if ( !std::getline(is, record) ){
             return is;
         }
         std::vector<std::string> fields;
-        boost::split(fields, l.record, boost::is_any_of("\t"), boost::token_compress_on);
-        if(fields.size() < 3) {
+        boost::split(fields, record, boost::is_any_of("\t"), boost::token_compress_on);
+        if(fields.size() < 2) {
             return is;
         }
-        l.geo_id = atol(fields.at(0).c_str()); 
-        l.city = fields.at(1);
-        l.country = fields.at(2);
+        l.ref_id = atol(fields.at(0).c_str());
+        l.url = fields.at(1);
         return is;
     }
 };
 
-template <typename Config = BidderConfig,
+
+namespace ipc { namespace data {
+
+
+    template <typename Alloc>
+    struct referer_entity {
+        using char_string =  boost::interprocess::basic_string<char, std::char_traits<char>, Alloc>;
+
+        //for tagging in multi_index_container
+        struct url_tag {}; // search on url
+
+        referer_entity( const Alloc & a ) : alloc{a}, url{a}, ref_id{}
+        {}
+
+        Alloc alloc;
+        char_string url;
+        uint32_t ref_id;
+
+
+        template<typename Key, typename Serializable>
+        void store(Key && key, Serializable  &&data)  {
+           auto url_value = key.template get<url_tag>();
+           url = char_string(url_value.data(), url_value.size(), alloc);
+           ref_id = data.ref_id;
+        }
+
+        template<typename Serializable>
+        void retrieve(Serializable  & data) const {
+           data.url = std::move(std::string(url.data(), url.length()));
+           data.ref_id = ref_id;
+        }
+        //needed for ability to update after matching by calling index.modify(itr,entry)
+        void operator()(referer_entity &entry) const {
+            entry.url=url;
+            entry.ref_id=ref_id;
+        }
+    };
+
+    template<typename Alloc>
+    using referer_container =
+    boost::multi_index_container<
+        referer_entity<Alloc>,
+        boost::multi_index::indexed_by<
+            boost::multi_index::ordered_unique<
+                  boost::multi_index::tag<typename referer_entity<Alloc>::url_tag>,
+                  boost::multi_index::composite_key<
+                      referer_entity<Alloc>,
+                      BOOST_MULTI_INDEX_MEMBER(referer_entity<Alloc>,typename referer_entity<Alloc>::char_string,url),
+                      BOOST_MULTI_INDEX_MEMBER(referer_entity<Alloc>,uint32_t,ref_id)
+                  >
+            >
+        >,
+        boost::interprocess::allocator<Referer,typename Alloc::segment_manager>
+    > ;
+}}
+
+template <typename Config = vanilla::config::config<ico_bidder_config_data>,
           typename Memory = typename mpclmi::ipc::Shared, 
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::city_country_container>::char_allocator >
-class RefererDataEntity {
-        using Cache = datacache::entity_cache<Memory, ipc::data::city_country_container> ; 
-        using Keys = vanilla::tagged_tuple<
-            typename ipc::data::city_country_entity<Alloc>::city_tag,    std::string, 
-            typename ipc::data::city_country_entity<Alloc>::country_tag, std::string
-        >;
-        using DataVect = typename std::vector<std::shared_ptr <Referer> >;
-        using CityCountryTag = typename ipc::data::city_country_entity<Alloc>::unique_city_country_tag;
-    public:    
-        RefererDataEntity(const Config &config):
-            config{config}, cache(config.data().geo_ipc_name)
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::referer_container>::char_allocator >
+class RefererEntity {
+        using Cache = datacache::entity_cache<Memory, ipc::data::referer_container> ;
+        using UrlTag = typename ipc::data::referer_entity<Alloc>::url_tag;
+        using Keys = vanilla::tagged_tuple<UrlTag, std::string>;
+        using DataCollection = typename std::vector<std::shared_ptr <Referer> >;
+    public:
+        RefererEntity(const Config &config):
+            config{config}, cache(config.data().referer_ipc_name)
         {}
         void load() noexcept(false) {
-            std::ifstream in{config.data().geo_source};
+            std::ifstream in{config.data().referer_source};
             if (!in) {
-                throw std::runtime_error(std::string("could not open file ") + config.data().geo_source + " exiting...");
+                throw std::runtime_error(std::string("could not open file ") + config.data().referer_source + " exiting...");
             }
-            LOG(debug) << "File opened " << config.data().geo_source;
+            LOG(debug) << "File opened " << config.data().referer_source;
             cache.clear();
             
-            std::for_each(std::istream_iterator<Referer>(in), std::istream_iterator<Referer>(), [&](const Referer &geo){
+            std::for_each(std::istream_iterator<Referer>(in), std::istream_iterator<Referer>(), [&](const Referer &referer){
                 using namespace boost::algorithm;
-                if(!cache.insert(Keys{to_lower_copy(geo.city), to_lower_copy(geo.country)}, geo).second) {
-                    //LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " failed!";
+                if(!cache.insert(Keys{to_lower_copy(referer.url)}, referer).second) {
+                    LOG(debug) << "Adding url " << referer.url << " ref_id " << referer.ref_id << " failed!";
                 }
                 else {
-                    //LOG(debug) << "Adding city " << geo.city << " country " << geo.country << " done";
+                    LOG(debug) << "Adding url " << referer.url << " ref_id " << referer.ref_id << " done!";
                 }
                 
             });
         }
 
-        bool retrieve(DataVect &vect, const std::string &url) {
-            return false;
-            // add ability to match referer with negated filter for country , say exclude investors from USA
-            //cache.template retrieveIf<RefererTag>(vect, url);
-        }
-
         bool retrieve(Referer &ref, const std::string &url) {
-            return true; 
-            // add ability to match referer with negated filter for country , say exclude investors from USA
-            //cache.template retrieveIf<RefererTag>(ref, url);
+            return  cache.template retrieve<UrlTag>(ref, url);
         }
 
     private:
