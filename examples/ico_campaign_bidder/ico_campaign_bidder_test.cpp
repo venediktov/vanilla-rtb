@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     
-    using bid_handler_type = exchange_handler<DSLT, vanilla::UserInfo>;   
+    using bid_handler_type = exchange_handler<DSLT>;
 
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
 
