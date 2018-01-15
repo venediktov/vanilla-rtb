@@ -40,12 +40,12 @@ namespace vanilla {
     public:
         Bidder(Selector selector) : selector{std::move(selector)}, uuid_generator{}
         {}
-        template <typename Request , typename ...Info>
-        const BidResponse& bid(const Request &vanilla_request, Info && ...) {
+        template <typename Request , typename Tuple, std::size_t... Idx, typename ...Info>
+        const BidResponse& bid(const Request &vanilla_request, Tuple&&  tuple, std::index_sequence<Idx...>, Info && ...) {
             response.clear();
             auto request = request_extractor<Request>::request(vanilla_request);
             for (auto &imp : request.imp) {
-                buildImpResponse(request, imp);
+                buildImpResponse(request, imp, std::get<Idx>(std::forward<Tuple>(tuple))...);
             }
             return response;
         }
@@ -78,9 +78,9 @@ namespace vanilla {
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
-        template<typename Impression>
-        void buildImpResponse(const BidRequest& request, const Impression& imp) {
-            if (auto ad = selector.select(request, imp)) {
+        template<typename Impression, typename Arg, typename ...ChainedFuncs>
+        void buildImpResponse(const BidRequest& request, const Impression& imp, Arg && arg, ChainedFuncs... chained) {
+            if (auto ad = selector.select(request, imp, std::forward<Arg>(arg), chained... )) {
                 boost::uuids::uuid bidid = uuid_generator();
                 response.bidid = boost::uuids::to_string(bidid);
 

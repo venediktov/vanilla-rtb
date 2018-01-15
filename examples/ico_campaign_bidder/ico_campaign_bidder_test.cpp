@@ -100,7 +100,17 @@ int main(int argc, char *argv[]) {
         })
         .auction_async([&](const BidRequest &request) {
             thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector(cacheLoader)));
-            return bidder.bid(request);
+            Referer referer;
+            return bidder.bid(request, 
+                              std::make_tuple(
+                                  referer,
+                                  //TODO: cacheLoader.retrieve(*ref); return ref.id;
+                                  [](const Referer& ref) { return boost::optional<int>(0);}, 
+                                  //TODO: return cacheLoader.retrieve(*id);
+                                  [](boost::optional<int> id)  { return boost::optional<std::vector<ICOCampaign>>();} 
+                              ),
+                              std::make_index_sequence<3>{} 
+            );
         });
     
     connection_endpoint ep {std::make_tuple(config.data().host, boost::lexical_cast<std::string>(config.data().port), config.data().root)};
