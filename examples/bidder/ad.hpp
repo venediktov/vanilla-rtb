@@ -99,8 +99,8 @@ class AdDataEntity {
         >;
         using DataVect = std::vector<Ad>;
         using Tag = typename ipc::data::ad_entity<Alloc>::campaign_size_tag;
-        using type = DataVect;
     public:
+        using type = DataVect;
         AdDataEntity(const Config &config):
             config{config}, cache(config.data().ads_ipc_name)
         {}

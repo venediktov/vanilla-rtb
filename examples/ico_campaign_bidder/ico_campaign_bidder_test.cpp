@@ -142,9 +142,10 @@ int main(int argc, char *argv[]) {
                               std::make_tuple(
                                   request.site.get().ref,
                                   retrieve_referer_f,
-                                  retrieve_ico_campaign_f
+                                  retrieve_ico_campaign_f,
+                                  retrieve_campaign_ads_f
                               ),
-                              std::make_index_sequence<3>{} 
+                              std::make_index_sequence<4>{}
             );
         });
     
