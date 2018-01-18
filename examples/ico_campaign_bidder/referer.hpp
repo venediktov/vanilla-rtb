@@ -18,6 +18,7 @@
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/composite_key.hpp>
+#include "rtb/datacache/any_str_ops.hpp"
 #include "core/tagged_tuple.hpp"
 #include "config.hpp"
 
@@ -106,6 +107,9 @@ namespace ipc { namespace data {
                       referer_entity<Alloc>,
                       BOOST_MULTI_INDEX_MEMBER(referer_entity<Alloc>,typename referer_entity<Alloc>::char_string,url),
                       BOOST_MULTI_INDEX_MEMBER(referer_entity<Alloc>,uint32_t,ref_id)
+                  >,
+                  boost::multi_index::composite_key_compare<
+                      ufw::any_str_less<Alloc> , std::less<uint32_t>
                   >
             >
         >,
@@ -120,8 +124,8 @@ class RefererEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::referer_container> ;
         using UrlTag = typename ipc::data::referer_entity<Alloc>::url_tag;
         using Keys = vanilla::tagged_tuple<UrlTag, std::string>;
-        using DataCollection = typename std::vector<std::shared_ptr <Referer> >;
     public:
+    using type  = Referer;
         RefererEntity(const Config &config):
             config{config}, cache(config.data().referer_ipc_name)
         {}

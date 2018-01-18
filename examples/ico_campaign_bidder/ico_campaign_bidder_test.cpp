@@ -91,6 +91,44 @@ int main(int argc, char *argv[]) {
 
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
 
+    //Return from each lambda becomes input for next lambda in the tuple of functions
+    auto retrieve_referer_f = [&cacheLoader](const std::string& ref, auto&& ...) {
+        Referer referer;
+        if(!cacheLoader.retrieve(referer,ref)) {
+            return boost::optional<uint32_t>();
+        }
+        return boost::optional<uint32_t>(referer.ref_id);
+    };
+
+    auto retrieve_ico_campaign_f = [&cacheLoader](boost::optional<uint32_t> ref_id, auto&& ...)  {
+        std::vector<ICOCampaign> ico_campains;
+        if (!cacheLoader.retrieve(ico_campains,*ref_id)) {
+            return boost::optional<decltype(ico_campains)>();
+        }
+        return boost::optional<decltype(ico_campains)>(ico_campains);
+    };
+
+
+    auto retrieve_campaign_ads_f = [&cacheLoader](boost::optional<std::vector<ICOCampaign>> campaigns, auto && req, auto && imp)  {
+        std::vector<Ad> retrieved_cached_ads;
+        for (auto &campaign : *campaigns) {
+            if (!cacheLoader.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
+                continue;
+            }
+//            auto budget_bid = selector.authorize(campaign.campaign_id);
+//            std::transform(std::begin(retrieved_cached_ads),
+//                           std::end(retrieved_cached_ads),
+//                           std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
+//                        ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
+//                        return ad;
+//                    });
+        }
+        if ( retrieved_cached_ads.empty() ) {
+            return boost::optional<decltype(retrieved_cached_ads)>();
+        }
+        return boost::optional<decltype(retrieved_cached_ads)>(retrieved_cached_ads);
+    };
+
     bid_handler    
         .logger([](const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
@@ -100,14 +138,11 @@ int main(int argc, char *argv[]) {
         })
         .auction_async([&](const BidRequest &request) {
             thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector(cacheLoader)));
-            Referer referer;
-            return bidder.bid(request, 
+            return bidder.bid(request,
                               std::make_tuple(
-                                  referer,
-                                  //TODO: cacheLoader.retrieve(*ref); return ref.id;
-                                  [](const Referer& ref) { return boost::optional<int>(0);}, 
-                                  //TODO: return cacheLoader.retrieve(*id);
-                                  [](boost::optional<int> id)  { return boost::optional<std::vector<ICOCampaign>>();} 
+                                  request.site.get().ref,
+                                  retrieve_referer_f,
+                                  retrieve_ico_campaign_f
                               ),
                               std::make_index_sequence<3>{} 
             );

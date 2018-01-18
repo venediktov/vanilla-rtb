@@ -23,7 +23,7 @@ struct chained_selector {
 template<typename T, typename Arg, typename Func , typename... Funcs> 
 static typename std::enable_if< (sizeof...(Funcs) > 0)>::type
 chain_function(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp, Arg&& arg, Func head, Funcs... tail) {
-    auto next_arg = head(std::forward<Arg>(arg));
+    auto next_arg = head(std::forward<Arg>(arg), req, imp);
     if ( next_arg ) {
         chain_function(req, imp, next_arg, tail...);
     }
@@ -31,7 +31,7 @@ chain_function(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &
 
 template<typename T, typename Arg, typename Func>
 static void chain_function(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp, Arg&& arg, Func terminal_func) {
-    terminal_func(std::forward<Arg>(arg));
+    terminal_func(std::forward<Arg>(arg), req, imp);
 }
 };
 
@@ -64,7 +64,6 @@ class ad_selector {
         
     private:   
         const BidderCaches &bidder_caches;
-//        std::vector<GeoCampaign> geo_campaigns;
         std::vector<Ad> retrieved_cached_ads;
         ad_selection_algo selection_algo;
         vanilla::core::Banker<vanilla::BudgetManager> banker;

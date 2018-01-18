@@ -109,6 +109,7 @@ class ICOCampaignEntity {
         using Keys = vanilla::tagged_tuple<RefererTag, uint32_t>;
     public:
         using ICOCampaignCollection = std::vector<ICOCampaign>;
+        using type = ICOCampaignCollection;
         ICOCampaignEntity(const Config &config):
             config{config}, cache(config.data().ico_campaign_ipc_name)
         {}
