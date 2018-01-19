@@ -20,7 +20,6 @@
 #define VANILLA_RTB_GENERIC_BIDDER_CACHE_LOADER_HPP
 
 #include "rtb/core/core.hpp"
-#include <type_traits>
 
 namespace vanilla {
     template<typename ...Entities>
@@ -29,6 +28,7 @@ namespace vanilla {
     template<typename Entity, typename ...Entities>
     struct GenericBidderCacheLoader<Entity, Entities ...> : GenericBidderCacheLoader<Entities ...> {
         using GenericBidderCacheLoader<Entities ...>::retrieve;
+
         template<typename Config>
         GenericBidderCacheLoader(const Config &config): GenericBidderCacheLoader<Entities...>(config), entity(config)
         {}
@@ -38,7 +38,7 @@ namespace vanilla {
         }
 
         template<typename T, typename... Keys>
-        typename std::enable_if<std::is_same<T,typename Entity::type>::value,bool>::type
+        decltype(std::declval<Entity>().retrieve(std::declval<T&>(),std::declval<Keys>()...), bool())
         retrieve(T & t, Keys&& ... keys) {
             return  entity.template retrieve(t, std::forward<Keys>(keys)...);
         }
@@ -48,6 +48,7 @@ namespace vanilla {
 
     template<typename Entity>
     struct GenericBidderCacheLoader<Entity> {
+
         template<typename Config>
         GenericBidderCacheLoader(const Config &config): entity(config)
         {}
@@ -56,7 +57,7 @@ namespace vanilla {
         }
 
         template<typename T, typename... Keys>
-        typename std::enable_if<std::is_same<T,typename Entity::type>::value,bool>::type
+        decltype(std::declval<Entity>().retrieve(std::declval<T&>(), std::declval<Keys>()...), bool())
         retrieve(T & t, Keys&& ... keys) {
             return  entity.template retrieve(t, std::forward<Keys>(keys)...);
         }

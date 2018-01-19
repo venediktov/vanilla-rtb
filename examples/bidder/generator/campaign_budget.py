@@ -1,6 +1,6 @@
 import random 
 import sys
-import argparse
+#import argparse
 
 #format 
 # id\tday_budget\day budget spentday_show_limit\tday_click_limit

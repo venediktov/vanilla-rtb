@@ -125,7 +125,6 @@ class RefererEntity {
         using UrlTag = typename ipc::data::referer_entity<Alloc>::url_tag;
         using Keys = vanilla::tagged_tuple<UrlTag, std::string>;
     public:
-    using type  = Referer;
         RefererEntity(const Config &config):
             config{config}, cache(config.data().referer_ipc_name)
         {}
