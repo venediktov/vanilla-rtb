@@ -28,8 +28,8 @@
 #include "examples/bidder/ad.hpp"
 #include "examples/campaign/campaign_cache.hpp"
 
-#include "bidder.hpp"
-#include "ad_selector.hpp"
+#include "rtb/core/bidder.hpp"
+#include "rtb/core/ad_selector.hpp"
 
 
 extern void init_framework_logging(const std::string &) ;

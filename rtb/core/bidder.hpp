@@ -1,10 +1,22 @@
 /*
  * File:   bidder.hpp
- * Author: arseny.bushev@gmail.com
- * Modified by Vladimir Venediktov on 12/18/2017
+ * Author: Vladimir Venediktov
+ * Author: Arseny Bushev
+ * Copyright (c) 2016-2018 Venediktes Gruppe, LLC
  *
- * Created on 5 марта 2017 г., 22:25
+ * Created on January 8, 2018, 2:42 PM
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
+
 
 #pragma once
 #ifndef VANILLA_BIDDER_HPP
@@ -14,7 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "rtb/core/user_info.hpp"
+#include "user_info.hpp"
 
 namespace vanilla {
 

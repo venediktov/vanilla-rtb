@@ -1,12 +1,27 @@
 /* 
  * File:   ad_selector.hpp
+ * * Author: Vladimir Venediktov
+ * * Author: Arseny Bushev
+ * Copyright (c) 2016-2018 Venediktes Gruppe, LLC
+ *
+ * Created on January 8, 2018, 1:42 PM
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 #ifndef AD_SELECTOR_HPP
 #define AD_SELECTOR_HPP
 
 #include "algos.hpp"
-#include "rtb/core/banker.hpp"
+#include "banker.hpp"
 #include <memory>
 
 
