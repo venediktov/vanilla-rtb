@@ -27,6 +27,7 @@
 #include "ico_campaign.hpp"
 #include "referer.hpp"
 #include "examples/bidder/ad.hpp"
+#include "examples/campaign/campaign_cache.hpp"
 
 #include "bidder.hpp"
 #include "ad_selector.hpp"
@@ -34,6 +35,7 @@
 
 extern void init_framework_logging(const std::string &) ;
 
+using namespace vanilla;
 
 int main(int argc, char *argv[]) {
     using namespace std::placeholders;
@@ -44,8 +46,8 @@ int main(int argc, char *argv[]) {
     using BidRequest = DSLT::deserialized_type;
     using BidResponse = DSLT::serialized_type;
     using BidderConfig = vanilla::config::config<ico_bidder_config_data>;
-    using CacheLoader  =  vanilla::GenericBidderCacheLoader<RefererEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>>;
-    using Selector = vanilla::ad_selector<CacheLoader>;
+    using CacheLoader  =  vanilla::GenericBidderCacheLoader<RefererEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>>; //, CampaignCache<BidderConfig>>;
+    using Selector = vanilla::ad_selector<vanilla::BudgetManager>;
 
     BidderConfig config([](ico_bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -81,6 +83,7 @@ int main(int argc, char *argv[]) {
 
     try {
         cacheLoader.load(); // Not needed if data cache loader is in work
+
     }
     catch(std::exception const& e) {
         LOG(error) << e.what();
@@ -115,7 +118,7 @@ int main(int argc, char *argv[]) {
             if (!cacheLoader.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                 continue;
             }
-//            auto budget_bid = selector.authorize(campaign.campaign_id);
+//            auto budget_bid = selector.authorize(cacheLoader.get_entity<CampaignCache<BidderConfig>>(), campaign.campaign_id);
 //            std::transform(std::begin(retrieved_cached_ads),
 //                           std::end(retrieved_cached_ads),
 //                           std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
@@ -137,7 +140,7 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector(cacheLoader)));
+            thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector()));
             return bidder.bid(request,
                               std::make_tuple(
                                   request.site.get().ref,

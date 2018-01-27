@@ -6,18 +6,11 @@
 #define AD_SELECTOR_HPP
 
 #include "algos.hpp"
-#include "referer.hpp"
-#include "rtb/core/openrtb.hpp"
 #include "rtb/core/banker.hpp"
-#include "examples/campaign/campaign_cache.hpp"
-
 #include <memory>
-#include <algorithm>
-#include <tuple>
-#include <type_traits>
+
 
 namespace vanilla {
-
 
 struct chained_selector {
 template<typename T, typename Arg, typename Func , typename... Funcs> 
@@ -35,17 +28,13 @@ static void chain_function(const openrtb::BidRequest<T> &req, const openrtb::Imp
 }
 };
 
-template<typename BidderCaches>
+template<typename BudgetManager>
 class ad_selector {
     public:
         using AdPtr = std::shared_ptr<Ad>;
         using ad_selection_algo = std::function<AdPtr(const std::vector<Ad>&)>;
-        using self_type = ad_selector<BidderCaches>;
-        
-        ad_selector(const BidderCaches &bidder_caches): bidder_caches{bidder_caches} {
-            retrieved_cached_ads.reserve(500);
-        }
-            
+        using self_type = ad_selector<BudgetManager>;
+
         self_type& with_selection_algo(const ad_selection_algo &algo) {
             selection_algo = algo;
             return *this;
@@ -57,16 +46,14 @@ class ad_selector {
             chained_selector::chain_function( req, imp, std::forward<HeadArg>(head), funcs...);
         } 
 
-        template<typename CampaignId>
-        auto  authorize(CampaignId && campaign_id) {
-            return banker.authorize(bidder_caches.budget_cache, campaign_id);
+        template<typename BudgetCache , typename CampaignId>
+        auto  authorize(BudgetCache & cache , CampaignId && campaign_id) {
+            return banker.authorize(cache, std::forward<CampaignId>(campaign_id));
         }
         
-    private:   
-        const BidderCaches &bidder_caches;
-        std::vector<Ad> retrieved_cached_ads;
+    private:
         ad_selection_algo selection_algo;
-        vanilla::core::Banker<vanilla::BudgetManager> banker;
+        vanilla::core::Banker<BudgetManager> banker;
 };
 
 }
