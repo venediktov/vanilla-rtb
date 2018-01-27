@@ -34,7 +34,7 @@
 #include "ad_selector.hpp"
 #include "decision_router.hpp"
 #include "rtb/client/empty_key_value_client.hpp"
-#include "examples/multiexchange/user_info.hpp"
+#include "rtb/core/user_info.hpp"
 #include "examples/campaign/campaign_cache.hpp"
 #include "examples/campaign/config.hpp"
 

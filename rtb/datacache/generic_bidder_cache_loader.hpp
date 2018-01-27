@@ -26,13 +26,13 @@
 
 namespace vanilla {
 
-
     template<typename ...Entities>
     struct GenericBidderCacheLoader;
 
     template<typename Entity, typename ...Entities>
     struct GenericBidderCacheLoader<Entity, Entities ...> : GenericBidderCacheLoader<Entities ...> {
         using GenericBidderCacheLoader<Entities...>::retrieve;
+        using GenericBidderCacheLoader<Entities...>::get;
 
         template<typename T, typename... Keys>
         using retrieve_type = decltype(std::declval<Entity>().retrieve(std::declval<T&>(), std::declval<Keys>()...)) ;
@@ -47,14 +47,20 @@ namespace vanilla {
 
         template<typename T, typename... Keys>
         bool retrieve(T & t, Keys&& ... keys) {
-            auto tuple = std::make_tuple(std::forward<Keys>(keys)...);
-            return  this->retrieve(t, tuple, std::make_index_sequence<std::tuple_size<decltype(tuple)>::value>());
+            return  this->retrieve(t, std::make_tuple(std::forward<Keys>(keys)...),
+                                      std::make_index_sequence<sizeof...(keys)>()
+            );
         }
 
         template<typename T, typename Tuple, std::size_t... Idx>
         decltype(std::declval<Entity>().retrieve(std::declval<T&>(),std::get<Idx>(std::declval<Tuple>())...), bool())
         retrieve(T & t, Tuple&& tuple, std::index_sequence<Idx...>, Entity* = 0) {
             return  entity.template retrieve(t, std::get<Idx>(std::forward<Tuple>(tuple))...);
+        }
+
+        template<typename EntityT>
+        Entity& get(typename std::enable_if<std::is_same<Entity, typename std::decay<EntityT>::type>::value>::type* = 0) {
+            return entity;
         }
 
     private:
@@ -64,7 +70,6 @@ namespace vanilla {
     template<typename Entity>
     struct GenericBidderCacheLoader<Entity> {
 
-
         template<typename Config>
         GenericBidderCacheLoader(const Config &config): entity(config)
         {}
@@ -73,15 +78,21 @@ namespace vanilla {
         }
 
         template<typename T, typename... Keys>
-        bool retrieve(T & t, Keys&& ... keys) {
-            auto tuple = std::make_tuple(std::forward<Keys>(keys)...);
-            return  this->retrieve(t, tuple, std::make_index_sequence<std::tuple_size<decltype(tuple)>::value>());
+        bool retrieve(T & t, Keys&&... keys) {
+            return  this->retrieve(t, std::make_tuple(std::forward<Keys>(keys)...),
+                                      std::make_index_sequence<sizeof...(keys)>()
+            );
         }
 
         template<typename T, typename Tuple, std::size_t... Idx>
         decltype(std::declval<Entity>().retrieve(std::declval<T&>(),std::get<Idx>(std::declval<Tuple>())...), bool())
         retrieve(T & t, Tuple&& tuple, std::index_sequence<Idx...>, Entity* = 0) {
             return  entity.template retrieve(t, std::get<Idx>(std::forward<Tuple>(tuple))...);
+        }
+
+        template<typename EntityT>
+        Entity& get(typename std::enable_if<std::is_same<Entity, typename std::decay<EntityT>::type>::value>::type* = 0) {
+            return entity;
         }
 
     private:

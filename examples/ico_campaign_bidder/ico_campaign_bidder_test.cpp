@@ -1,6 +1,5 @@
 #include <vector>
 #include <random>
-#include <utility>
 #include <boost/log/trivial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -46,7 +45,7 @@ int main(int argc, char *argv[]) {
     using BidRequest = DSLT::deserialized_type;
     using BidResponse = DSLT::serialized_type;
     using BidderConfig = vanilla::config::config<ico_bidder_config_data>;
-    using CacheLoader  =  vanilla::GenericBidderCacheLoader<RefererEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>>; //, CampaignCache<BidderConfig>>;
+    using CacheLoader  =  vanilla::GenericBidderCacheLoader<RefererEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>, CampaignCache<BidderConfig>>;
     using Selector = vanilla::ad_selector<vanilla::BudgetManager>;
 
     BidderConfig config([](ico_bidder_config_data &d, boost::program_options::options_description &desc){
@@ -111,20 +110,20 @@ int main(int argc, char *argv[]) {
         return boost::optional<decltype(ico_campains)>(ico_campains);
     };
 
-
-    auto retrieve_campaign_ads_f = [&cacheLoader](boost::optional<std::vector<ICOCampaign>> campaigns, auto && req, auto && imp)  {
+    vanilla::core::Banker<BudgetManager> banker;
+    auto retrieve_campaign_ads_f = [&](boost::optional<std::vector<ICOCampaign>> campaigns, auto && req, auto && imp)  {
         std::vector<Ad> retrieved_cached_ads;
         for (auto &campaign : *campaigns) {
             if (!cacheLoader.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                 continue;
             }
-//            auto budget_bid = selector.authorize(cacheLoader.get_entity<CampaignCache<BidderConfig>>(), campaign.campaign_id);
-//            std::transform(std::begin(retrieved_cached_ads),
-//                           std::end(retrieved_cached_ads),
-//                           std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
-//                        ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
-//                        return ad;
-//                    });
+            auto budget_bid = banker.authorize(cacheLoader.get<CampaignCache<BidderConfig>>(), campaign.campaign_id);
+            std::transform(std::begin(retrieved_cached_ads),
+                           std::end(retrieved_cached_ads),
+                           std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
+                        ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
+                        return ad;
+                    });
         }
         if ( retrieved_cached_ads.empty() ) {
             return boost::optional<decltype(retrieved_cached_ads)>();
@@ -142,13 +141,11 @@ int main(int argc, char *argv[]) {
         .auction_async([&](const BidRequest &request) {
             thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector()));
             return bidder.bid(request,
-                              std::make_tuple(
-                                  request.site.get().ref,
-                                  retrieve_referer_f,
-                                  retrieve_ico_campaign_f,
-                                  retrieve_campaign_ads_f
-                              ),
-                              std::make_index_sequence<4>{}
+                              //chained matchers
+                              request.site.get().ref,
+                              retrieve_referer_f,
+                              retrieve_ico_campaign_f,
+                              retrieve_campaign_ads_f
             );
         });
     

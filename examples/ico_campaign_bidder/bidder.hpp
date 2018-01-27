@@ -14,7 +14,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include "examples/multiexchange/user_info.hpp"
+#include "rtb/core/user_info.hpp"
 
 namespace vanilla {
 
@@ -48,6 +48,12 @@ namespace vanilla {
                 buildImpResponse(request, imp, std::get<Idx>(std::forward<Tuple>(tuple))...);
             }
             return response;
+        }
+        template <typename Request , typename ...Keys>
+        const BidResponse& bid(const Request &vanilla_request, Keys&&... keys) {
+            return  this->bid(vanilla_request, std::make_tuple(std::forward<Keys>(keys)...),
+                                               std::make_index_sequence<sizeof...(keys)>()
+            );
         }
     private:
 

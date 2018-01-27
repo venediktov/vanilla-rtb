@@ -12,7 +12,7 @@
 #include <memory>
 #include <iostream>
 #include "ad_selector.hpp"
-#include "examples/multiexchange/user_info.hpp"
+#include "rtb/core/user_info.hpp"
 
 namespace vanilla {
 
