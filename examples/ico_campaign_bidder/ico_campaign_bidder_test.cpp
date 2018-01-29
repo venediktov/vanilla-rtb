@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     using BidResponse = DSLT::serialized_type;
     using BidderConfig = vanilla::config::config<ico_bidder_config_data>;
     using CacheLoader  =  vanilla::GenericBidderCacheLoader<RefererEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>, CampaignCache<BidderConfig>>;
-    using Selector = vanilla::ad_selector<vanilla::BudgetManager>;
+    using Selector = vanilla::ad_selector<vanilla::BudgetManager, Ad>;
 
     BidderConfig config([](ico_bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()

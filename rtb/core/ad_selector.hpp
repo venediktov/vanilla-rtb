@@ -50,24 +50,23 @@ static auto chain_function(BidRequest&& req, Impression&& imp, Arg&& arg, Func t
 }
 };
 
-template<typename BudgetManager>
+template<typename BudgetManager, typename Ad>
 class ad_selector {
     public:
-//        using AdPtr = std::shared_ptr<Ad>;
-        using ad_selection_algo = std::function<Ad(const std::vector<Ad>&)>;
-        using self_type = ad_selector<BudgetManager>;
+        using ad_selection_func = std::function<std::unique_ptr<Ad> (const std::vector<Ad>&)>;
+        using self_type = ad_selector<BudgetManager, Ad>;
 
-//        self_type& with_selection_algo(const ad_selection_algo &algo) {
-//            selection_algo = algo;
-//            return *this;
-//        }
+        self_type& with_selection_algo(const ad_selection_func &algo) {
+            selection_algo = algo;
+            return *this;
+        }
 
         template<typename BidRequest, typename Impression, typename HeadArg , typename... Funcs>
-        auto select(BidRequest&& req, Impression&& imp, HeadArg&& head , Funcs... funcs) {
+        auto select(BidRequest&& req, Impression&& imp, HeadArg&& head, Funcs... funcs) {
             auto ads = chained_selector::chain_function( std::forward<BidRequest>(req), std::forward<Impression>(imp), std::forward<HeadArg>(head), funcs...);
-//            if(selection_alg) {
-//                return selection_alg(ads);
-//            }
+            if(selection_algo) {
+                return selection_algo(ads);
+            }
             return algorithm::calculate_max_bid(ads);
         }
 
@@ -77,7 +76,7 @@ class ad_selector {
         }
         
     private:
-//        ad_selection_algo selection_algo;
+        ad_selection_func selection_algo;
         vanilla::core::Banker<BudgetManager> banker;
 };
 
