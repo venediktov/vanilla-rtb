@@ -22,44 +22,54 @@
 
 #include "algos.hpp"
 #include "banker.hpp"
+#include "tagged_tuple.hpp"
+#include "common/type_algo.hpp"
+#include "core/algos.hpp"
 #include <memory>
+#include <type_traits>
 
 
 namespace vanilla {
 
 struct chained_selector {
-template<typename T, typename Arg, typename Func , typename... Funcs> 
-static typename std::enable_if< (sizeof...(Funcs) > 0)>::type
-chain_function(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp, Arg&& arg, Func head, Funcs... tail) {
-    auto next_arg = head(std::forward<Arg>(arg), req, imp);
+template<typename BidRequest, typename Impression, typename Arg, typename Func , typename... Funcs>
+static typename std::enable_if< (sizeof...(Funcs) > 0), typename terminal_function<Func,Funcs...>::template return_type<Arg,BidRequest,Impression> >::type
+chain_function(BidRequest&& req, Impression&& imp, Arg&& arg, Func head, Funcs... tail) {
+    //using return_type = typename vanilla::nth_function<sizeof...(Funcs)-1,Funcs...>::template return_type<Arg,BidRequest<T>,Impression<T>>::type;
+    using return_type = typename terminal_function<Func,Funcs...>::template return_type<Arg,BidRequest,Impression>;
+    auto next_arg = head(std::forward<Arg>(arg), std::forward<decltype(req)>(req), std::forward<decltype(imp)>(imp));
     if ( next_arg ) {
-        chain_function(req, imp, next_arg, tail...);
+        return chain_function(std::forward<BidRequest>(req), std::forward<Impression>(imp), next_arg, tail...);
     }
+    return return_type();
 }
 
-template<typename T, typename Arg, typename Func>
-static void chain_function(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp, Arg&& arg, Func terminal_func) {
-    terminal_func(std::forward<Arg>(arg), req, imp);
+template<typename BidRequest, typename Impression, typename Arg, typename Func>
+static auto chain_function(BidRequest&& req, Impression&& imp, Arg&& arg, Func terminal_func) {
+    return terminal_func(std::forward<Arg>(arg), std::forward<BidRequest>(req), std::forward<Impression>(imp));
 }
 };
 
 template<typename BudgetManager>
 class ad_selector {
     public:
-        using AdPtr = std::shared_ptr<Ad>;
-        using ad_selection_algo = std::function<AdPtr(const std::vector<Ad>&)>;
+//        using AdPtr = std::shared_ptr<Ad>;
+        using ad_selection_algo = std::function<Ad(const std::vector<Ad>&)>;
         using self_type = ad_selector<BudgetManager>;
 
-        self_type& with_selection_algo(const ad_selection_algo &algo) {
-            selection_algo = algo;
-            return *this;
-        }
+//        self_type& with_selection_algo(const ad_selection_algo &algo) {
+//            selection_algo = algo;
+//            return *this;
+//        }
 
-        template<typename T, typename HeadArg , typename... Funcs>
-        AdPtr select(const openrtb::BidRequest<T> &req, const openrtb::Impression<T> &imp, HeadArg&& head , Funcs... funcs) {
-            AdPtr result;
-            chained_selector::chain_function( req, imp, std::forward<HeadArg>(head), funcs...);
-        } 
+        template<typename BidRequest, typename Impression, typename HeadArg , typename... Funcs>
+        auto select(BidRequest&& req, Impression&& imp, HeadArg&& head , Funcs... funcs) {
+            auto ads = chained_selector::chain_function( std::forward<BidRequest>(req), std::forward<Impression>(imp), std::forward<HeadArg>(head), funcs...);
+//            if(selection_alg) {
+//                return selection_alg(ads);
+//            }
+            return algorithm::calculate_max_bid(ads);
+        }
 
         template<typename BudgetCache , typename CampaignId>
         auto  authorize(BudgetCache & cache , CampaignId && campaign_id) {
@@ -67,7 +77,7 @@ class ad_selector {
         }
         
     private:
-        ad_selection_algo selection_algo;
+//        ad_selection_algo selection_algo;
         vanilla::core::Banker<BudgetManager> banker;
 };
 

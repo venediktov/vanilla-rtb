@@ -78,8 +78,8 @@ namespace vanilla {
             }
         }
 
-        template<typename Impression>
-        void addBid(const BidRequest& request, const Impression& imp, const std::shared_ptr<Ad> &ad) {
+        template<typename Impression, typename Ad>
+        void addBid(const BidRequest& request, const Impression& imp, Ad && ad) {
             if (response.seatbid.size() == 0) {
                 response.seatbid.emplace_back();
             }
@@ -88,11 +88,11 @@ namespace vanilla {
             bid.id = boost::uuids::to_string(bidid); // TODO check documentation
             // Is it the same as response.bidid?
             bid.impid = imp.id;
-            bid.price = ad->auth_bid_micros ? *ad->auth_bid_micros / 1000000.0 : ad->max_bid_micros / 1000000.0 ; // Not micros?
-            bid.w = ad->width;
-            bid.h = ad->height;
-            bid.adm = ad->code;
-            bid.adid = std::to_string(ad->ad_id); //for T = std::string , for T = string_view must use thread_local storage
+            bid.price = ad.auth_bid_micros ? *ad.auth_bid_micros / 1000000.0 : ad.max_bid_micros / 1000000.0 ; // Not micros?
+            bid.w = ad.width;
+            bid.h = ad.height;
+            bid.adm = ad.code;
+            bid.adid = std::to_string(ad.ad_id); //for T = std::string , for T = string_view must use thread_local storage
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
@@ -103,7 +103,7 @@ namespace vanilla {
                 response.bidid = boost::uuids::to_string(bidid);
 
                 addCurrency(request, imp);
-                addBid(request, imp, ad);
+                addBid(request, imp, *ad);
             }
         }
         Selector selector;

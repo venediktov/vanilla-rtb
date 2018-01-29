@@ -125,10 +125,7 @@ int main(int argc, char *argv[]) {
                         return ad;
                     });
         }
-        if ( retrieved_cached_ads.empty() ) {
-            return boost::optional<decltype(retrieved_cached_ads)>();
-        }
-        return boost::optional<decltype(retrieved_cached_ads)>(retrieved_cached_ads);
+        return retrieved_cached_ads;
     };
 
     bid_handler    

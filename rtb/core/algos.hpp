@@ -34,7 +34,7 @@ namespace vanilla { namespace algorithm {
                     return first.auth_bid_micros && second.auth_bid_micros ?
                            first.auth_bid_micros <second.auth_bid_micros : first.max_bid_micros < second.max_bid_micros;
                 });
-            return std::make_shared<Ad>(*result);
+            return std::make_shared<Ad>(*result); //TODO: revise need alias without ownership or boost::optional
         }
 
 }}
