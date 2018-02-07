@@ -15,7 +15,7 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "core/tagged_tuple.hpp"
-#include "config.hpp"
+#include "../bidder/config.hpp"
 
 struct Geo {
     uint32_t geo_id;

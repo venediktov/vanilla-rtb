@@ -7,7 +7,7 @@
 #ifndef ICO_CAMPAIGN_HPP
 #define ICO_CAMPAIGN_HPP
 
-#include "config.hpp"
+#include "examples/bidder_experimental/config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"
 #include <boost/multi_index_container.hpp>

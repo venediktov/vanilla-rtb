@@ -23,9 +23,9 @@
 #include "CRUD/handlers/crud_dispatcher.hpp"
 
 
-#include "ico_campaign.hpp"
-#include "referer.hpp"
-#include "examples/bidder/ad.hpp"
+#include "examples/matchers/ico_campaign.hpp"
+#include "examples/matchers/referer.hpp"
+#include "examples/matchers/ad.hpp"
 #include "examples/campaign/campaign_cache.hpp"
 
 #include "rtb/core/bidder.hpp"
@@ -50,18 +50,18 @@ int main(int argc, char *argv[]) {
 
     BidderConfig config([](ico_bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
-            ("ico_bidder.log", boost::program_options::value<std::string>(&d.log_file_name), "bidder_test log file name log")
+            ("ico-bidder.log", boost::program_options::value<std::string>(&d.log_file_name), "bidder_test log file name log")
             ("ico_bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ads"), "ads_source file name")
             ("ico_bidder.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("bidder.referer_source", boost::program_options::value<std::string>(&d.referer_source)->default_value("data/referer"), "geo_source file name")
-            ("bidder.referer_ipc_name", boost::program_options::value<std::string>(&d.referer_ipc_name)->default_value("vanilla-referer-ipc"), "referer ipc name")
-            ("ico_bidder.port", boost::program_options::value<short>(&d.port)->required(), "ico_bidder port")
-            ("ico_bidder.host", boost::program_options::value<std::string>(&d.host)->default_value("0.0.0.0"), "ico_bidder host")
-            ("ico_bidder.root", boost::program_options::value<std::string>(&d.root)->default_value("."), "ico_bidder root")
-            ("ico_bidder.timeout", boost::program_options::value<int>(&d.timeout), "ico_bidder timeout")
-            ("ico_bidder.concurrency", boost::program_options::value<unsigned int>(&d.concurrency)->default_value(0), "ico_bidder concurrency, if 0 is set std::thread::hardware_concurrency()")
-            ("ico_bidder.ico_campaign_ipc_name", boost::program_options::value<std::string>(&d.ico_campaign_ipc_name)->default_value("vanilla-ico-campaign-ipc"), "ico campaign ipc name")
-            ("ico_bidder.ico_campaign_source", boost::program_options::value<std::string>(&d.ico_campaign_source)->default_value("data/ico_campaign"), "ico_campaign_source file name")
+            ("ico-bidder.referer_source", boost::program_options::value<std::string>(&d.referer_source)->default_value("data/referer"), "referer_source file name")
+            ("ico-bidder.referer_ipc_name", boost::program_options::value<std::string>(&d.referer_ipc_name)->default_value("vanilla-referer-ipc"), "referer ipc name")
+            ("ico-bidder.port", boost::program_options::value<short>(&d.port)->required(), "ico_bidder port")
+            ("ico-bidder.host", boost::program_options::value<std::string>(&d.host)->default_value("0.0.0.0"), "ico_bidder host")
+            ("ico-bidder.root", boost::program_options::value<std::string>(&d.root)->default_value("."), "ico_bidder root")
+            ("ico-bidder.timeout", boost::program_options::value<int>(&d.timeout), "ico_bidder timeout")
+            ("ico-bidder.concurrency", boost::program_options::value<unsigned int>(&d.concurrency)->default_value(0), "ico_bidder concurrency, if 0 is set std::thread::hardware_concurrency()")
+            ("ico-bidder.ico_campaign_ipc_name", boost::program_options::value<std::string>(&d.ico_campaign_ipc_name)->default_value("vanilla-ico-campaign-ipc"), "ico campaign ipc name")
+            ("ico-bidder.ico_campaign_source", boost::program_options::value<std::string>(&d.ico_campaign_source)->default_value("data/ico_campaign"), "ico_campaign_source file name")
             ("campaign-manager.ipc_name", boost::program_options::value<std::string>(&d.ipc_name),"campaign_budget IPC name")
             ("campaign-manager.budget_source", boost::program_options::value<std::string>(&d.campaign_budget_source)->default_value("data/campaign_budget"),"campaign_budget source file name")
         ;

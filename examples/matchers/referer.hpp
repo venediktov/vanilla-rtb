@@ -20,7 +20,7 @@
 #include <boost/multi_index/composite_key.hpp>
 #include "rtb/datacache/any_str_ops.hpp"
 #include "core/tagged_tuple.hpp"
-#include "config.hpp"
+#include "../bidder_experimental/config.hpp"
 
 struct Referer {
     std::string url;

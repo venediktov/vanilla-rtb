@@ -11,11 +11,11 @@
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include "geo_campaign.hpp"
+#include "examples/matchers/geo_campaign.hpp"
 #include "campaign_data.hpp"
-#include "ad.hpp"
-#include "geo_ad.hpp"
-#include "geo.hpp"
+#include "examples/matchers/ad.hpp"
+#include "examples/matchers/geo_ad.hpp"
+#include "examples/matchers/geo.hpp"
 #include "examples/campaign/serialization.hpp"
 
 //Non-Intrusive boost serialization implementation

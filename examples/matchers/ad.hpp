@@ -16,7 +16,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include "rtb/core/tagged_tuple.hpp"
-#include "config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"
 #include "examples/datacache/ad_entity.hpp"
@@ -30,6 +29,7 @@ namespace boost {
 #endif
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include "../bidder/config.hpp"
 
 struct Ad {
     uint64_t ad_id;
