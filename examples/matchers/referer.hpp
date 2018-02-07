@@ -19,6 +19,7 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/composite_key.hpp>
 #include "rtb/datacache/any_str_ops.hpp"
+#include "rtb/common/uri_grammar.hpp"
 #include "core/tagged_tuple.hpp"
 #include "../bidder_experimental/config.hpp"
 
@@ -149,7 +150,13 @@ class RefererEntity {
         }
 
         bool retrieve(Referer &ref, const std::string &url) {
-            return  cache.template retrieve<UrlTag>(ref, url);
+            boost::network::uri::detail::uri_parts<std::string::const_iterator> parts;
+            boost::network::uri::detail::parse(url.cbegin(), url.cend(), parts);
+            if (parts.hier_part.host) {
+                std::string host(parts.hier_part.host->begin(), parts.hier_part.host->end());
+                return cache.template retrieve<UrlTag>(ref, host);
+            }
+            return false;
         }
 
     private:
