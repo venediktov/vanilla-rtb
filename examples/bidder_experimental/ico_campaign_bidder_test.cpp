@@ -51,9 +51,9 @@ int main(int argc, char *argv[]) {
     BidderConfig config([](ico_bidder_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
             ("ico-bidder.log", boost::program_options::value<std::string>(&d.log_file_name), "bidder_test log file name log")
-            ("ico_bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ads"), "ads_source file name")
+            ("ico_bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ico_ads"), "ads_source file name")
             ("ico_bidder.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("ico-bidder.referer_source", boost::program_options::value<std::string>(&d.referer_source)->default_value("data/referer"), "referer_source file name")
+            ("ico-bidder.referer_source", boost::program_options::value<std::string>(&d.referer_source)->default_value("data/ico_referers"), "referer_source file name")
             ("ico-bidder.referer_ipc_name", boost::program_options::value<std::string>(&d.referer_ipc_name)->default_value("vanilla-referer-ipc"), "referer ipc name")
             ("ico-bidder.port", boost::program_options::value<short>(&d.port)->required(), "ico_bidder port")
             ("ico-bidder.host", boost::program_options::value<std::string>(&d.host)->default_value("0.0.0.0"), "ico_bidder host")

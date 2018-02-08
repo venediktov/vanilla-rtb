@@ -326,7 +326,9 @@ extractors<boost::optional<openrtb::Site<T>>>::extract( rapidjson::Value & value
     openrtb::Site<T> site;
     auto m    = value.GetObject();
     auto &id = m["id"];
+    auto &ref = m["ref"];
     site.id = decltype(site.id)(id.GetString(), id.GetStringLength());
+    site.ref = decltype(site.ref)(ref.GetString(), ref.GetStringLength());
     return boost::make_optional(site);
 }
 

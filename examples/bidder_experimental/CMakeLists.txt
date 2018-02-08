@@ -32,11 +32,10 @@ install(TARGETS ico_campaign_bidder_test
   LIBRARY DESTINATION lib
 )
 
-#TODO
-#add_custom_target(
-#    generator
-#    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/generator && python ico.py && python campaign_budget.py ico > ../data/ico_campaign_budget
-#)
+add_custom_target(
+    generator_experimental
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/../bidder/generator && python ico.py
+)
 
-#add_dependencies(ico_campaign_bidder_test generator)
+add_dependencies(ico_campaign_bidder_test generator_experimental)
 
