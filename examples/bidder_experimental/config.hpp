@@ -9,8 +9,8 @@ struct ico_bidder_config_data {
     std::string log_file_name;
     std::string ads_source;
     std::string ads_ipc_name;
-    std::string referer_source;
-    std::string referer_ipc_name;
+    std::string domain_source;
+    std::string domain_ipc_name;
     std::string ico_campaign_ipc_name;
     std::string ico_campaign_source;
     std::string campaign_budget_source;

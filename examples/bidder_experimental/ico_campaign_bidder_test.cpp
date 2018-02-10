@@ -24,7 +24,7 @@
 
 
 #include "examples/matchers/ico_campaign.hpp"
-#include "examples/matchers/referer.hpp"
+#include "examples/matchers/domain.hpp"
 #include "examples/matchers/ad.hpp"
 #include "examples/campaign/campaign_cache.hpp"
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     using BidRequest = DSLT::deserialized_type;
     using BidResponse = DSLT::serialized_type;
     using BidderConfig = vanilla::config::config<ico_bidder_config_data>;
-    using CacheLoader  =  vanilla::GenericBidderCacheLoader<RefererEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>, CampaignCache<BidderConfig>>;
+    using CacheLoader  =  vanilla::GenericBidderCacheLoader<DomainEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>, CampaignCache<BidderConfig>>;
     using Selector = vanilla::ad_selector<vanilla::BudgetManager, Ad>;
 
     BidderConfig config([](ico_bidder_config_data &d, boost::program_options::options_description &desc){
@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
             ("ico-bidder.log", boost::program_options::value<std::string>(&d.log_file_name), "bidder_test log file name log")
             ("ico_bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ico_ads"), "ads_source file name")
             ("ico_bidder.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("ico-bidder.referer_source", boost::program_options::value<std::string>(&d.referer_source)->default_value("data/ico_referers"), "referer_source file name")
-            ("ico-bidder.referer_ipc_name", boost::program_options::value<std::string>(&d.referer_ipc_name)->default_value("vanilla-referer-ipc"), "referer ipc name")
+            ("ico-bidder.domain_source", boost::program_options::value<std::string>(&d.domain_source)->default_value("data/ico_domains"), "domain_source file name")
+            ("ico-bidder.domain_ipc_name", boost::program_options::value<std::string>(&d.domain_ipc_name)->default_value("vanilla-domain-ipc"), "domain ipc name")
             ("ico-bidder.port", boost::program_options::value<short>(&d.port)->required(), "ico_bidder port")
             ("ico-bidder.host", boost::program_options::value<std::string>(&d.host)->default_value("0.0.0.0"), "ico_bidder host")
             ("ico-bidder.root", boost::program_options::value<std::string>(&d.root)->default_value("."), "ico_bidder root")
@@ -94,17 +94,17 @@ int main(int argc, char *argv[]) {
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
 
     //Return from each lambda becomes input for next lambda in the tuple of functions
-    auto retrieve_referer_f = [&cacheLoader](const std::string& ref, auto&& ...) {
-        Referer referer;
-        if(!cacheLoader.retrieve(referer,ref)) {
+    auto retrieve_domain_f = [&cacheLoader](const std::string& dom, auto&& ...) {
+        Domain domain;
+        if(!cacheLoader.retrieve(domain,dom)) {
             return boost::optional<uint32_t>();
         }
-        return boost::optional<uint32_t>(referer.ref_id);
+        return boost::optional<uint32_t>(domain.dom_id);
     };
 
-    auto retrieve_ico_campaign_f = [&cacheLoader](boost::optional<uint32_t> ref_id, auto&& ...)  {
+    auto retrieve_ico_campaign_f = [&cacheLoader](boost::optional<uint32_t> dom_id, auto&& ...)  {
         std::vector<ICOCampaign> ico_campains;
-        if (!cacheLoader.retrieve(ico_campains,*ref_id)) {
+        if (!cacheLoader.retrieve(ico_campains,*dom_id)) {
             return boost::optional<decltype(ico_campains)>();
         }
         return boost::optional<decltype(ico_campains)>(ico_campains);
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
             return bidder.bid(request,
                               //chained matchers
                               request.site.get().ref,
-                              retrieve_referer_f,
+                              retrieve_domain_f,
                               retrieve_ico_campaign_f,
                               retrieve_campaign_ads_f
             );

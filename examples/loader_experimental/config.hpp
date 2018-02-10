@@ -5,8 +5,8 @@
 
 struct ico_cache_loader_config_data {
     std::string log_file_name;
-    std::string ico_ref_source;
-    std::string ico_ref_ipc_name;
+    std::string domain_source;
+    std::string domain_ipc_name;
     std::string ico_campaign_source;
     std::string ico_campaign_ipc_name;
     std::string ads_source;

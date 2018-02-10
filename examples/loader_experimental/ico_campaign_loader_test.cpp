@@ -1,5 +1,4 @@
 
-// Work in progress ....
 
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
@@ -7,17 +6,13 @@
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "rtb/config/config.hpp"
 #include "datacache/ad_entity.hpp"
-#include "datacache/geo_entity.hpp"
 #include "datacache/city_country_entity.hpp"
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
-#include "rtb/common/perf_timer.hpp"
 #include "bidder/bidder_caches.hpp"
 #include "bidder/serialization.hpp"
 #include "config.hpp" 
 
-
-#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 
@@ -32,10 +27,10 @@ int main(int argc, char *argv[]) {
             ("ico-cache-loader.host", "cache_loader_test Host")
             ("ico-cache-loader.port", "cache_loader_test Port")
             ("ico-cache-loader.root", "cache_loader_test Root")
-            ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("bidder/data/ads"), "ads_source file name")
-            ("datacache.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("datacache.ico_ref_source", boost::program_options::value<std::string>(&d.ico_ref_source)->default_value("bidder/data/ico_referer"), "ico referer source file name")
-            ("datacache.ico_ref_ipc_name", boost::program_options::value<std::string>(&d.ico_ref_ipc_name)->default_value("vanilla-ico-ref-ipc"), "ico referer ipc name")        
+            ("ico_bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ico_ads"), "ads_source file name")
+            ("ico-bidder.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
+            ("ico-bidder.domain_source", boost::program_options::value<std::string>(&d.domain_source)->default_value("data/ico_domains"), "domain_source file name")
+            ("ico-bidder.domain_ipc_name", boost::program_options::value<std::string>(&d.domain_ipc_name)->default_value("vanilla-domain-ipc"), "domain ipc name")
             ("ico-bidder.ico_campaign_ipc_name", boost::program_options::value<std::string>(&d.ico_campaign_ipc_name)->default_value("vanilla-ico-campaign-ipc"), "ico campaign ipc name")
             ("ico-bidder.ico_campaign_source", boost::program_options::value<std::string>(&d.ico_campaign_source)->default_value("data/ico_campaign"), "ico_campaign_source file name")
             ("campaign-manager.ipc_name", boost::program_options::value<std::string>(&d.ipc_name),"campaign_budget IPC name")
@@ -70,7 +65,7 @@ int main(int argc, char *argv[]) {
     restful_dispatcher_t dispatcher(config.get("ico-cache-loader.root")) ;
     dispatcher.crud_match(boost::regex("/ico_cache_loader/(\\w*)"))
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "received cache update event url=" << match[0];
+              LOG(info) << "received cache update event name=" << match[0];
               try {
                   //caches[match[1]]();
               } catch (std::exception const& e) {

@@ -19,26 +19,26 @@
 
 //This struct gets stored in the cache
 struct ICOCampaign {
-    uint32_t ref_id;
+    uint32_t domain_id;
     uint32_t campaign_id;
      
-    struct ref_id_tag{};
+    struct domain_id_tag{};
 
     ICOCampaign() :
-        ref_id{} , campaign_id{}
+        domain_id{} , campaign_id{}
     {}
      
     template<typename Alloc> 
     ICOCampaign(const Alloc &) :
-        ref_id{} , campaign_id{}
+        domain_id{} , campaign_id{}
     {}
 
     ICOCampaign(uint32_t ref_id, uint32_t campaign_id) :
-        ref_id{ref_id} , campaign_id{campaign_id}
+        domain_id{ref_id} , campaign_id{campaign_id}
     {}
 
     friend std::ostream &operator<<(std::ostream & os, const  ICOCampaign & value)  {
-        os << "{" << value.ref_id << "|" << value.campaign_id << "}" ;
+        os << "{" << value.domain_id << "|" << value.campaign_id << "}" ;
         return os;
     }
     friend std::ostream &operator<<(std::ostream & os, const  std::vector<ICOCampaign> & value)  {
@@ -55,7 +55,7 @@ struct ICOCampaign {
         if(fields.size() < 2) {
             return is;
         }
-        data.ref_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
+        data.domain_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
         data.campaign_id = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
         return is;
     }
@@ -63,17 +63,17 @@ struct ICOCampaign {
 
     template<typename Key>
     void store(Key && key, const ICOCampaign  & data)  {
-        ref_id = key.template get<ref_id_tag>();
+        domain_id = key.template get<domain_id_tag>();
         campaign_id =  data.campaign_id;
     }
 
     void retrieve(ICOCampaign  & data) const {
-        data.ref_id=ref_id;
+        data.domain_id=domain_id;
         data.campaign_id=campaign_id;
     }
 
     void operator()(ICOCampaign &entry) const {
-        entry.ref_id=ref_id;
+        entry.domain_id=domain_id;
         entry.campaign_id=campaign_id;
     }
 
@@ -88,10 +88,10 @@ boost::multi_index_container<
     ICOCampaign,
     boost::multi_index::indexed_by<
         boost::multi_index::ordered_unique<
-            boost::multi_index::tag<typename ICOCampaign::ref_id_tag>,
+            boost::multi_index::tag<typename ICOCampaign::domain_id_tag>,
             boost::multi_index::composite_key<
               ICOCampaign,
-              BOOST_MULTI_INDEX_MEMBER(ICOCampaign,uint32_t,ref_id),
+              BOOST_MULTI_INDEX_MEMBER(ICOCampaign,uint32_t,domain_id),
               BOOST_MULTI_INDEX_MEMBER(ICOCampaign,uint32_t,campaign_id)
             >
         >
@@ -106,8 +106,8 @@ template <typename Config=vanilla::config::config<ico_bidder_config_data>,
           typename Alloc = typename datacache::entity_cache<Memory, ipc::data::ico_campaign_container>::char_allocator >
 class ICOCampaignEntity {
         using Cache = datacache::entity_cache<Memory, ipc::data::ico_campaign_container> ;
-        using RefererTag = typename ICOCampaign::ref_id_tag;
-        using Keys = vanilla::tagged_tuple<RefererTag, uint32_t>;
+        using DomainTag = typename ICOCampaign::domain_id_tag;
+        using Keys = vanilla::tagged_tuple<DomainTag, uint32_t>;
     public:
         using ICOCampaignCollection = std::vector<ICOCampaign>;
         ICOCampaignEntity(const Config &config):
@@ -122,14 +122,14 @@ class ICOCampaignEntity {
             cache.clear();
             
             std::for_each(std::istream_iterator<ICOCampaign>(in), std::istream_iterator<ICOCampaign>(), [this](const ICOCampaign &data) {
-                if (!this->cache.insert(Keys{data.ref_id}, data).second) {
+                if (!this->cache.insert(Keys{data.domain_id}, data).second) {
                     LOG(debug) << "Failed to insert ico_campaign=" << data;
                 }
             });
         }
         
-        bool retrieve(ICOCampaignCollection &ico_campaigns, uint32_t ref_id) {
-            auto p = cache.template retrieve_raw<RefererTag>(ref_id);
+        bool retrieve(ICOCampaignCollection &ico_campaigns, uint32_t domain_id) {
+            auto p = cache.template retrieve_raw<DomainTag>(domain_id);
             auto is_found = p.first != p.second;
             ico_campaigns.reserve(500);
             while ( p.first != p.second ) {
