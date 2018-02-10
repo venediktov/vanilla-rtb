@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     restful_dispatcher_t dispatcher(config.get("ico-cache-loader.root")) ;
     dispatcher.crud_match(boost::regex("/ico_cache_loader/(\\w*)"))
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
-              LOG(info) << "received cache update event name=" << match[0];
+              LOG(info) << "received cache update event url=" << match[0];
               try {
                   //caches[match[1]]();
               } catch (std::exception const& e) {
