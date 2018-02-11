@@ -8,7 +8,6 @@
 #ifndef GEO_CAMPAIGN_HPP
 #define GEO_CAMPAIGN_HPP
 
-#include "config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"
 #if BOOST_VERSION <= 106000
@@ -21,6 +20,7 @@ namespace boost {
 #endif
 #include <boost/lexical_cast.hpp>
 #include <iterator>
+#include "../bidder/config.hpp"
 
 //This struct gets stored in the cache
 struct GeoCampaign {

@@ -9,7 +9,6 @@
 #ifndef GEO_AD_HPP
 #define GEO_AD_HPP
 
-#include "config.hpp"
 #include "rtb/common/split_string.hpp"
 #include "rtb/core/tagged_tuple.hpp"
 #include "rtb/datacache/entity_cache.hpp"
@@ -25,6 +24,7 @@ namespace boost {
 #include <boost/utility/string_view.hpp>
 #endif
 #include <boost/lexical_cast.hpp>
+#include "../bidder/config.hpp"
 
 /* 
  * Geo Targeting is implemented this way to test selection and reload on big amount of records

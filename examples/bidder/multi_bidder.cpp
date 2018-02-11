@@ -37,7 +37,7 @@
 #include <process.h>
 #endif
 #include "bidder.hpp"
-#include "examples/multiexchange/user_info.hpp"
+#include "rtb/core/user_info.hpp"
 
 #include "rtb/core/core.hpp"
 

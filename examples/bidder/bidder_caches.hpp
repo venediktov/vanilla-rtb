@@ -8,10 +8,10 @@
 #ifndef BIDDER_CACHES_HPP
 #define BIDDER_CACHES_HPP
 
-#include "ad.hpp"
-#include "geo_ad.hpp"
-#include "geo.hpp"
-#include "geo_campaign.hpp"
+#include "examples/matchers/ad.hpp"
+#include "examples/matchers/geo_ad.hpp"
+#include "examples/matchers/geo.hpp"
+#include "examples/matchers/geo_campaign.hpp"
 #include "rtb/core/openrtb.hpp"
 #include "rtb/common/perf_timer.hpp"
 #include "examples/campaign/campaign_cache.hpp"

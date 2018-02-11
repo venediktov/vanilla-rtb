@@ -20,7 +20,7 @@
 #include "rtb/messaging/communicator.hpp"
 #include "core/tagged_tuple.hpp"
 #include <boost/memory_order.hpp>
-#include "user_info.hpp"
+#include "rtb/core/user_info.hpp"
  
 
 #include <boost/asio/ip/address.hpp>
