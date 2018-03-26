@@ -11,10 +11,10 @@
 [5.1]: http://i.imgur.com/0o48UoR.png (github icon with padding)
 
 [1]: http://www.twitter.com/vanilla_rtb
-[2]: http://www.facebook.com/
+[2]: http://www.linkedin.com/company/vanillartb
 [3]: https://plus.google.com/+VladimirVenediktov
 [4]: http://forkbid.com
-[5]: http://www.github.com/carlsednaoui
+[5]: http://www.github.com/vanilla-rtb
 
 # vanilla-rtb
 
