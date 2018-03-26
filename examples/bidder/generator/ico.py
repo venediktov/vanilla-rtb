@@ -9,12 +9,12 @@ domain_list = ['www.coinbase.com', 'www.coindesk.com' , 'www.cointelegraph.com',
 ico_domains = []
 
 for n, ref in enumerate(domain_list):
-    ico_domains.append([n, ref])
+    ico_domains.append([ref, n])
 
 file = open("../data/ico_domains", "w")
 
-for n, ref in ico_domains:
-    file.write("%d\t%s\n" % (n, ref))
+for ref, n in ico_domains:
+    file.write("%s\t%d\n" % (ref,n))
 
 file.close()
 
@@ -32,7 +32,7 @@ max_bid = [1, 1000]
 code = """<script>alert(" ad %d!");</script>"""
 
 file = open("../data/ico_campaign", "w")
-for ref_id, domain in ico_domains:
+for domain, ref_id in ico_domains:
     max_targetings = random.randint(1, max_campaigns/10)
     start_pos = random.randint(1, max_campaigns-max_targetings)
     for i in range(start_pos, start_pos+max_targetings+1):

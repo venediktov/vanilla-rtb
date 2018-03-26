@@ -53,8 +53,8 @@ struct Domain {
         if(fields.size() < 2) {
             return is;
         }
-        domain.dom_id = atol(fields.at(0).c_str());
-        domain.name = fields.at(1);
+        domain.name = fields.at(0);
+        domain.dom_id = atol(fields.at(1).c_str());
         return is;
     }
 };

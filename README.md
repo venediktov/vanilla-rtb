@@ -9,13 +9,16 @@ What makes us different from other open-source RTB projects we have seen?
 Our stack is fairly small and easy to integrate with any cmake project. 
 As a model project please see [https://github.com/vanilla-rtb/rapid-bidder](https://github.com/vanilla-rtb/rapid-bidder)
 
+We provide extensions to vanilla-rtb including bindings to popular languages NodeJS/Go/Java/PHP/Python  
+and custom targetings and bidder executable generators [https://github.com/vanilla-rtb/extensions](https://github.com/vanilla-rtb/extensions)
+
 vanilla-rtb stack is completely decoupled by C++ templates and has minimum dependency on outside vendors.
 
 [vanilla-rtb ecosystem](../../wiki)
 
 [Multi-bidder-model-with-communicator-for-Win-notifications](../../wiki/Multi-bidder-model-with-communicator-for-Win-notifications)
 
-[best performance compared to other stacks -  50K QPS](../../wiki/QPS-test)
+[best performance compared to other stacks -  105K QPS](../../wiki/QPS-test)
 
 [runs on cloud with docker - see instructions](../../tree/master/docker/)
 
@@ -40,6 +43,7 @@ Structure :
       * [DSL/](../../tree/master/rtb/DSL) --  DSL formats for jsonv , boost::any and rapidjson
    * [examples/](../../tree/master/examples) -- root to our sandbox with examples
       * [bidder/](../../tree/master/examples/bidder) -- collection of application specific classes to support targeting
+      * [bidder_experimental/](../../tree/master/examples/bidder_experimental) -- bidder based on chained matchers model
       * [loader/](../../tree/master/examples/loader) -- collection of application specific classes to support campaign loading
       * [campaign/](../../tree/master/examples/campaign) -- add/modify/delete campaign API + UI ( work in progress ) 
       * [datacache/](../../tree/master/examples/datacache) -- IPC cache implementation based on rtb/datacache model 

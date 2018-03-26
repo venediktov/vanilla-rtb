@@ -1,9 +1,6 @@
 #include <vector>
 #include <random>
 #include <boost/log/trivial.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/uuid_generators.hpp>
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
@@ -77,7 +74,6 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
 
-    boost::uuids::random_generator uuid_generator{};
     CacheLoader cacheLoader(config);
 
     try {

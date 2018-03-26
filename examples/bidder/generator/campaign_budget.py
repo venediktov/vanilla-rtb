@@ -1,3 +1,4 @@
+from __future__ import print_function
 import random 
 import sys
 #import argparse
@@ -13,11 +14,12 @@ metrics = {
 
 for campaign_id in range(1, campaigns+1):
     campaign_budget = random.randint(budget[0], budget[1])
-    metric = random.choice(metrics.keys())
-    print """%(id)s\t%(budget)s\t%(spent)s\t%(metric)s\t%(limit)s""" % {
+    metric = random.choice(list(metrics)) #make it run on both python 2.x and 3.x
+    print("%(id)s\t%(budget)s\t%(spent)s\t%(metric)s\t%(limit)s" % {
        'id' : campaign_id,
        'budget' : campaign_budget,
        'spent': random.randint(0, campaign_budget),
        'metric' : metrics[metric]['id'],
        'limit' : random.randint(metrics[metric]['limit'][0], metrics[metric]['limit'][1])
-    }
+    })
+
