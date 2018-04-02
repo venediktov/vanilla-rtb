@@ -42,8 +42,9 @@ vanilla-rtb stack is completely decoupled by C++ templates and has minimum depen
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
 [![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
+[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 
-Recommended build environment: Linux or macOS, CMake >= 3.7.2, GCC >= 5.1, Boost >= 1.60
+Recommended build environment: Linux or macOS, CMake >= 3.8, GCC >= 7.0, Boost >= 1.64
 
 Structure :
 * [/](../../tree/master/) -- the root directory
