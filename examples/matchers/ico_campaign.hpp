@@ -22,6 +22,16 @@
 #include "rtb/common/split_string.hpp"
 #include "core/tagged_tuple.hpp"
 #include "../bidder_experimental/config.hpp"
+#include <iterator>
+
+#if BOOST_VERSION <= 106000
+#include <boost/utility/string_ref.hpp>
+namespace boost {
+    using string_view = string_ref;
+}
+#else
+#include <boost/utility/string_view.hpp>
+#endif
 
 #if __APPLE_CC__
 #if __cplusplus >= 201402L
@@ -70,8 +80,8 @@ struct ICOCampaign {
         std::vector<std::string_view> fields ;
         vanilla::common::split_string(fields, record, "\t");
 #else
-        std::vector<std::string> fields ;
-        boost::split(fields, record, boost::is_any_of("\t"), boost::token_compress_on);
+        std::vector<boost::string_view> fields ;
+        vanilla::common::split_string(fields, record, "\t");
 #endif
         if(fields.size() < 2) {
             return is;
