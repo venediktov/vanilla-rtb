@@ -4,24 +4,33 @@
 #include "CRUD/service/server.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "rtb/config/config.hpp"
-#include "datacache/ad_entity.hpp"
-#include "datacache/geo_entity.hpp"
-#include "datacache/city_country_entity.hpp"
 #include "datacache/entity_cache.hpp"
 #include "datacache/memory_types.hpp"
-#include "rtb/common/perf_timer.hpp"
-#include "bidder/bidder_caches.hpp"
-#include "bidder/serialization.hpp"
+
+#include "examples/datacache/city_country_entity.hpp"
+#include "examples/matchers/geo_campaign.hpp"
+#include "examples/matchers/geo.hpp"
+
+
+#include "examples/matchers/ico_campaign.hpp"
+#include "examples/matchers/domain.hpp"
+#include "examples/matchers/ad.hpp"
+#include "examples/campaign/campaign_cache.hpp"
+#include "rtb/datacache/generic_bidder_cache_loader.hpp"
 #include "config.hpp"
 
-
-#include "rtb/core/core.hpp"
 
 extern void init_framework_logging(const std::string &) ;
 
 
 int main(int argc, char *argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
+    using CacheLoadConfig    = vanilla::config::config<cache_loader_config_data> ;
+    using GeoEntityT         = GeoDataEntity<CacheLoadConfig> ;
+    using GeoCampaignEntityT = GeoCampaignEntity<CacheLoadConfig> ;
+    using AdEntityT          = AdDataEntity<CacheLoadConfig> ;
+    using BudgetEntityT      = vanilla::CampaignCache<CacheLoadConfig> ;
+    using CacheLoader        =  vanilla::GenericBidderCacheLoader<GeoEntityT, GeoCampaignEntityT, AdEntityT, BudgetEntityT> ;
     
     CacheLoadConfig config([](cache_loader_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -29,11 +38,11 @@ int main(int argc, char *argv[]) {
             ("cache-loader.host", "cache_loader_test Host")
             ("cache-loader.port", "cache_loader_test Port")
             ("cache-loader.root", "cache_loader_test Root")
-            ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("bidder/data/ads"), "ads_source file name")
+            ("datacache.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ads"), "ads_source file name")
             ("datacache.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("datacache.geo_ad_source", boost::program_options::value<std::string>(&d.geo_ad_source)->default_value("bidder/data/ad_geo"), "geo_ad_source file name")
-            ("datacache.geo_ad_ipc_name", boost::program_options::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")
-            ("datacache.geo_source", boost::program_options::value<std::string>(&d.geo_source)->default_value("bidder/data/geo"), "geo_source file name")
+            ("datacache.geo_capmaign_source", boost::program_options::value<std::string>(&d.geo_campaign_source)->default_value("data/geo_campaign"), "geo_ad_source file name")
+            ("datacache.geo_campaign_ipc_name", boost::program_options::value<std::string>(&d.geo_campaign_ipc_name)->default_value("vanilla-geo-campaign-ipc"), "geo campaign ipc name")
+            ("datacache.geo_source", boost::program_options::value<std::string>(&d.geo_source)->default_value("data/geo"), "geo_source file name")
             ("datacache.geo_ipc_name", boost::program_options::value<std::string>(&d.geo_ipc_name)->default_value("vanilla-geo-ipc"), "geo ipc name")        
             ("bidder.geo_campaign_ipc_name", boost::program_options::value<std::string>(&d.geo_campaign_ipc_name)->default_value("vanilla-geo-campaign-ipc"), "geo campaign ipc name")
             ("bidder.geo_campaign_source", boost::program_options::value<std::string>(&d.geo_campaign_source)->default_value("data/geo_campaign"), "geo_campaign_source file name")
@@ -51,16 +60,14 @@ int main(int argc, char *argv[]) {
     }
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
-    vanilla::BidderCaches<CacheLoadConfig> bidder_caches(config);
-    GeoAdDataEntity<CacheLoadConfig>  geo_ad_cache(config);
-    GeoDataEntity<CacheLoadConfig>    geo_cache(config);
-    AdDataEntity<CacheLoadConfig>     ad_cache(config);
-    
+    CacheLoader bidder_caches(config);
+
     std::map<std::string, std::function<void()>> caches = {
-        {"geo_ad" , [&geo_ad_cache](){geo_ad_cache.load();}},
-        {"geo"    , [&geo_cache]   (){geo_cache.load();}   },
-        {"ad"     , [&ad_cache]    (){ad_cache.load();}    },
-        {""       , [&bidder_caches]    (){bidder_caches.load();}    }
+        {"geo_campaign" , [&bidder_caches](){bidder_caches.get<GeoCampaignEntityT>().load();  }},
+        {"geo"    , [&bidder_caches](){bidder_caches.get<GeoEntityT>().load();    }},
+        {"ad"     , [&bidder_caches](){bidder_caches.get<AdEntityT>().load();     }},
+        {"budget",  [&bidder_caches](){bidder_caches.get<BudgetEntityT>().load(); }},
+        {""       , [&bidder_caches](){bidder_caches.load();   }}
     };
     
     //initialize and setup CRUD dispatcher

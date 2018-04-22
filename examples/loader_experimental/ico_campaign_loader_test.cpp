@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
               .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "received cache update event url=" << match[0];
               try {
-                  //ico_targeting_caches[match[1]]();
+                  ico_targeting_caches[match[1]]();
               } catch (std::exception const& e) {
                   LOG(error) << e.what();
               }

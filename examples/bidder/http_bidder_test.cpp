@@ -9,8 +9,6 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
 
 #include "rtb/core/core.hpp"
 #include "rtb/exchange/exchange_handler.hpp"
@@ -23,33 +21,21 @@
 #include "rtb/datacache/entity_cache.hpp"
 #include "rtb/datacache/memory_types.hpp"
 #include "CRUD/handlers/crud_dispatcher.hpp"
-#include "examples/datacache/geo_entity.hpp"
 #include "examples/datacache/city_country_entity.hpp"
-#include "examples/datacache/ad_entity.hpp"
 #include "bidder.hpp"
 
-#include "rtb/common/perf_timer.hpp"
-#include "config.hpp"
 #include "serialization.hpp"
-#include "ad_selector.hpp"
 #include "rtb/common/decision_router.hpp"
 #include "rtb/client/empty_key_value_client.hpp"
-#include "rtb/core/user_info.hpp"
-#include "examples/campaign/campaign_cache.hpp"
-#include "examples/campaign/config.hpp"
-
 
 extern void init_framework_logging(const std::string &) ;
 
-
-
-
-auto random_pick(int max) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> dis(1, max);
-  return dis(gen);
-}
+//auto random_pick(int max) {
+//  std::random_device rd;
+//  std::mt19937 gen(rd());
+//  std::uniform_int_distribution<> dis(1, max);
+//  return dis(gen);
+//}
 
 namespace bidder_decision_codes {
         enum {EXIT=-1, USER_DATA=0, NO_BID, AUCTION_ASYNC, SIZE};
@@ -69,8 +55,6 @@ int main(int argc, char *argv[]) {
             ("bidder.log", boost::program_options::value<std::string>(&d.log_file_name), "bidder_test log file name log")
             ("bidder.ads_source", boost::program_options::value<std::string>(&d.ads_source)->default_value("data/ads"), "ads_source file name")
             ("bidder.ads_ipc_name", boost::program_options::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("bidder.geo_ad_source", boost::program_options::value<std::string>(&d.geo_ad_source)->default_value("data/ad_geo"), "geo_ad_source file name")
-            ("bidder.geo_ad_ipc_name", boost::program_options::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")
             ("bidder.geo_source", boost::program_options::value<std::string>(&d.geo_source)->default_value("data/geo"), "geo_source file name")
             ("bidder.geo_ipc_name", boost::program_options::value<std::string>(&d.geo_ipc_name)->default_value("vanilla-geo-ipc"), "geo ipc name")
             ("bidder.port", boost::program_options::value<short>(&d.port)->required(), "bidder port")
@@ -97,12 +81,10 @@ int main(int argc, char *argv[]) {
     LOG(debug) << config;
     init_framework_logging(config.data().log_file_name);
     
-    //vanilla::Selector<> selector(config); 
     boost::uuids::random_generator uuid_generator{};
     vanilla::BidderCaches<> caches(config);
     try {
         caches.load(); // Not needed if data cache loader is in work
-        //selector.load();
     }
     catch(std::exception const& e) {
         LOG(error) << e.what();
