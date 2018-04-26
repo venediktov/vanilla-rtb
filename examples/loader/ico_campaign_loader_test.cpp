@@ -13,7 +13,7 @@
 #include "examples/matchers/ad.hpp"
 #include "examples/campaign/campaign_cache.hpp"
 #include "rtb/datacache/generic_bidder_cache_loader.hpp"
-#include "config.hpp" 
+#include "config.hpp"
 
 
 extern void init_framework_logging(const std::string &) ;
