@@ -22,15 +22,21 @@ Real Time Bidding (RTB) - Demand Side Platform framework
 
 open-source library utilizing  modern C++11/14  features and latest Boost.
 
-What makes us different from other open-source RTB projects we have seen?
+What makes us different from other open-source RTB projects on GitHub :
 
-Our stack is fairly small and easy to integrate with any cmake project. 
-As a model project please see [https://github.com/vanilla-rtb/rapid-bidder](https://github.com/vanilla-rtb/rapid-bidder)
+* Our stack is fairly small and easy to integrate with any cmake project. 
+* Partitioned targeting data
+* Monolithic bidder 
+* Code generation for targeting matchers and bidder executable
+* Minimum dependency on outside vendors.
+* Decoupled by C++ templates
+* Very high throughput up to 105K QPS on 16 cores Intel(R) Xeon(R) CPU E5-2697 v3 @ 2.60GHz
+* GUI for editing campaign budget 
 
-We provide extensions to vanilla-rtb including bindings to popular languages NodeJS/Go/Java/PHP/Python  
+As a model cmake project please visit [https://github.com/vanilla-rtb/rapid-bidder](https://github.com/vanilla-rtb/rapid-bidder)
+
+We provide extensions to vanilla-rtb including bindings to popular languages **NodeJS/Go/Java/PHP/Python**  
 and custom targetings and bidder executable generators [https://github.com/vanilla-rtb/extensions](https://github.com/vanilla-rtb/extensions)
-
-vanilla-rtb stack is completely decoupled by C++ templates and has minimum dependency on outside vendors.
 
 [vanilla-rtb ecosystem](../../wiki)
 
@@ -49,7 +55,7 @@ vanilla-rtb stack is completely decoupled by C++ templates and has minimum depen
 
 
 
-Recommended build environment: Linux or macOS, CMake >= 3.8, GCC >= 7.0, Boost >= 1.64
+Recommended build environment: Linux or macOS, CMake >= 3.8, GCC >= 7.0, Clang >= 4.0 , Boost >= 1.64
 
 Structure :
 * [/](../../tree/master/) -- the root directory
