@@ -45,6 +45,8 @@ vanilla-rtb stack is completely decoupled by C++ templates and has minimum depen
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 [![Installing Dependencies](https://img.shields.io/badge/Dependencies-wiki-green.svg)](https://github.com/venediktov/vanilla-rtb/wiki)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/venediktov/vanilla-rtb/issues)
+[![Beerpay](https://beerpay.io/venediktov/vanilla-rtb/badge.svg?style=beer)](https://beerpay.io/venediktov/vanilla-rtb)
+
 
 
 Recommended build environment: Linux or macOS, CMake >= 3.8, GCC >= 7.0, Boost >= 1.64
