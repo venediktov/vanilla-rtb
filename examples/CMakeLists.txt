@@ -17,7 +17,6 @@ endif()
 
 ## Configuring vanilla-rtb
 include_directories("${PROJECT_SOURCE_DIR}"
-                    "${PROJECT_SOURCE_DIR}/rtb"
                     "${PROJECT_SOURCE_DIR}/jsonv/include"
                    )
 
