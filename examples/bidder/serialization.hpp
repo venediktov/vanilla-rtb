@@ -14,7 +14,6 @@
 #include "examples/matchers/geo_campaign.hpp"
 #include "campaign_data.hpp"
 #include "examples/matchers/ad.hpp"
-#include "examples/matchers/geo_ad.hpp"
 #include "examples/matchers/geo.hpp"
 #include "examples/campaign/serialization.hpp"
 
@@ -30,11 +29,7 @@ namespace boost { namespace serialization {
         ar & value.max_bid_micros;
         ar & value.code;
     }
-    template<class Archive>
-    void serialize(Archive & ar, GeoAd & value, const unsigned int version) {
-        ar & value.geo_id;
-        ar & value.ad_id;
-    }
+
     template<class Archive>
     void serialize(Archive & ar, Geo & value, const unsigned int version) {
         ar & value.geo_id;

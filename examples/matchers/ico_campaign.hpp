@@ -7,15 +7,41 @@
 #ifndef ICO_CAMPAIGN_HPP
 #define ICO_CAMPAIGN_HPP
 
-#include "examples/bidder_experimental/config.hpp"
-#include "rtb/common/split_string.hpp"
-#include "core/tagged_tuple.hpp"
+#include <string>
+#include <cstdint>
+#include <iostream>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
+#include <boost/interprocess/containers/string.hpp>
 #include <boost/multi_index_container.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/composite_key.hpp>
-#include <boost/lexical_cast.hpp>
+#include "rtb/datacache/any_str_ops.hpp"
+#include "rtb/common/split_string.hpp"
+#include "core/tagged_tuple.hpp"
+#include "../bidder_experimental/config.hpp"
 #include <iterator>
+
+#if BOOST_VERSION <= 106000
+#include <boost/utility/string_ref.hpp>
+namespace boost {
+    using string_view = string_ref;
+}
+#else
+#include <boost/utility/string_view.hpp>
+#endif
+
+#if __APPLE_CC__
+#if __cplusplus >= 201402L
+#define STRING_VIEW_DEFINED 1
+#endif
+#elif __GNUC__
+#if __cplusplus >= 201703L
+#define STRING_VIEW_DEFINED 1
+#endif
+#endif
 
 //This struct gets stored in the cache
 struct ICOCampaign {
@@ -50,13 +76,23 @@ struct ICOCampaign {
         if (!std::getline(is, record) ){
             return is;
         }
-        std::vector<boost::string_view> fields;
+#if defined(STRING_VIEW_DEFINED)
+        std::vector<std::string_view> fields ;
         vanilla::common::split_string(fields, record, "\t");
+#else
+        std::vector<boost::string_view> fields ;
+        vanilla::common::split_string(fields, record, "\t");
+#endif
         if(fields.size() < 2) {
             return is;
         }
+#if defined(STRING_VIEW_DEFINED)
+        data.domain_id = boost::lexical_cast<uint32_t>(fields.at(0));
+        data.campaign_id = boost::lexical_cast<uint32_t>(fields.at(1));
+#else
         data.domain_id = boost::lexical_cast<uint32_t>(fields.at(0).begin(), fields.at(0).size());
         data.campaign_id = boost::lexical_cast<uint32_t>(fields.at(1).begin(), fields.at(1).size());
+#endif
         return is;
     }
 

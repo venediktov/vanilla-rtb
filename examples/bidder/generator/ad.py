@@ -79,10 +79,10 @@ for campaign_id in range(1, max_campaigns+1):
     max_ad+=ads_in_campaign+1
 file.close()
 
-file = open("../data/ad_geo", "w")
-for ad_id in range(1, max_ad+1):
-    max_targetings = random.randint(1, len(geo)/3)
-    start_pos = random.randint(1, len(geo))
-    for i in range(start_pos, start_pos+max_targetings+1):
-       file.write("%d\t%d\n" % (ad_id, geo[i%len(geo)][0]))
-file.close()
+#file = open("../data/ad_geo", "w")
+#for ad_id in range(1, max_ad+1):
+#    max_targetings = random.randint(1, len(geo)/3)
+#    start_pos = random.randint(1, len(geo))
+#    for i in range(start_pos, start_pos+max_targetings+1):
+#       file.write("%d\t%d\n" % (ad_id, geo[i%len(geo)][0]))
+#file.close()

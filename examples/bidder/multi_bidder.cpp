@@ -66,8 +66,6 @@ int main(int argc, char *argv[]) {
             ("multi_bidder.log", po::value<std::string>(&d.log_file_name), "bidder_test log file name log")
             ("multi_bidder.ads_source", po::value<std::string>(&d.ads_source)->default_value("data/ads"), "ads_source file name")
             ("multi_bidder.ads_ipc_name", po::value<std::string>(&d.ads_ipc_name)->default_value("vanilla-ads-ipc"), "ads ipc name")
-            ("multi_bidder.geo_ad_source", po::value<std::string>(&d.geo_ad_source)->default_value("data/ad_geo"), "geo_ad_source file name")
-            ("multi_bidder.geo_ad_ipc_name", po::value<std::string>(&d.geo_ad_ipc_name)->default_value("vanilla-geo-ad-ipc"), "geo ad-ipc name")
             ("multi_bidder.geo_source", po::value<std::string>(&d.geo_source)->default_value("data/geo"), "geo_source file name")
             ("multi_bidder.geo_ipc_name", po::value<std::string>(&d.geo_ipc_name)->default_value("vanilla-geo-ipc"), "geo ipc name")
             ("multi_bidder.host", "bidder_test Host")

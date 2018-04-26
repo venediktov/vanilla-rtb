@@ -17,7 +17,6 @@ endif()
 
 ## Configuring vanilla-rtb
 include_directories("${PROJECT_SOURCE_DIR}"
-                    "${PROJECT_SOURCE_DIR}/rtb"
                     "${PROJECT_SOURCE_DIR}/jsonv/include"
                    )
 
@@ -108,7 +107,6 @@ add_subdirectory(loader)
 add_subdirectory(campaign)
 add_subdirectory(multiexchange)
 add_subdirectory(bidder_experimental)
-add_subdirectory(loader_experimental)
 
 #Install all json files from our examples
 file(GLOB_RECURSE JSON_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.json)
