@@ -228,6 +228,6 @@ $ chrt --batch 0 make -j$(nproc) -l$(nproc)
 
 
 ## Support on Beerpay
-Hey dude! Help me out for a couple of :beers:!
+We hope you like our project , fork our repo or chip in for couple of  :beers:!
 
 [![Beerpay](https://beerpay.io/venediktov/vanilla-rtb/badge.svg?style=beer-square)](https://beerpay.io/venediktov/vanilla-rtb)  [![Beerpay](https://beerpay.io/venediktov/vanilla-rtb/make-wish.svg?style=flat-square)](https://beerpay.io/venediktov/vanilla-rtb?focus=wish)
