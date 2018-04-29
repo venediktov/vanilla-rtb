@@ -12,7 +12,7 @@
 
 [1]: http://www.twitter.com/vanilla_rtb
 [2]: http://www.linkedin.com/company/vanillartb
-[3]: https://plus.google.com/+VladimirVenediktov
+[3]: https://plus.google.com/106245340525296590304
 [4]: http://forkbid.com
 [5]: http://www.github.com/vanilla-rtb
 
