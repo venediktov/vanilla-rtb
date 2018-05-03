@@ -35,7 +35,8 @@ What makes us different from other open-source RTB projects on GitHub :
 
 As a model cmake project please visit [https://github.com/vanilla-rtb/rapid-bidder](https://github.com/vanilla-rtb/rapid-bidder)
 
-We provide extensions to vanilla-rtb including bindings to popular languages **NodeJS/Go/Java/PHP/Python**  
+We provide 
+[![VanillaRTB extensions](https://img.shields.io/badge/VanillaRTB-extensions-blue.svg)](https://github.com/vanilla-rtb/extensions) including bindings to popular languages **NodeJS/Go/Java/PHP/Python**  
 and custom targetings and bidder executable generators [https://github.com/vanilla-rtb/extensions](https://github.com/vanilla-rtb/extensions)
 
 [vanilla-rtb ecosystem](../../wiki)
