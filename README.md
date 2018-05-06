@@ -216,10 +216,16 @@ $ cd Release
 $ cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ -DCMAKE_RANLIB=/usr/local/opt/llvm/bin/llvm-ranlib -DCMAKE_AR=/usr/local/opt/llvm/bin/llvm-ar .. -G "Unix Makefiles"
 ```
 ### Parallel Builds
-When building on Linux and Mac OS X with Make it's possible to automatically adjust the concurreny of the build using `nproc` command line tool that returns number of CPUs available to the Make execution context\: 
+When building on Linux and Mac OS X with Make it's possible to automatically adjust the concurreny of the build using `nproc` for Linux and `msysctl -n hw.physicalcpu)` for Mac OS X command line tools that returns number of CPUs available to the Make execution context\: 
 
+Linux :
 ```
 $ make -j $(nproc) ... 
+```
+
+Mac OS X :
+```
+make -j $(sysctl -n hw.physicalcpu) ...
 ```
 
 It's also possible to specifying the target _Load Average_ with `-l` flag to prevent machine overloading\:
