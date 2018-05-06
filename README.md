@@ -130,7 +130,8 @@ auto retrieve_campaign_ads_f = [&](boost::optional<std::vector<ICOCampaign>> cam
 };
 
 //creating bidder endpoint utilizing self-referencing pattern
-exchange_handler<DSLT>(std::chrono::milliseconds(10))
+exchange_handler<DSLT> bid_handler(std::chrono::milliseconds(10));
+bid_handler
 .logger([](const std::string &data) {
     LOG(debug) << "bid request=" << data ;
 })
