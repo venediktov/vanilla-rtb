@@ -89,6 +89,65 @@ Structure :
 * git subtree pull --prefix CRUD git@github.com:venediktov/CRUD.git  master --squash
 
 
+### Creating bidder in 49 lines of code
+```C++
+using Selector = vanilla::ad_selector<vanilla::BudgetManager, Ad>;
+using DSLT = DSL::GenericDSL<std::string, DSL::rapid_mapper> ;
+
+//Return from each lambda becomes input for next lambda in the tuple of functions
+auto retrieve_domain_f = [&cacheLoader](const std::string& dom, auto&& ...) {
+    Domain domain;
+    if(!cacheLoader.retrieve(domain,dom)) {
+        return boost::optional<uint32_t>();
+    }
+    return boost::optional<uint32_t>(domain.dom_id);
+};
+
+auto retrieve_ico_campaign_f = [&cacheLoader](boost::optional<uint32_t> dom_id, auto&& ...)  {
+    std::vector<ICOCampaign> ico_campains;
+    if (!cacheLoader.retrieve(ico_campains,*dom_id)) {
+        return boost::optional<decltype(ico_campains)>();
+    }
+    return boost::optional<decltype(ico_campains)>(ico_campains);
+};
+
+vanilla::core::Banker<BudgetManager> banker;
+auto retrieve_campaign_ads_f = [&](boost::optional<std::vector<ICOCampaign>> campaigns, auto && req, auto && imp)  {
+    std::vector<Ad> retrieved_cached_ads;
+    for (auto &campaign : *campaigns) {
+        if (!cacheLoader.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
+            continue;
+        }
+        auto budget_bid = banker.authorize(cacheLoader.get<CampaignCache<BidderConfig>>(), campaign.campaign_id);
+        std::transform(std::begin(retrieved_cached_ads),
+                       std::end(retrieved_cached_ads),
+                       std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
+                          ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
+                          return ad;
+                       });
+    }
+    return retrieved_cached_ads;
+};
+
+//creating bidder endpoint utilizing self-referencing pattern
+exchange_handler<DSLT>(std::chrono::milliseconds(10))
+.logger([](const std::string &data) {
+    LOG(debug) << "bid request=" << data ;
+})
+.error_logger([](const std::string &data) {
+    LOG(debug) << "bid request error " << data ;
+})
+.auction_async([&](const BidRequest &request) {
+    thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector()));
+    return bidder.bid(request,
+                      request.site.get().ref,
+                      //chained matchers lambdas defined above
+                      retrieve_domain_f,
+                      retrieve_ico_campaign_f,
+                      retrieve_campaign_ads_f
+   );
+});
+```
 
 ### *(&#x1F4D7;) To build vanilla-rtb use following commands in the root of vanilla-rtb*
 
