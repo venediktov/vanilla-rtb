@@ -53,7 +53,8 @@ and custom targetings and bidder executable generators [https://github.com/vanil
 [![Installing Dependencies](https://img.shields.io/badge/Dependencies-wiki-green.svg)](https://github.com/venediktov/vanilla-rtb/wiki)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/venediktov/vanilla-rtb/issues)
 [![Beerpay](https://beerpay.io/venediktov/vanilla-rtb/badge.svg?style=beer)](https://beerpay.io/venediktov/vanilla-rtb)
-
+[![Backers on Open Collective](https://opencollective.com/vanilla-rtb/backers/badge.svg)](#backers) 
+[![Sponsors on Open Collective](https://opencollective.com/vanilla-rtb/sponsors/badge.svg)](#sponsors) 
 
 
 Recommended build environment: Linux or macOS, CMake >= 3.8, GCC >= 7.0, Clang >= 4.0 , Boost >= 1.64
@@ -298,3 +299,33 @@ $ chrt --batch 0 make -j$(nproc) -l$(nproc)
 We hope you like our project , fork our repo or chip in for couple of  :beers:!
 
 [![Beerpay](https://beerpay.io/venediktov/vanilla-rtb/badge.svg?style=beer-square)](https://beerpay.io/venediktov/vanilla-rtb)  [![Beerpay](https://beerpay.io/venediktov/vanilla-rtb/make-wish.svg?style=flat-square)](https://beerpay.io/venediktov/vanilla-rtb?focus=wish)
+
+## Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="graphs/contributors"><img src="https://opencollective.com/vanilla-rtb/contributors.svg?width=890&button=false" /></a>
+
+
+## Backers
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/vanilla-rtb#backer)]
+
+<a href="https://opencollective.com/vanilla-rtb#backers" target="_blank"><img src="https://opencollective.com/vanilla-rtb/backers.svg?width=890"></a>
+
+
+## Sponsors
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/vanilla-rtb#sponsor)]
+
+<a href="https://opencollective.com/vanilla-rtb/sponsor/0/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/0/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/1/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/1/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/2/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/2/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/3/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/3/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/4/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/4/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/5/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/5/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/6/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/6/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/7/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/7/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/8/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/8/avatar.svg"></a>
+<a href="https://opencollective.com/vanilla-rtb/sponsor/9/website" target="_blank"><img src="https://opencollective.com/vanilla-rtb/sponsor/9/avatar.svg"></a>
+
+
