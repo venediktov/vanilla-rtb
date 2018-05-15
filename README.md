@@ -2,19 +2,16 @@
 [![alt text][2.1]][2]
 [![alt text][3.1]][3]
 [![alt text][4.1]][4]
-[![alt text][5.1]][5]
 
-[1.1]: http://i.imgur.com/tXSoThF.png (twitter icon with padding)
-[2.1]: http://i.imgur.com/P3YfQoD.png (facebook icon with padding)
-[3.1]: http://i.imgur.com/yCsTjba.png (google plus icon with padding)
-[4.1]: http://i.imgur.com/YckIOms.png (tumblr icon with padding)
-[5.1]: http://i.imgur.com/0o48UoR.png (github icon with padding)
+[1.1]: https://i.imgur.com/tbK9oQ9.png (twitter icon)
+[2.1]: https://i.imgur.com/f1rWtvg.png (LinkedIn icon)
+[3.1]: https://i.imgur.com/g8bZTwu.png (telegram icon)
+[4.1]: https://i.imgur.com/1slR4ab.png (github icon)
 
 [1]: http://www.twitter.com/vanilla_rtb
 [2]: http://www.linkedin.com/company/vanillartb
-[3]: https://plus.google.com/106245340525296590304
-[4]: http://forkbid.com
-[5]: http://www.github.com/vanilla-rtb
+[3]: http://t.me/vanilla_rtb
+[4]: http://www.github.com/vanilla-rtb
 
 # vanilla-rtb
 
