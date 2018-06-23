@@ -26,7 +26,7 @@ WORKDIR /root/code
 
 ADD build-vanilla.sh /root/code
 
-RUN  chmod +x ./build-vanilla.sh && ./build-vanilla.sh
+RUN  chmod +x ./build-vanilla.sh ; sync ;  ./build-vanilla.sh
 
 WORKDIR /root/pkg/vanilla-rtb/snapshot/bin
 
