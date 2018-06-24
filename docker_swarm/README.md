@@ -44,6 +44,6 @@ docker service logs vanilla_swarm_loadbalancer
 ```
 
 Connect to traefik and make sure it shows backend and frontend mapped 
-![traefik](https://github.com/venediktov/vanilla-rtb/wiki/images/VanillaTraefikDocker.png)
+![traefik](https://github.com/venediktov/vanilla-rtb/wiki/images/SwarmTraefikDocker.png)
  
 
