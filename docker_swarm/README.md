@@ -55,3 +55,13 @@ Connect to traefik and make sure it shows backend and frontend mapped
 ![traefik](https://github.com/venediktov/vanilla-rtb/wiki/images/SwarmTraefikDocker.png)
  
 
+#### To compare performane of single docker image with swarm and with standalone stack running on physical host 
+```bash
+#running agains swarm/traefik utilizing sticky option backend processes use persistent connection 
+ab -k -p BID_REQUEST_BANNER.json -T application/json -n 1000 -c 10 http://$(docker-machine ip)/bid/123
+#running against bidder in a single container backend process uses persistent connection
+ab -k -p BID_REQUEST_BANNER.json -T application/json -n 1000 -c 10 http://$(docker-machine ip):9081/bid/123
+#running against loally built exe ( persistent connection)
+ab -k -p BID_REQUEST_BANNER.json -T application/json -n 1000 -c 10 http://localhost:9081/bid/123
+
+```
