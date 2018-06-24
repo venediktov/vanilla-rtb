@@ -7,12 +7,20 @@
  docker loadbalancing occurs between physical hosts running single container rather then multiple containers running on single host 
 </p>
 
+#### Installing docker swarm run scatter.sh 
+
 ```bash
-docker service ls
+bash -x scatter.sh
 ```
 
 #### This command will show you all services deployed to swarm network 
 
+```bash
+docker service ls
+```
+ 
+If you see REPLICAS 0/5 instead of 5/5 give it some time , if it's still 0/5 change  --loglevel=DEBUG in swarm-persist-with-traefik.yaml
+and rerun scatter.sh again. See 'Checking the logs' for more details 
 
 ```
 ID                  NAME                         MODE                REPLICAS            IMAGE                               PORTS
