@@ -1,0 +1,49 @@
+version: "3"
+services:
+  bidder:
+    image: localhost:5000/vanilla-dev
+    tty: true
+    working_dir: /root/pkg/vanilla-rtb/snapshot/bin
+    command: ./http_bidder_test --config etc/config.cfg
+    deploy:
+      replicas: 5
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.docker.network=vanilla_swarm_net"
+        - "traefik.port=9081"
+        - "traefik.frontend.rule=Path:/bid/{id:[0-9]+}"
+        - "traefik.backend.loadbalancer.stickiness=true"
+    networks:
+      - net
+    ports:
+      - 9081
+
+  loadbalancer:
+    image: traefik
+    command: --docker \
+      --docker.swarmmode \
+      --docker.watch \
+      --web \
+      --loglevel=ERROR
+    ports:
+      - 80:80
+      - 9090:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      restart_policy:
+        condition: any
+      mode: replicated
+      replicas: 1
+      update_config:
+        delay: 2s
+      placement:
+         constraints: [node.role == manager]
+    networks:
+      - net
+ 
+networks:
+  net:
+
+

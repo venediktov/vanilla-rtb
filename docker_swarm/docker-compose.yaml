@@ -1,0 +1,14 @@
+version: "3"
+services:
+  bidder:
+    image: localhost:5000/vanilla-dev
+    tty: true
+    working_dir: /root/pkg/vanilla-rtb/snapshot/bin
+    command: ./http_bidder_test --config etc/config.cfg
+    deploy:
+      replicas: 5
+      restart_policy:
+        condition: on-failure
+    ports:
+      - 9081:9081
+
