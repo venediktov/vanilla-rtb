@@ -6,6 +6,7 @@ services:
     working_dir: /root/pkg/vanilla-rtb/snapshot/bin
     command: ./http_bidder_test --config etc/config.cfg
     deploy:
+      mode: replicated
       replicas: 5
       restart_policy:
         condition: on-failure

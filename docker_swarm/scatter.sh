@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+
 if [ "$(uname)" == "Darwin" ]; then
    IP_ADDR="--advertise-addr $(docker-machine ip default)"
+   SUDO=
    MAC=1 
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+   IP_ADDR=
    SUDO=sudo
 else
    echo platform $(uname -s) not supported ... 
@@ -14,8 +17,8 @@ fi
 #    exit 1
 #fi
 
-if [ -z ${MAC+x} ]; then
- #additional commands for Mac OS 
+if ! [ -z ${MAC+x} ]; then
+echo MAC OS detected
  if docker-machine status  2> /dev/null; then 
    docker-machine upgrade 
  else 
@@ -26,29 +29,30 @@ if [ -z ${MAC+x} ]; then
 fi
 
 
-docker swarm leave --force
+$SUDO docker swarm leave --force
+
 #for multi IP networks specify ip to start swarm network
-docker swarm init ${IP_ADDR} 
+$SUDO docker swarm init ${IP_ADDR} 
 
 #create local service to share image between nodes 
-docker service create --name registry --publish 5000:5000 registry:2
+$SUDO docker service create --name registry --publish 5000:5000 registry:2
 
 #pull vanilla image if it's not installed on VM
-docker pull vanillartb/vanilla-dev
+$SUDO docker pull vanillartb/vanilla-dev
 
 #tag it with localhost for local registry upload
-docker tag  vanillartb/vanilla-dev localhost:5000/vanilla-dev
+$SUDO docker tag  vanillartb/vanilla-dev localhost:5000/vanilla-dev
 
 #upload image to local registry accessibe by all swarm nodes 
-docker push localhost:5000/vanilla-dev
+$SUDO docker push localhost:5000/vanilla-dev
 
 #remove cached images in the docker
-docker image rm vanillartb/vanilla-dev --force
-docker image rm localhost:5000/vanilla-dev --force 
+$SUDO docker image rm vanillartb/vanilla-dev --force
+$SUDO docker image rm localhost:5000/vanilla-dev --force 
 
 #deploy stack to the swarm manager
-#docker stack deploy -c docker-compose.yaml vanilla_swarm
-docker stack deploy -c  swarm-persist-with-traefik.yaml  vanilla_swarm
+#$SUDO docker stack deploy -c  swarm-persist-with-traefik.yaml  vanilla_swarm
+#$SUDO docker stack deploy -c  swarm-persist-with-haproxy.yaml  vanilla_swarm
 
 
  

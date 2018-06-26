@@ -1,0 +1,40 @@
+version: "3.3"
+services:
+  bidder:
+    image: localhost:5000/vanilla-dev
+    tty: true
+    working_dir: /root/pkg/vanilla-rtb/snapshot/bin
+    command: ./http_bidder_test --config etc/config.cfg
+    environment:
+     - SERVICE_PORTS=9081
+    deploy:
+      mode: replicated
+      replicas: 5
+      restart_policy:
+        condition: on-failure
+    networks:
+      - net
+    ports:
+      - 9081:9081
+
+  haproxy:
+    image: dockercloud/haproxy
+    depends_on:
+      - bidder 
+    environment:
+      - BALANCE=leastconn
+      - OPTION=http-keep-alive
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - net 
+    ports:
+      - 80:80
+    deploy:
+      mode: global 
+      placement:
+        constraints: [node.role == manager] 
+networks:
+  net:
+
+

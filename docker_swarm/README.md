@@ -50,18 +50,44 @@ xjyvbavobvfq        vanilla_swarm_bidder.5   localhost:5000/vanilla-dev:latest  
 docker service logs vanilla_swarm_bidder --raw
 docker service logs vanilla_swarm_loadbalancer
 ```
+Start vanilla bidder + traefik proxy, use sudo on linux
+```bash
+docker stack deploy -c  swarm-persist-with-traefik.yaml  vanilla_swarm
+```
 
 Connect to traefik and make sure it shows backend and frontend mapped 
+
 ![traefik](https://github.com/venediktov/vanilla-rtb/wiki/images/SwarmTraefikDocker.png)
  
 
-#### To compare performane of single docker image with swarm and with standalone stack running on physical host 
+#### To compare performane of single docker image with swarm and with standalone stack running on physical host replace $(docker-machine ip) with localhost on Linux  
 ```bash
 #running agains swarm/traefik utilizing sticky option backend processes use persistent connection 
-ab -k -p BID_REQUEST_BANNER.json -T application/json -n 10000 -c 10 http://$(docker-machine ip)/bid/123
+ab -k -p ../examples/bidder/BID_REQUEST_BANNER.json -T application/json -n 10000 -c 10 http://$(docker-machine ip)/bid/123
 #running against bidder in a single container backend process uses persistent connection
-ab -k -p BID_REQUEST_BANNER.json -T application/json -n 10000 -c 10 http://$(docker-machine ip):9081/bid/123
+ab -k -p ../examples/bidder/BID_REQUEST_BANNER.json -T application/json -n 10000 -c 10 http://$(docker-machine ip):9081/bid/123
 #running against loally built exe ( persistent connection)
-ab -k -p BID_REQUEST_BANNER.json -T application/json -n 10000 -c 10 http://localhost:9081/bid/123
+ab -k -p ../examples/bidder/BID_REQUEST_BANNER.json -T application/json -n 10000 -c 10 http://localhost:9081/bid/123
 
 ```
+
+#### To get HTTP keep-alive mode we have researched running docker swarm with HAProxy http-keep-alive option 
+
+#### From common use case seen in many deployments
+
+![haproxy-original](https://github.com/venediktov/vanilla-rtb/wiki/images/IngressDockerMeshRouting.png)
+
+#### We have remodeled containers to utilize persistent connection based on http-keep-alive
+
+![haproxy-vanilla-rtb](https://github.com/venediktov/vanilla-rtb/wiki/images/IngressDockerHAProxyRouting.png)
+ 
+Start vanilla bidder + HAProxy proxy, use sudo on linux
+```bash
+docker stack deploy -c  swarm-persist-with-haproxy.yaml  vanilla_swarm
+
+```
+
+The performance is still an issue with any proxy we have tried, we'll add our own light weight proxy with zero memory allocation , zero copy just binding fron-end and back-end BSD sockets.
+Another best performant in out view way of load balancing apps running in docker containers is by utilizing shared memory it is explained [here](https://torusware.com/blog/2015/04/optimizing-communications-between-html/)
+
+ 
