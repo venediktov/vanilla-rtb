@@ -88,6 +88,6 @@ docker stack deploy -c  swarm-persist-with-haproxy.yaml  vanilla_swarm
 ```
 
 The performance is still an issue with any proxy we have tried, we'll add our own light weight proxy with zero memory allocation , zero copy just binding fron-end and back-end BSD sockets.
-Another best performant in out view way of load balancing apps running in docker containers is by utilizing shared memory it is explained [here](https://torusware.com/blog/2015/04/optimizing-communications-between-html/)
+Another way to achieve best performance is to abondon TCP/IP for load balancing and utilize shared memory as explained [here](https://torusware.com/blog/2015/04/optimizing-communications-between-html/)
 
  
