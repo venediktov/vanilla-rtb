@@ -30,7 +30,6 @@ struct CacheBenchmarkFixture: benchmark::Fixture
     std::unique_ptr<vanilla::CampaignCache<CacheLoadConfig>> campaign_cache_;
     std::unique_ptr<GeoCampaignEntity<CacheLoadConfig>> geo_campaign_cache_;
 
-    GeoAdDataEntity<CacheLoadConfig>::DataVect geoAds_;
     vanilla::CampaignBudget campaignBudget_;
     GeoCampaignEntity<CacheLoadConfig>::GeoCampaignCollection geoCampaigns_;
 
@@ -52,9 +51,11 @@ struct CacheBenchmarkFixture: benchmark::Fixture
             ;
         })
     {
-        char argv0[] = "--config etc/config.cfg";
-        char* argv[] {argv0};
-        config_.parse(0, argv);
+        char argv0[] = "";
+        char argv1[] = "--config";
+        char argv2[] = "config.cfg";
+        char* argv[] {argv0, argv1, argv2, nullptr};
+        config_.parse(3, argv);
         geo_cache_ = std::make_unique<GeoDataEntity<CacheLoadConfig>>(config_);
         ad_cache_ = std::make_unique<AdDataEntity<CacheLoadConfig>>(config_);
         campaign_cache_ = std::make_unique<vanilla::CampaignCache<CacheLoadConfig>>(config_);

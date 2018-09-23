@@ -27,11 +27,12 @@ Commands depend on the target environment but are usually similar to the ones be
     $ chrt -b 0 ninja -j$(nproc) -l$(nproc)
 
 ## Running Benchmarks
+
 Benchmarks can be run either as a build target
 
-    $ ninja benchmark
+    $ cmake --build . --target benchmark
 
-or directly (specifically, if command line customization is required)
+or directly (specifically, if command line customization or debugging is required)
 
     $ cd $work_dir
     $ cd vanilla-rtb-build
