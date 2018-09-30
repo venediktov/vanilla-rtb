@@ -70,6 +70,7 @@ $ vanilla_env_ver=x.y.z
 $ docker login
 $ docker push vanillartb/vanilla-base:${vanilla_env_ver}
 $ docker push vanillartb/vanilla-deps:${vanilla_env_ver}
+$ docker push vanillartb/vanilla-runtime:${vanilla_env_ver}
 $ docker push vanillartb/vanilla-dev:${vanilla_env_ver}
 $ docker tag vanillartb/vanilla-dev:${vanilla_env_ver} vanillartb/vanilla-dev:latest
 $ docker push vanillartb/vanilla-prod:${vanilla_env_ver}
