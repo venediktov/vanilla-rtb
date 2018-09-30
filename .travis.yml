@@ -60,7 +60,7 @@ install:
         BOOST_URL="https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//\./_}.tar.gz"
         BOOST_DIR="${DEPS_DIR}/boost-${BOOST_VERSION}"
         BOOST_TOOLSET=gcc
-        BOOST_LIBS='program_options,system,regex,serialization,log,date_time,test'
+        BOOST_LIBS='program_options,system,regex,serialization,log,date_time,test,filesystem'
 
         mkdir -p "${BOOST_DIR}"
         if [[ -z "$(ls -A ${BOOST_DIR})" ]]; then
