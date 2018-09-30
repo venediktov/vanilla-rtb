@@ -54,7 +54,7 @@ and custom targetings and bidder executable generators [https://github.com/vanil
 [![Sponsors on Open Collective](https://opencollective.com/vanilla-rtb/sponsors/badge.svg)](#sponsors) 
 
 
-Recommended build environment: Linux or macOS, CMake >= 3.9.2, GCC >= 7.0, Clang >= 5.0 , Boost >= 1.66
+Recommended build environment: Linux or macOS, CMake >= 3.9.2, GCC >= 7.0, Clang >= 5.0 , Boost >= 1.67
 
 Structure :
 * [/](../../tree/master/) -- the root directory
