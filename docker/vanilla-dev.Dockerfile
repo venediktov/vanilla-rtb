@@ -1,33 +1,20 @@
-FROM vanillartb/vanilla-base:0.0.2
+FROM vanillartb/vanilla-runtime:0.0.2
+ARG BOOST_VERSION=1.67.0
+ARG VANILLA_RTB_VERSION=snapshot
+ARG WORK_ROOT=/root
 LABEL Description="vanilla-rtb Dev" Vendor="ForkBid" Maintainer="mrbald@github"
 RUN apt-get update
-RUN apt-get install -y\
- cmake\
- git\
- clang\
- vim\
- libboost-atomic1.67-dev\
- libboost-chrono1.67-dev\
- libboost-date-time1.67-dev\
- libboost-filesystem1.67-dev\
- libboost-log1.67-dev\
- libboost-program-options1.67-dev\
- libboost-regex1.67-dev\
- libboost-serialization1.67-dev\
- libboost-system1.67-dev\
- libboost-thread1.67-dev\
- libboost-test1.67\
- libboost-test1.67-dev\
- python
+RUN apt-get install -yq --no-install-suggests --no-install-recommends make cmake git build-essential g++-7 vim python
+ENV CC=gcc-7 CXX=g++-7
 
-WORKDIR /root/pkg
-WORKDIR /root/build
-WORKDIR /root/code
+WORKDIR ${WORK_ROOT}/scripts
+ADD build-vanilla.sh ${WORK_ROOT}/scripts
+RUN chmod +x ${WORK_ROOT}/scripts/build-vanilla.sh && sync
 
-ADD build-vanilla.sh /root/code
+WORKDIR ${WORK_ROOT}/deps
+WORKDIR ${WORK_ROOT}/build
+RUN env VANILLA_RTB_VERSION=${VANILLA_RTB_VERSION} PKG_DIR=${WORK_ROOT}/pkg DEPS_DIR=${WORK_ROOT}/deps BUILD_DIR=${WORK_ROOT}/build BOOST_VERSION=${BOOST_VERSION} ${WORK_ROOT}/scripts/build-vanilla.sh
 
-RUN chmod +x ./build-vanilla.sh && sync && ./build-vanilla.sh
-
-WORKDIR /root/pkg/vanilla-rtb/snapshot/bin
+WORKDIR /root/pkg/vanilla-rtb-${VANILLA_RTB_VERSION}/bin
 
 CMD ["bash"]

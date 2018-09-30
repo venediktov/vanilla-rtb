@@ -4,37 +4,51 @@
 VanillaRTB Docker images have two layers (optionally three) of hierarchy:
 
 * #0.0 VanillaRTB Base - VanillaRTB unified runtime environment
-* #1.1 VanillaRTB Dev (extends #0.0) - VanillaRTB development environment with preinstalled G++, CMake, Boost (selected libraries)
-* #1.2 VanillaRTB Bld (extends #0.0) - VanillaRTB package builder image (!TODO!)
+* #1.1 VanillaRTB Deps (extends #0.0) - VanillaRTB dependencies builder image
+* #1.2 VanillaRTB Dev (extends #0.0) - VanillaRTB development environment with preinstalled G++, CMake, Boost (selected libraries)
 * #1.3 VanillaRTB Prod (extends #0.0) - VanillaRTB pre-built ready to run package
 * #2.x (extends #1.3) - Specialized container preconfigured to run particular VanillaRTB component or subsystem
 
 ## Creating and Updating 
-### ( instructions for vanilla-rtb stack contributors only !!!! )
+!!! instructions for vanilla-rtb stack contributors only !!!
 
-Base package:
+All steps below require the same pre-steps:
 
 ```bash
 $ vanilla_env_ver=x.y.z
 $ cd vanilla-rtb/docker
+```
+
+### 0.0 Base Package
+
+```bash
 $ docker build --tag vanillartb/vanilla-base:${vanilla_env_ver} --file vanilla-base.Dockerfile ${PWD}
-$ docker login
-$ docker push vanillartb/vanilla-base:${vanilla_env_ver}
 ```
 
-Development environment package : built automatically on hub.docker.com everytime we tag our git push 
+### 1.1 Dependencies & Runtime
+
+This is a side-package required to build boost and other dependencies keeping the production chain clean of build tools.
+```bash
+$ docker build --tag vanillartb/vanilla-deps:${vanilla_env_ver} --file vanilla-deps.Dockerfile $PWD
+```
 
 ```bash
-$ vanilla_env_ver=x.y.z
-$ cd vanilla-rtb/docker
-$ docker build --tag vanillartb/vanilla-dev:${vanilla_env_ver} --file vanilla-dev.Dockerfile ${PWD}
-$ docker tag vanillartb/vanilla-dev:${vanilla_env_ver} vanillartb/vanilla-dev:latest
+$ docker container run -a STDOUT --name vanilla-depsbox vanillartb/vanilla-deps:${vanilla_env_ver}
+$ docker cp vanilla-depsbox:/root/deps ./deps
+$ docker container rm vanilla-depsbox
 $
-$ docker login
-$ docker push vanillartb/vanilla-dev:${vanilla_env_ver} vanillartb/vanilla-dev:latest
+$ docker build --tag vanillartb/vanilla-runtime:${vanilla_env_ver} --file vanilla-runtime.Dockerfile $PWD
+$ /bin/rm -rf ./deps
 ```
 
-Production package :
+### 1.2 Development Environment
+Built automatically on hub.docker.com everytime we tag our git push.
+
+```bash
+$ docker build --tag vanillartb/vanilla-dev:${vanilla_env_ver} --file vanilla-dev.Dockerfile ${PWD}
+```
+
+### 1.3 Production
 
 ```bash
 $ vanilla_env_ver=a.b.c
@@ -42,14 +56,26 @@ $ vanilla_ver=x.y.z
 $ cd vanilla-rtb/docker
 $
 $ docker container run -a STDOUT --name vanilla-buildbox vanillartb/vanilla-dev:${vanilla_env_ver}
-$ docker cp vanilla-buildbox:/root/pkg/vanilla-rtb/snapshot ./vanilla
+$ docker cp vanilla-buildbox:/root/pkg ./pkg
+$ docker container rm vanilla-buildbox
 $
 $ docker build --tag vanillartb/vanilla-prod:${vanilla_ver} --file vanilla-prod.Dockerfile ${PWD}
-$ /bin/rm -rf ./vanilla
-$ docker tag vanillartb/vanilla-prod:${vanilla_ver} vanillartb/vanilla-prod:latest
-$
+$ /bin/rm -rf ./pkg
+```
+
+### Upload to the Docker Hub
+
+```bash
+$ vanilla_env_ver=x.y.z
 $ docker login
+$ docker push vanillartb/vanilla-base:${vanilla_env_ver}
+$ docker push vanillartb/vanilla-deps:${vanilla_env_ver}
+$ docker push vanillartb/vanilla-dev:${vanilla_env_ver}
+$ docker tag vanillartb/vanilla-dev:${vanilla_env_ver} vanillartb/vanilla-dev:latest
+$ docker push vanillartb/vanilla-prod:${vanilla_env_ver}
+$ docker tag vanillartb/vanilla-prod:${vanilla_ver} vanillartb/vanilla-prod:latest
 $ docker push vanillartb/vanilla-prod:latest
+
 ```
 
 # Running 
