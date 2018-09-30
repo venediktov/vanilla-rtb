@@ -13,7 +13,6 @@ set(JSMN_VERSION "1.0.0"
 
 
 ## Configure CXX
-set(CMAKE_CXX_STANDARD 14)
 
 file(GLOB_RECURSE parsers_cs RELATIVE_PATH "." "*.c")
 file(GLOB_RECURSE parsers_hs RELATIVE_PATH "." "*.h")

@@ -17,7 +17,7 @@
 
 Real Time Bidding (RTB) - Demand Side Platform framework
 
-open-source library utilizing  modern C++11/14  features and latest Boost.
+open-source library utilizing  modern C++11/14/17 features and latest Boost.
 
 What makes us different from other open-source RTB projects on GitHub :
 
@@ -54,7 +54,7 @@ and custom targetings and bidder executable generators [https://github.com/vanil
 [![Sponsors on Open Collective](https://opencollective.com/vanilla-rtb/sponsors/badge.svg)](#sponsors) 
 
 
-Recommended build environment: Linux or macOS, CMake >= 3.8, GCC >= 7.0, Clang >= 4.0 , Boost >= 1.64
+Recommended build environment: Linux or macOS, CMake >= 3.9.2, GCC >= 7.0, Clang >= 5.0 , Boost >= 1.66
 
 Structure :
 * [/](../../tree/master/) -- the root directory
@@ -80,7 +80,7 @@ Structure :
       
 * [CMakeLists.txt] - cmake file
 
->The stack of vanilla-rtb includes other C++11 projects and is referencing them via gh-subree.
+>The stack of vanilla-rtb includes other C++11/14 projects and is referencing them via gh-subree.
 >To update to the latest version of json-voorhees or CRUD we use the following commands \:
 
 * git subtree pull --prefix jsonv git@github.com:tgockel/json-voorhees.git master --squash
