@@ -41,8 +41,8 @@ $ vanilla_env_ver=a.b.c
 $ vanilla_ver=x.y.z
 $ cd vanilla-rtb/docker
 $
-$ docker container run -a STDOUT --name vanilla-build-box vanillartb/vanilla-dev:${vanilla_env_ver}
-$ docker cp build-box:/root/pkg/vanilla-rtb/snapshot ./vanilla
+$ docker container run -a STDOUT --name vanilla-buildbox vanillartb/vanilla-dev:${vanilla_env_ver}
+$ docker cp vanilla-buildbox:/root/pkg/vanilla-rtb/snapshot ./vanilla
 $
 $ docker build --tag vanillartb/vanilla-prod:${vanilla_ver} --file vanilla-prod.Dockerfile ${PWD}
 $ /bin/rm -rf ./vanilla

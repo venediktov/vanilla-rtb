@@ -2,20 +2,20 @@
 
 # the cmake version used in the travis integration build
 # older versions may still work but have not been tested
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.9.2)
 
-project(vanilla-rtb CXX)
+PROJECT(vanilla-rtb CXX)
 
-SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-FIND_PACKAGE(Boost 1.60.0 REQUIRED)
+FIND_PACKAGE(Boost 1.66.0 REQUIRED)
 
 FIND_PACKAGE(Threads)
 
-IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "5.1")
-    MESSAGE(FATAL_ERROR "The build has not been tested with GCC version < 5.1, to proceed at your own risk comment this message out in the top level CMakeLists.txt")
+IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7.0")
+    MESSAGE(FATAL_ERROR "The build has not been tested with GCC version < 7.0, to proceed at your own risk comment this message out in the top level CMakeLists.txt")
 ENDIF()
 
 IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

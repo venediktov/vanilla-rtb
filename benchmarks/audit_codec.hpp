@@ -21,11 +21,9 @@
 #include <tuple>
 #include <type_traits>
 
-#include <experimental/string_view>
-namespace std { using experimental::string_view; }
+#include <string_view>
 
-#include <experimental/tuple>
-namespace std { using experimental::apply; }
+#include <tuple>
 
 namespace auditor {
 
