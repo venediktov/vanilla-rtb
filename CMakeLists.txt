@@ -2,15 +2,15 @@
 
 # the cmake version used in the travis integration build
 # older versions may still work but have not been tested
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.9.2)
 
-project(vanilla-rtb CXX)
+PROJECT(vanilla-rtb CXX)
 
-SET(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-FIND_PACKAGE(Boost 1.60.0 REQUIRED)
+FIND_PACKAGE(Boost 1.66.0 REQUIRED)
 
 FIND_PACKAGE(Threads)
 

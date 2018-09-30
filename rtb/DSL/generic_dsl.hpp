@@ -30,6 +30,7 @@ namespace DSL {
         
         using encoded_type =  typename Mapper<T>::encoded_type;
     public:
+        using Mapper<T>::Mapper;
         using deserialized_type = typename Mapper<T>::deserialized_type;
         using serialized_type = typename Mapper<T>::serialized_type;
         using parse_error_type = typename Mapper<T>::parse_error_type;

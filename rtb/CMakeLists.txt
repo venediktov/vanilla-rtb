@@ -13,7 +13,6 @@ set(VANILLA_RTB_VERSION "1.1.0"
 
 
 ## cConfigure CXX
-set(CMAKE_CXX_STANDARD 14)
 
 ## Configuring Boost
 set(REQUIRED_BOOST_LIBRARIES)
