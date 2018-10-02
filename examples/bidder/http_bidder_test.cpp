@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
             ("bidder.concurrency", boost::program_options::value<unsigned int>(&d.concurrency)->default_value(0), "bidder concurrency, if 0 is set std::thread::hardware_concurrency()")
             ("bidder.geo_campaign_ipc_name", boost::program_options::value<std::string>(&d.geo_campaign_ipc_name)->default_value("vanilla-geo-campaign-ipc"), "geo campaign ipc name")
             ("bidder.geo_campaign_source", boost::program_options::value<std::string>(&d.geo_campaign_source)->default_value("data/geo_campaign"), "geo_campaign_source file name")
-            ("campaign-manager.ipc_name", boost::program_options::value<std::string>(&d.ipc_name),"campaign_budget IPC name")
+            ("campaign-manager.ipc_name", boost::program_options::value<std::string>(&d.ipc_name)->default_value("vanilla-campaign-budget-ipc"),"campaign_budget IPC name")
             ("campaign-manager.budget_source", boost::program_options::value<std::string>(&d.campaign_budget_source)->default_value("data/campaign_budget"),"campaign_budget source file name")
             ("bidder.key_value_host", boost::program_options::value<std::string>(&d.key_value_host)->default_value("0.0.0.0"), "key value storage host")
             ("bidder.key_value_port", boost::program_options::value<int>(&d.key_value_port)->default_value(0), "key value storage port")
