@@ -55,7 +55,7 @@ namespace vanilla {
         template<typename T, typename Tuple, std::size_t... Idx>
         decltype(std::declval<Entity>().retrieve(std::declval<T&>(),std::get<Idx>(std::declval<Tuple>())...), bool())
         retrieve(T & t, Tuple&& tuple, std::index_sequence<Idx...>, Entity* = 0) {
-            return  entity.template retrieve(t, std::get<Idx>(std::forward<Tuple>(tuple))...);
+            return  entity.retrieve(t, std::get<Idx>(std::forward<Tuple>(tuple))...);
         }
 
         template<typename EntityT>
@@ -87,7 +87,7 @@ namespace vanilla {
         template<typename T, typename Tuple, std::size_t... Idx>
         decltype(std::declval<Entity>().retrieve(std::declval<T&>(),std::get<Idx>(std::declval<Tuple>())...), bool())
         retrieve(T & t, Tuple&& tuple, std::index_sequence<Idx...>, Entity* = 0) {
-            return  entity.template retrieve(t, std::get<Idx>(std::forward<Tuple>(tuple))...);
+            return  entity.retrieve(t, std::get<Idx>(std::forward<Tuple>(tuple))...);
         }
 
         template<typename EntityT>
