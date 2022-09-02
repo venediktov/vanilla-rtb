@@ -10,7 +10,14 @@ SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-FIND_PACKAGE(Boost 1.67.0 REQUIRED)
+OPTION(GET_BOOST "Get boost lib." OFF)
+
+IF(${GET_BOOST})
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/IntegrateBoost.cmake)
+  integrate_boost()
+ELSE()
+  FIND_PACKAGE(Boost 1.67.0 REQUIRED)
+ENDIF()
 
 #disable the search for boost-cmake.
 SET(Boost_NO_BOOST_CMAKE ON)
