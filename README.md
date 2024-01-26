@@ -165,6 +165,10 @@ $ mkdir Debug
 $ cd Debug
 $ cmake -DCMAKE_BUILD_TYPE=Debug .. -G "Unix Makefiles"
 $ make -j4 install
+####### Automatic integrate Boost library
+$ mkdir build && cd build
+$ cmake -DGET_BOOST=ON -DCMAKE_BUILD_TYPE=Release ../ -G "Unix Makefiles"
+$ make -j4 install
 ```
 
 ### Windows \:
