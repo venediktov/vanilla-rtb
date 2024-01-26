@@ -43,7 +43,6 @@ endmacro()
 
 
 macro(integrate_boost)
-  config_boost()
   if(Boost_FOUND)
     message(STATUS "Boost lib already exists")
   else()
