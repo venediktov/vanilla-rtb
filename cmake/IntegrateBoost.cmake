@@ -16,10 +16,12 @@ macro(download_boost)
   message(STATUS "Downloading boost...")
   message(STATUS "Target boost URL: ${BOOST_URL}")
   execute_process(COMMAND mkdir -p ${BOOST_ROOT_DIR})
-  execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && wget ${BOOST_URL}")
-  execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && tar -xvzf ./*.tar.gz")
-  execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && rm ./*.tar.gz")
-  execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && mv boost* boost")
+  if (NOT EXISTS ${BOOST_SRC_DIR})
+     file(DOWNLOAD ${BOOST_URL} ${BOOST_ROOT_DIR}/boost_1_67_0.tar.gz SHOW_PROGRESS)
+     execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && tar -xvzf ./*.tar.gz")
+     execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && rm ./*.tar.gz")
+     execute_process(COMMAND bash -c "cd ${BOOST_ROOT_DIR} && mv boost* boost")
+  endif()
 endmacro()
 
 
@@ -28,8 +30,8 @@ macro(install_boost)
   execute_process(COMMAND mkdir -p ${BOOST_INSTALL_DIR})
   execute_process(
     COMMAND 
-    bash -c "cd ${BOOST_SRC_DIR} && ./bootstrap.sh --prefix=${BOOST_INSTALL_DIR}")
-  execute_process(COMMAND bash -c "cd ${BOOST_SRC_DIR} && ./b2 install")
+    bash -c "cd ${BOOST_SRC_DIR} && ./bootstrap.sh --prefix=${BOOST_INSTALL_DIR} cxxflags=-std=c++17")
+  execute_process(COMMAND bash -c "cd ${BOOST_SRC_DIR} && ./b2 -j4 hardcode-dll-paths=true dll-path=\"'\\$ORIGIN/../lib'\" install")
 endmacro()
 
 
@@ -38,7 +40,7 @@ macro(config_boost)
   set(BOOST_ROOT ${BOOST_INSTALL_DIR})
   set(Boost_INCLUDE_DIR ${BOOST_INSTALL_DIR}/include)
   set(Boost_LIBRARY_DIRS ${BOOST_INSTALL_DIR}/lib)
-  find_package(Boost 1.67.0 REQUIRED)
+  find_package(Boost 1.67.0 EXACT REQUIRED)
 endmacro()
 
 
