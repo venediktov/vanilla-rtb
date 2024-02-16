@@ -1,25 +1,21 @@
 # -*- cmake -*-
 
-cmake_minimum_required(VERSION 3.3.2)
+cmake_minimum_required(VERSION 3.20)
 
 # VERSION not required, but good for library versioning
-project(CRUD VERSION 0.1.0)
+project(CRUD VERSION 0.2.0)
 
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 23)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
+ADD_COMPILE_OPTIONS(-Wall -Wextra -pedantic -Werror)
+SET(CRUD_BOOST_VERSION 1.84)
 
 set ( CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/examples)
-
-find_package(Boost
-             COMPONENTS "log" "system" "serialization" "program_options"
-             REQUIRED
-            )
 
 add_subdirectory(service)
 

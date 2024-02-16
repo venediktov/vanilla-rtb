@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
 
     restful_dispatcher_t handler(argv[3]) ;
     handler.crud_match(std::string("/venue_handler/RTB") )
-        .get([](http::server::reply & r, const http::crud::crud_match<std::string> & match) {
+        .get([](http::server::reply & r, const http::crud::crud_match<std::string> &) {
             //r = http::server::reply::stock_reply(http::server::reply::no_content, http::server::mime_types::JSON) ;
             r << "{value:\"Hello World\"}" << http::server::reply::flush("json") ;
             std::cout << "GET request" << std::endl;

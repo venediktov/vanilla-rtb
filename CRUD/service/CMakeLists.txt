@@ -1,16 +1,6 @@
-
-set(CMAKE_CXX_STANDARD 14)
-
 ## Configuring Boost
-set(REQUIRED_BOOST_LIBRARIES)
-list(APPEND REQUIRED_BOOST_LIBRARIES "system")
-list(APPEND REQUIRED_BOOST_LIBRARIES "regex")
 set(Boost_USE_MULTITHREADED ON)
-
-find_package(Boost
-             COMPONENTS "${REQUIRED_BOOST_LIBRARIES}"
-             REQUIRED
-            )
+find_package(Boost "${CRUD_BOOST_VERSION}" COMPONENTS "system" REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})

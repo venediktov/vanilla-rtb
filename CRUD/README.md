@@ -10,25 +10,13 @@ This library supports persistent connections to achieve highest throughput and u
 git clone https://github.com/venediktov/CRUD.git
 ```
 
-### Building on Linux 
+### Building on Linux & Mac OS X
 ```bash
 $ mkdir Release
 $ cd Release
-$ cmake -DCMAKE_BUILD_TYPE=Release -DCRUD_WITH_EXAMPLES=1 .. -G "Unix Makefiles"
-$ make -j $(nproc) install
-
+$ cmake -DCMAKE_BUILD_TYPE=Release -DCRUD_WITH_EXAMPLES=1 .. -G Ninja
+$ cmake --build . --target install
 ```
-
-### Building on  Mac OS 
-```bash
-$ mkdir Release
-$ cd Release
-$ cmake -DCMAKE_BUILD_TYPE=Release -DCRUD_WITH_EXAMPLES=1 .. -G "Unix Makefiles"
-$ make -j $(sysctl -n hw.physicalcpu) install
-
-```
-
-
 
 ### Running examples 
 ```bash
