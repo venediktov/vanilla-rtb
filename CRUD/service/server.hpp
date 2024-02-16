@@ -38,14 +38,15 @@ public:
   server& operator=(const server&) = delete;
   /// Construct the server to listen on the specified TCP address and port, and
   /// serve up files from the given directory.
+  template<typename Handler>
   explicit server(const std::string& address, const std::string& port,
-      const request_handler_type& handler)
+      Handler&& handler)
     : io_service_(),
     signals_(io_service_),
     acceptor_(io_service_),
     connection_manager_(),
     socket_(io_service_),
-    request_handler_(handler)
+    request_handler_(std::forward<Handler>(handler))
   {
     // Register to handle the signals that indicate when the server should exit.
     // It is safe to register for the same signal multiple times in a program,
