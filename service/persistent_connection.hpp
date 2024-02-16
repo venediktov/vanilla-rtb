@@ -116,8 +116,9 @@ private:
   {
     reply_.headers.emplace_back("Connection:" , "keep-alive");
     boost::asio::async_write(socket_, reply_.to_buffers(),
-        [=](boost::system::error_code ec, std::size_t)
+        [=](boost::system::error_code, std::size_t)
         {
+          // TODO: VL: why is error_code not checked?
             request_parser_.reset();
             reply_.headers.resize(0);
             reply_.status = reply::status_type::ok;

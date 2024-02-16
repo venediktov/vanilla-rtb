@@ -1,6 +1,6 @@
-# -*- cmake -*-
 
-cmake_minimum_required(VERSION 3.3.2)
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost "${CRUD_BOOST_VERSION}" COMPONENTS "log" "system" "serialization" "program_options" REQUIRED)
 
 include_directories(${Boost_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 
