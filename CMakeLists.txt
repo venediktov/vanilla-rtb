@@ -9,32 +9,24 @@ project(CRUD VERSION 0.1.0)
 #set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-add_subdirectory(service)
 
 set(CMAKE_CXX_STANDARD 14)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
-set ( CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR})
+set ( CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/examples)
 
 find_package(Boost
              COMPONENTS "log" "system" "serialization" "program_options"
              REQUIRED
             )
 
-include_directories(${Boost_INCLUDE_DIRS} handlers service)
+add_subdirectory(service)
 
-add_executable(
-        my_service
-        main.cpp
-        )
+if ( DEFINED CRUD_WITH_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
-find_package (Threads)
-
-target_link_libraries(
-        my_service
-        crud_service
-        ${Boost_LIBRARIES}
-        ${CMAKE_THREAD_LIBS_INIT}
-        )
-
+#Install all json files from our examples
+file(GLOB_RECURSE HTML_FILES ${CMAKE_CURRENT_SOURCE_DIR}/examples/*.html)
+INSTALL(FILES ${HTML_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX})
