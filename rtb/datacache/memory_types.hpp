@@ -51,7 +51,7 @@ struct Shared {
         mem_ptr.reset(open_segment(path)) ;
         return ;
     }
-    static std::string convert_base_dir(const std::string &base_dir) {
+    static std::string convert_base_dir([[maybe_unused]] const std::string &base_dir) {
         return "" ;
     }
 
@@ -99,18 +99,18 @@ struct Heap {
     typedef boost::shared_mutex lock_t ;
     typedef boost::unique_lock<lock_t>  scoped_exclusive_locker_t;
     typedef boost::shared_lock<lock_t>  scoped_shared_locker_t;
-    static segment_t * open_or_create_segment (const std::string &path, size_t size) {
+    static segment_t * open_or_create_segment ([[maybe_unused]] const std::string &path, size_t size) {
         return new segment_t(size) ; 
     }
-    static segment_t * create_segment (const std::string &path, size_t size) {
+    static segment_t * create_segment ([[maybe_unused]] const std::string &path, size_t size) {
         return new segment_t(size) ; 
     }
     template <typename MemPtr>
-    static void grow( MemPtr &mem_ptr, const std::string &path, size_t size) {
+    static void grow( MemPtr &mem_ptr, [[maybe_unused]] const std::string &path, size_t size) {
         mem_ptr->grow(size) ;
         return ;
     }
-    static std::string convert_base_dir(const std::string &base_dir) {
+    static std::string convert_base_dir([[maybe_unused]] const std::string &base_dir) {
         return "" ;
     }
 

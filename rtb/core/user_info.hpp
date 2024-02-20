@@ -25,7 +25,7 @@ namespace vanilla {
 
 namespace boost { namespace serialization {
     template<class Archive>
-    void serialize(Archive & ar, vanilla::UserInfo & value, const unsigned int version) {
+    void serialize(Archive & ar, vanilla::UserInfo & value, [[maybe_unused]] const unsigned int version) {
         ar & value.user_id;
         ar & value.user_data;
     }

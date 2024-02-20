@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
-
 add_executable(
     multi_exchange_handler
     multi_exchange_handler.cpp

@@ -60,7 +60,7 @@ namespace vanilla {
         }
 
         template<typename Impression>
-        void addBid(const BidRequest& request, const Impression& imp, const std::shared_ptr<Ad> &ad) {
+        void addBid([[maybe_unused]] const BidRequest& request, const Impression& imp, const std::shared_ptr<Ad> &ad) {
             if (response.seatbid.size() == 0) {
                 response.seatbid.emplace_back();
             }

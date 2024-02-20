@@ -39,7 +39,7 @@ namespace vanilla {
             }
 
             void request(const std::string &key, std::string &data) {
-                client.get(key, data, [](boost::asio::io_service& io, const std::string & data) {
+                client.get(key, data, [](boost::asio::io_service& io, [[maybe_unused]] const std::string & data) {
                     io.stop();
                 });
 
@@ -56,7 +56,7 @@ namespace vanilla {
                     [](boost::asio::io_service & io) {
                         io.stop();
                     },
-                    [](const std::string& err, boost::asio::io_service & io) {
+                    []([[maybe_unused]] const std::string& err, boost::asio::io_service & io) {
                         io.stop();
                     }
                 );

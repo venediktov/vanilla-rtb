@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     //initialize and setup CRUD dispatcher
     restful_dispatcher_t dispatcher(config.get("cache-loader.root")) ;
     dispatcher.crud_match(boost::regex("/cache_loader/(\\w*)"))
-              .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              .put([&]([[maybe_unused]] http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "received cache update event url=" << match[0];
               try {
                   caches[match[1]]();

@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     // bid exchange handler
     vanilla::exchange::exchange_handler<DSL::GenericDSL<>> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout));
     openrtb_handler_distributor
-    .logger([](const std::string &data) {
+    .logger([]([[maybe_unused]] const std::string &data) {
         //LOG(debug) << "request_data for distribution=" << data ;
     })
     .error_logger([](const std::string &data) {
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
                     ++status.timeout_response_count;
                 }
             })
-            .on_add([&status](const vanilla::multibidder_collector<string_view>* collector) {
+            .on_add([&status]([[maybe_unused]] const vanilla::multibidder_collector<string_view>* collector) {
                  ++status.bidder_response_count;
             });
         
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
             openrtb_handler_distributor.handle_post(r,match);
         });
     dispatcher.crud_match(boost::regex("/status.html"))
-        .get([&status](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+        .get([&status](http::server::reply & r, [[maybe_unused]] const http::crud::crud_match<boost::cmatch> & match) {
             r << status.to_string();
             r.stock_reply(http::server::reply::ok);
         });

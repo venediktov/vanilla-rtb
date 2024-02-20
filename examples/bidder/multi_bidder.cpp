@@ -47,7 +47,7 @@ using RtbBidderCaches = vanilla::BidderCaches<BidderConfig>;
 void run(short port, RtbBidderCaches &bidder_caches) {
     using namespace vanilla::messaging;
     vanilla::Bidder<DSL::GenericDSL<>, BidderConfig> bidder(bidder_caches);
-    communicator<broadcast>().inbound(port).process<vanilla::VanillaRequest>([&bidder](auto endpoint, vanilla::VanillaRequest vanilla_request) {
+    communicator<broadcast>().inbound(port).process<vanilla::VanillaRequest>([&bidder]([[maybe_unused]] auto endpoint, vanilla::VanillaRequest vanilla_request) {
         LOG(debug) << "Request from user " << vanilla_request.user_info.user_id;
         return bidder.bid(vanilla_request);
     }).dispatch();
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     else {
         using OS::UNIX::Process;
         try {
-            auto handle = [&config, &caches](unsigned int port) {
+            auto handle = [&config, &caches]([[maybe_unused]] unsigned int port) {
                 LOG(info) << "Starting mock bidder pid=" << getpid();
                 run(config.data().port, caches);
             };

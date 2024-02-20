@@ -23,7 +23,7 @@ using namespace vanilla;
 template<typename Cache>
 void run(short port, Cache &cache) {
     using namespace vanilla::messaging;
-    communicator<broadcast>().inbound(port).consume<CampaignBudget>([&cache](auto endpoint, auto budget) {
+    communicator<broadcast>().inbound(port).consume<CampaignBudget>([&cache]([[maybe_unused]] auto endpoint, auto budget) {
         cache.update(budget,budget.campaign_id);
         LOG(debug) << "updated budget :" << budget;
         return ;

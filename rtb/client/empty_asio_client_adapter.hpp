@@ -32,12 +32,12 @@ namespace vanilla {
         empty_asio_client_adapter(boost::asio::io_service &io):
             io{io}
         {}
-        void connect(const std::string &host, uint16_t port, const connection_ok_handler_type &connection_ok_handler, const connection_fail_handler_type &connection_fail_handler) {        
+        void connect([[maybe_unused]] const std::string &host, [[maybe_unused]] uint16_t port, const connection_ok_handler_type &connection_ok_handler, const connection_fail_handler_type &) {        
             // Please call specific clients  connect method here,
             // call connection_ok_handler & connection_fail_handler in callback lambda
             connection_ok_handler(this->io);        
         }
-        void get(const std::string &key, std::string &data, const get_handler_type &get_handler) {
+        void get([[maybe_unused]] const std::string &key, [[maybe_unused]] std::string &ata, const get_handler_type &get_handler) {
             // Please call specific clients  get method here,
             // call get_handler  in callback lambda
             get_handler(this->io, "");    

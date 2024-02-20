@@ -113,7 +113,7 @@ int encode(const char *js, jsmntok_t *t, size_t count, boost::any &value) {
             if ( k.empty() || v.empty()) {
                 continue;
             }
-            boost::any_cast<std::map<boost::string_view, boost::any>&>(value).insert({std::move(boost::any_cast<boost::string_view>(k)),std::move(v)});
+            boost::any_cast<std::map<boost::string_view, boost::any>&>(value).insert({boost::any_cast<boost::string_view>(k), std::move(v)});
         }
         return j + 1;
     } else if (t->type == JSMN_ARRAY) {

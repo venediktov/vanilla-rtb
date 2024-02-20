@@ -33,7 +33,7 @@ int main(int argc, char**argv) {
   unsigned short port{};
   int num_of_bidders{};
 
-  vanilla::config::config<void *> config([&](void *&d, boost::program_options::options_description &desc){
+  vanilla::config::config<void *> config([&]([[maybe_unused]] void *&d, boost::program_options::options_description &desc){
     desc.add_options()
         ("help", "produce help message")
         ("mock-bidder.local_address", po::value<std::string>(&local_address)->default_value("0.0.0.0"), "bind to this address locally")
@@ -76,7 +76,7 @@ void run_communicator(unsigned short port) {
   using BidRequest  = openrtb::BidRequest<jsonv::string_view>;
   using BidResponse = openrtb::BidResponse<jsonv::string_view>;
   LOG(info) << "Starting mock bidder pid=" << getpid();
-  communicator<broadcast>().inbound(port).process<BidRequest>([](auto endpoint, BidRequest data) {
+  communicator<broadcast>().inbound(port).process<BidRequest>([]([[maybe_unused]] auto endpoint, BidRequest) {
       //LOG(info) << "Received(Broadcast:" << *endpoint  << "):" << data ;
       return BidResponse();
   }).dispatch();

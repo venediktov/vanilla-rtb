@@ -27,28 +27,30 @@
 #include "core/algos.hpp"
 #include <memory>
 #include <type_traits>
+#include <functional>
 
 
 namespace vanilla {
 
-struct chained_selector {
-template<typename BidRequest, typename Impression, typename Arg, typename Func , typename... Funcs>
-static typename std::enable_if< (sizeof...(Funcs) > 0), typename terminal_function<Func,Funcs...>::template return_type<Arg,BidRequest,Impression> >::type
-chain_function(BidRequest&& req, Impression&& imp, Arg&& arg, Func head, Funcs... tail) {
-    //using return_type = typename vanilla::nth_function<sizeof...(Funcs)-1,Funcs...>::template return_type<Arg,BidRequest<T>,Impression<T>>::type;
-    using return_type = typename terminal_function<Func,Funcs...>::template return_type<Arg,BidRequest,Impression>;
-    auto next_arg = head(std::forward<Arg>(arg), std::forward<decltype(req)>(req), std::forward<decltype(imp)>(imp));
-    if ( next_arg ) {
-        return chain_function(std::forward<BidRequest>(req), std::forward<Impression>(imp), next_arg, tail...);
-    }
-    return return_type();
+namespace detail {
+
+template <typename BidRequest, typename Impression, typename Arg, typename Func,
+          typename... Funcs>
+static auto chain_function(BidRequest &&req, Impression &&imp, Arg &&arg,
+                           Func head, Funcs... tail) {
+  if constexpr (sizeof...(tail) == 0) {
+    return head(std::forward<Arg>(arg), std::forward<BidRequest>(req),
+                std::forward<Impression>(imp));
+  } else if constexpr (sizeof...(tail) > 0) {
+    return chain_function(
+        std::forward<BidRequest>(req), std::forward<Impression>(imp),
+        head(std::forward<Arg>(arg), std::forward<BidRequest>(req),
+             std::forward<Impression>(imp)),
+        tail...);
+  }
 }
 
-template<typename BidRequest, typename Impression, typename Arg, typename Func>
-static auto chain_function(BidRequest&& req, Impression&& imp, Arg&& arg, Func terminal_func) {
-    return terminal_func(std::forward<Arg>(arg), std::forward<BidRequest>(req), std::forward<Impression>(imp));
-}
-};
+} // namespace detail
 
 template<typename BudgetManager, typename Ad>
 class ad_selector {
@@ -63,7 +65,7 @@ class ad_selector {
 
         template<typename BidRequest, typename Impression, typename HeadArg , typename... Funcs>
         auto select(BidRequest&& req, Impression&& imp, HeadArg&& head, Funcs... funcs) {
-            auto ads = chained_selector::chain_function( std::forward<BidRequest>(req), std::forward<Impression>(imp), std::forward<HeadArg>(head), funcs...);
+            auto ads = detail::chain_function( std::forward<BidRequest>(req), std::forward<Impression>(imp), std::forward<HeadArg>(head), funcs...);
             if(selection_algo) {
                 return selection_algo(ads);
             }

@@ -72,7 +72,7 @@ private:
   void do_read()
   {
     socket_.async_read_some(boost::asio::buffer(buffer_),
-        [=](boost::system::error_code ec, std::size_t bytes_transferred)
+        [this](boost::system::error_code ec, std::size_t bytes_transferred)
         {
             
           if (!ec)
@@ -116,7 +116,7 @@ private:
   {
     reply_.headers.emplace_back("Connection:" , "keep-alive");
     boost::asio::async_write(socket_, reply_.to_buffers(),
-        [=](boost::system::error_code, std::size_t)
+        [this](boost::system::error_code, std::size_t)
         {
           // TODO: VL: why is error_code not checked?
             request_parser_.reset();

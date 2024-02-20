@@ -67,7 +67,7 @@ private:
   {
     auto self(this->shared_from_this());
     socket_.async_read_some(boost::asio::buffer(buffer_),
-        [=](boost::system::error_code ec, std::size_t bytes_transferred)
+        [this](boost::system::error_code ec, std::size_t bytes_transferred)
         {
           if (!ec)
           {
@@ -109,7 +109,7 @@ private:
   {
     auto self(this->shared_from_this());
     boost::asio::async_write(socket_, reply_.to_buffers(),
-        [=](boost::system::error_code ec, std::size_t)
+        [this](boost::system::error_code ec, std::size_t)
         {
           if (!ec)
           {

@@ -92,7 +92,7 @@ namespace vanilla {
             return data_.c_str();
         }
 
-        const size_t length() const {
+        size_t length() const {
             return data_.length();
         }
 

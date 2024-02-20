@@ -1,0 +1,10 @@
+---
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+BasedOnStyle: LLVM
+IndentWidth: 4
+LineEnding: LF
+---
+Language: Cpp
+# Force pointers to the type for C++.
+PointerAlignment: Left
+...

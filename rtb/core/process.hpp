@@ -45,6 +45,9 @@ const std::string FAILED_WAIT = "wait failed , status=" ;
 
 struct null_proc_handler{};
 
+template <typename>
+struct Process;
+
 template<typename Handler = null_proc_handler>
 struct Process {
 
@@ -64,9 +67,8 @@ struct Process {
     template<typename ...Args,
              typename T = Handler,
              typename = typename std::enable_if<!std::is_same<T,null_proc_handler>::value>::type>
-    typename std::result_of<T(Args...)>::type 
-    operator() (Args && ...args ) const {
-        handle_(std::forward<Args>(args)...) ;
+    auto operator() (Args && ...args ) const {
+        return handle_(std::forward<Args>(args)...) ;
     }
     
     template<typename Child,

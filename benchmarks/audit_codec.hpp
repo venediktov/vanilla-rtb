@@ -133,7 +133,7 @@ constexpr uint32_t full_record_size(Args&&... args) {
 // ------------------------------------------------------------------------------
 
 template<typename Arg> inline
-uint32_t encode_field(char* buf, uint32_t& blob_offset, Arg&& arg) {
+uint32_t encode_field(char* buf, [[maybe_unused]] uint32_t& blob_offset, Arg&& arg) {
     using naked_t = std::remove_cv_t<std::remove_reference_t<Arg>>;
 
     *(buf++) = typemap::code_of<naked_t>();
@@ -160,7 +160,7 @@ inline
 uint32_t encode_field(char* buf, uint32_t& blob_offset, char const* arg) { return encode_field(buf, blob_offset, std::string_view(arg)); }
 
 template<typename Arg> inline
-uint32_t encode_blob(char* buf, Arg&& arg) { return 0; }
+uint32_t encode_blob([[maybe_unused]] char* buf, [[maybe_unused]] Arg&& arg) { return 0; }
 
 inline
 uint32_t encode_blob(char* blob_buf, std::string_view arg) {

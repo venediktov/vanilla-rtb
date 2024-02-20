@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
     
-    auto request_user_data_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto && info) {
+    auto request_user_data_f = [&config]([[maybe_unused]]http::server::reply &reply, BidRequest &, auto && info) {
         using kv_type = vanilla::client::empty_key_value_client;
         thread_local kv_type kv_client;
         bool is_matched_user = info.user_id.length();
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
         kv_client.request(info.user_id, info.user_data);
         return true;
     };
-    auto no_bid_f = [&bid_handler, &config](http::server::reply &reply, BidRequest &, auto&&) {
+    auto no_bid_f = [](http::server::reply &reply, BidRequest &, auto&&) {
         reply << http::server::reply::flush("");
         return true;
     };
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
     decision_router_type decision_router(decision_tree);
     
     bid_handler    
-        .logger([](const std::string &data) {
+        .logger([]([[maybe_unused]]const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
         })
         .error_logger([](const std::string &data) {
@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
             bid_handler.handle_post(r, match);
         });
     dispatcher.crud_match(boost::regex("/test/"))
-        .post([](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+        .post([](http::server::reply & r, [[maybe_unused]] const http::crud::crud_match<boost::cmatch> & match) {
             //r << "test";
             //r.stock_reply(http::server::reply::ok);
             r << "test" << http::server::reply::flush("text");

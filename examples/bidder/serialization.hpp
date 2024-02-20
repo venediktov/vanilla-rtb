@@ -20,7 +20,7 @@
 //Non-Intrusive boost serialization implementation
 namespace boost { namespace serialization {
     template<class Archive>
-    void serialize(Archive & ar, Ad & value, const unsigned int version) {
+    void serialize(Archive & ar, Ad & value, [[maybe_unused]] const unsigned int version) {
         ar & value.ad_id;
         ar & value.campaign_id;
         ar & value.width;
@@ -31,14 +31,14 @@ namespace boost { namespace serialization {
     }
 
     template<class Archive>
-    void serialize(Archive & ar, Geo & value, const unsigned int version) {
+    void serialize(Archive & ar, Geo & value, [[maybe_unused]] const unsigned int version) {
         ar & value.geo_id;
         ar & value.city;
         ar & value.country;
         ar & value.record;
     }
     template<class Archive>
-    void serialize(Archive & ar, GeoCampaign & value, const unsigned int version) {
+    void serialize(Archive & ar, GeoCampaign & value, [[maybe_unused]] const unsigned int version) {
         ar & value.geo_id;
         ar & value.campaign_id;
     }

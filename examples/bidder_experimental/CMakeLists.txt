@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
-
-
 include_directories(
                    "${PROJECT_SOURCE_DIR}/examples"
                    "${PROJECT_SOURCE_DIR}/examples/bidder"
@@ -34,7 +31,7 @@ install(TARGETS ico_campaign_bidder_test
 
 add_custom_target(
     generator_experimental
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/../bidder/generator && python ico.py
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/../bidder/generator && python3 ico.py
 )
 
 add_dependencies(ico_campaign_bidder_test generator_experimental)

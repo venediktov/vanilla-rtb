@@ -79,7 +79,7 @@ namespace vanilla {
         }
 
         template<typename Impression, typename Ad>
-        void addBid(const BidRequest& request, const Impression& imp, Ad && ad) {
+        void addBid([[maybe_unused]] const BidRequest& request, const Impression& imp, Ad && ad) {
             if (response.seatbid.size() == 0) {
                 response.seatbid.emplace_back();
             }

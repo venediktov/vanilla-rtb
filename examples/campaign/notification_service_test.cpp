@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
             r.stock_reply(http::server::reply::ok);
         });
     dispatcher.crud_match(boost::regex("/status.html"))
-        .get([&status](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+        .get([&status](http::server::reply & r, const http::crud::crud_match<boost::cmatch> &) {
             r << boost::lexical_cast<std::string>(status) ;
             r.stock_reply(http::server::reply::ok);
         });

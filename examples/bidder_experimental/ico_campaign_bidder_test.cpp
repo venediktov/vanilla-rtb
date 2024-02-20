@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
     using restful_dispatcher_t =  http::crud::crud_dispatcher<http::server::request, http::server::reply> ;
     using DSLT = DSL::GenericDSL<std::string, DSL::rapid_mapper> ;
     using BidRequest = DSLT::deserialized_type;
-    using BidResponse = DSLT::serialized_type;
+    // using BidResponse = DSLT::serialized_type;
     using BidderConfig = vanilla::config::config<ico_bidder_config_data>;
     using CacheLoader  =  vanilla::GenericBidderCacheLoader<DomainEntity<>, ICOCampaignEntity<>, AdDataEntity<BidderConfig>, CampaignCache<BidderConfig>>;
     using Selector = vanilla::ad_selector<vanilla::BudgetManager, Ad>;
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     };
 
     vanilla::core::Banker<BudgetManager> banker;
-    auto retrieve_campaign_ads_f = [&](boost::optional<std::vector<ICOCampaign>> campaigns, auto && req, auto && imp)  {
+    auto retrieve_campaign_ads_f = [&](boost::optional<std::vector<ICOCampaign>> campaigns, [[maybe_unused]] auto && req, auto && imp)  {
         std::vector<Ad> retrieved_cached_ads;
         for (auto &campaign : *campaigns) {
             if (!cacheLoader.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
@@ -125,14 +125,14 @@ int main(int argc, char *argv[]) {
     };
 
     bid_handler    
-        .logger([](const std::string &data) {
+        .logger([]([[maybe_unused]] const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
         })
         .error_logger([](const std::string &data) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::Bidder<DSLT, Selector> bidder(std::move(Selector()));
+            thread_local vanilla::Bidder<DSLT, Selector> bidder{Selector{}};
             return bidder.bid(request,
                               //chained matchers
                               request.site.get().ref,

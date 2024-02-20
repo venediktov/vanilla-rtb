@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
     };
     std::map<std::string, std::function<void(CampaignBudgets&,uint32_t)>> read_commands = {
         {"budget/id/" , [&cache](auto &data, auto id){cache.retrieve(data,id);}},
-        {"budget" ,   [&cache](auto &data, auto id){cache.retrieve(data);}}
+        {"budget" ,   [&cache](auto &data, [[maybe_unused]] auto id){cache.retrieve(data);}}
     };
     std::map<std::string, std::function<void(const CampaignBudget&,uint32_t)>> update_commands = {
         {"budget/id/" , [&cache](auto cb, auto id){cache.update(cb,id);}}
@@ -140,7 +140,7 @@ int main(int argc, char *argv[]) {
     //initialize and setup CRUD dispatcher
     restful_dispatcher_t dispatcher(config.get("campaign-manager.root")) ;
     dispatcher.crud_match(boost::regex("/campaign/([A-Za-z/]+)(\\d+)"))
-              .put([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              .put([&]([[maybe_unused]] http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
               LOG(info) << "Create received cache update event url=" << match[0];
                 try {
                     auto data = DSL::CampaignDSL<CampaignBudgetMapper>().extract_request(match.data);
@@ -153,7 +153,7 @@ int main(int argc, char *argv[]) {
                     LOG(error) << e.what();
                 }
               })
-              .post([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              .post([&]([[maybe_unused]] http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
                 LOG(info) << "Update received event url=" << match[0];
                 try {
                     auto data = DSL::CampaignDSL<CampaignBudgetMapper>().extract_request(match.data);
@@ -166,7 +166,7 @@ int main(int argc, char *argv[]) {
                     LOG(error) << e.what();
                 }
               })
-              .del([&](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
+              .del([&]([[maybe_unused]] http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
                 LOG(info) << "Delete received event url=" << match[0];
                 try {
                     uint32_t campaign_id = boost::lexical_cast<uint32_t>(match[2]);

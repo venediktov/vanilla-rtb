@@ -106,3 +106,8 @@ install_manifest.txt
 *.db-shm
 *.db-wal
 compile_commands.json
+
+build/
+.cache/
+.vscode/
+

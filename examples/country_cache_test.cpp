@@ -95,7 +95,7 @@ namespace boost {
 namespace serialization {
 
 template<class Archive>
-void serialize(Archive & ar, CityCountry & value, const unsigned int version)
+void serialize(Archive & ar, CityCountry & value, [[maybe_unused]] const unsigned int version)
 {
     ar & value.city;
     ar & value.country;

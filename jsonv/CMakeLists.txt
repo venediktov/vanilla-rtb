@@ -10,7 +10,8 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
 # an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.20)
+
 project(json-voorhees)
 
 set(PACKAGE_NAME "jsonv"
@@ -20,10 +21,6 @@ set(PACKAGE_NAME "jsonv"
 ################################################################################
 # Configuration                                                                #
 ################################################################################
-
-if (CMAKE_VERSION VERSION_GREATER "3.0")
-  cmake_policy(SET CMP0042 NEW) # MACOSX_RPATH
-endif()
 
 # Extract version information from the config file. It can still be overridden by the user setting JSONV_VERSION, but
 # that is probably a bad idea.
@@ -36,17 +33,6 @@ set(JSONV_VERSION "${JSONV_VERSION_MAJOR}.${JSONV_VERSION_MINOR}.${JSONV_VERSION
     CACHE STRING "The version of the library."
    )
 message(STATUS "JSONV version: ${JSONV_VERSION}")
-
-set(CXX_STANDARD_DEFAULT "c++14")
-if (CMAKE_COMPILER_IS_GNUCC)
-  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
-    set(CXX_STANDARD_DEFAULT "c++1y")
-  endif()
-endif()
-
-set(CXX_STANDARD ${CXX_STANDARD_DEFAULT}
-    CACHE STRING "The version of the language to use (only applies to GCC and Clang)."
-   )
 
 option(JSONV_BUILD_TESTS
        "Should the unit test library get built?"
@@ -172,7 +158,7 @@ option(BENCHMARK
 if(WIN32)
 else(WIN32)
     # Reasonable compilers...
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=${CXX_STANDARD} -pedantic -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
     set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -ggdb -DJSONV_DEBUG=1")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ggdb")
 endif(WIN32)
@@ -183,6 +169,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include"
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost
+             "${RTB_BOOST_VERSION}"
              COMPONENTS "${REQUIRED_BOOST_LIBRARIES}"
              REQUIRED
             )
@@ -203,6 +190,7 @@ set_target_properties(jsonv
                           SOVERSION ${JSONV_VERSION}
                           VERSION   ${JSONV_VERSION}
                      )
+
 if (Boost_LIBRARIES)
     target_link_libraries(jsonv ${Boost_LIBRARIES})
 endif()
@@ -221,6 +209,9 @@ if (JSONV_BUILD_TESTS)
                       USES_TERMINAL
                      )
 endif()
+
+target_compile_options(jsonv INTERFACE -Wno-deprecated-declarations)
+
 
 if (COVERAGE)
     target_link_libraries(jsonv "gcov")

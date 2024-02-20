@@ -36,11 +36,11 @@ namespace vanilla {
                 return *this;
             }
 
-            void request(const std::string &key, std::string &data) {
+            void request([[maybe_unused]] const std::string &key, [[maybe_unused]] std::string &data) {
                 response_handler();
             }
 
-            void connect(const std::string &host, uint16_t port) {
+            void connect([[maybe_unused]] const std::string &host, [[maybe_unused]] uint16_t port) {
             }
 
             bool connected() const {

@@ -1,9 +1,8 @@
-cmake_minimum_required(VERSION 3.1)
-
 set(REQUIRED_BOOST_LIBRARIES)
 list(APPEND REQUIRED_BOOST_LIBRARIES "log" "program_options" "system" "serialization" "date_time")
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost
+             "${RTB_BOOST_VERSION}"
              COMPONENTS "${REQUIRED_BOOST_LIBRARIES}"
              REQUIRED
             )

@@ -118,6 +118,7 @@ value merge_explicit(const merge_rules& rules,
             if (b.kind() == kind::integer)
                 return a.as_integer() + b.as_integer();
             // fall through to decimal handler if b is a decimal
+            [[fallthrough]];
         case kind::decimal:
             return a.as_decimal() + b.as_decimal();
         case kind::null:

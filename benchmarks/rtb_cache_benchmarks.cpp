@@ -135,7 +135,6 @@ BENCHMARK_REGISTER_F(CacheBenchmarkFixture, campaign_load_benchmark);
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, campaign_retrieve_benchmark)(benchmark::State& state)
 {
     uint32_t const campaign_id = 36;
-    vanilla::CampaignBudget campaignBudget;
     while (state.KeepRunning())
     {
         benchmark::DoNotOptimize(campaign_cache_->retrieve(campaign_id));

@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     using BidRequest = DSLT::deserialized_type;
     using BidResponse = DSLT::serialized_type;
    
-    int n_bid{};
+    size_t n_bid{};
     unsigned short port{};
     vanilla::config::config<exchange_config_data> config([&](exchange_config_data &d, boost::program_options::options_description &desc){
         desc.add_options()
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
             ("exchange.v1.timeout", boost::program_options::value<int>(&d.handler_timeout_v1), "exchange_handler_test v1 timeout")
             ("exchange.v2.timeout", boost::program_options::value<int>(&d.handler_timeout_v2), "exchange_handler_test v2 timeout")
             ("mock-bidder.port", po::value<unsigned short>(&port)->default_value(5000), "udp port for broadcast")
-            ("mock-bidder.num_of_bidders", po::value<int>(&n_bid)->default_value(1), "number of bidders to wait for")
+            ("mock-bidder.num_of_bidders", po::value<size_t>(&n_bid)->default_value(1), "number of bidders to wait for")
         ;
     });
     try {
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     // ab.sh -n30000 -c10 --auction 
     exchange_handler<DSLT> openrtb_handler(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler    
-    .logger([](const std::string &data) {
+    .logger([]([[maybe_unused]] const std::string &data) {
 //        LOG(debug) << "request_data_v1=" << data ;
     })
     .error_logger([](const std::string &data) {
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
             r = http::server::reply::stock_reply(code);
         };
     })
-    .auction_async([](const auto &request) {
+    .auction_async([]([[maybe_unused]] const auto &request) {
         //TODO: send to the auction Asynchronously with timeout or bid directly in this handler
         return  BidResponse();
     });
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     // ab.sh -n30000 -c10 --auction-any 
     exchange_handler<DSLTA> openrtb_handler_any(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler_any
-    .logger([](const std::string &data) {
+    .logger([]([[maybe_unused]] const std::string &data) {
     })
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v1 error " << data ;
@@ -104,14 +104,14 @@ int main(int argc, char *argv[]) {
             r = http::server::reply::stock_reply(code);
         };
     })
-    .auction_async([](const auto &request) {
+    .auction_async([]([[maybe_unused]] const auto &request) {
         return  BidResponse();
     });
     
     // ab.sh -n30000 -c10 --auction-rapid
     exchange_handler<DSLTR> openrtb_handler_rapid(std::chrono::milliseconds(config.data().handler_timeout_v1));
     openrtb_handler_rapid
-    .logger([](const std::string &data) {
+    .logger([]([[maybe_unused]] const std::string &data) {
     })
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v1 error " << data ;
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
             r = http::server::reply::stock_reply(code);
         };
     })
-    .auction_async([](const auto &request) {
+    .auction_async([]([[maybe_unused]] const auto &request) {
         return  BidResponse();
     });
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     .error_logger([](const std::string &data) {
         LOG(debug) << "request v2 error " << data ;
     })
-    .auction_async([&uuid_generator](const BidRequest &request) {
+    .auction_async([&uuid_generator]([[maybe_unused]] const BidRequest &request) {
         //TODO: send to the auction synchronously with timeout or bid directly in this handler
         BidResponse response;
         boost::uuids::uuid id = uuid_generator() ;
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
     // or you can broadcast to your farm of multiple bidders on multiple remote machines
     exchange_handler<DSLT> openrtb_handler_distributor(std::chrono::milliseconds(config.data().handler_timeout_v2));
     openrtb_handler_distributor
-    .logger([](const std::string &data) {
+    .logger([]([[maybe_unused]] const std::string &data) {
         //LOG(debug) << "request_data for distribution=" << data ;
     })
     .error_logger([](const std::string &data) {

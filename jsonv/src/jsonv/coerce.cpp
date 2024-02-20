@@ -197,6 +197,7 @@ value coerce_merge(value a, value b)
         if (can_coerce(b, kind::integer))
             return a.as_integer() + coerce_integer(b);
         // fall through to see if we can coerce a decimal
+        [[fallthrough]];
     case kind::decimal:
         if (can_coerce(b, kind::decimal))
             return a.as_decimal() + coerce_decimal(b);

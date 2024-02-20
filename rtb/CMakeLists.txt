@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
-
 project(vanilla-rtb)
 
 
@@ -19,6 +17,7 @@ set(REQUIRED_BOOST_LIBRARIES)
 list(APPEND REQUIRED_BOOST_LIBRARIES "log" "serialization" "system")
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost
+             "${RTB_BOOST_VERSION}"
              COMPONENTS "${REQUIRED_BOOST_LIBRARIES}"
              REQUIRED
             )

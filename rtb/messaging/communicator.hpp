@@ -25,7 +25,6 @@
 
 #include <string>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -121,7 +120,7 @@ public:
      out_data_ = std::move(serialize(std::forward<Serializable>(data)));
      socket_.async_send_to(
         boost::asio::buffer(out_data_), to_endpoint_,
-        [](const boost::system::error_code& error, std::size_t bytes_transferred) {
+        [](const boost::system::error_code&, std::size_t) {
      });
   }
 
@@ -139,7 +138,7 @@ private:
   template<typename Handler>
   void handle_receive_from(const boost::system::error_code& error, 
                            Handler  handler,
-                           size_t bytes_recvd) 
+                           [[maybe_unused]] size_t bytes_recvd) 
   {
     if (!error) {
       socket_.async_receive_from(
@@ -176,7 +175,7 @@ public:
      out_data_ = std::move(serialize(std::forward<Serializable>(data)));
      socket_.async_send_to(
         boost::asio::buffer(out_data_), to_endpoint_,
-        [](const boost::system::error_code& error, std::size_t bytes_transferred) {
+        [](const boost::system::error_code&, std::size_t) {
      });
   }
 
@@ -184,7 +183,7 @@ public:
      out_data_ = std::move(std::string(data,size));
      socket_.async_send_to(
         boost::asio::buffer(out_data_), to_endpoint_,
-        [](const boost::system::error_code& error, std::size_t bytes_transferred) {
+        [](const boost::system::error_code&, std::size_t) {
      });
   }
   
@@ -203,7 +202,7 @@ private:
   template<typename Handler>
   void handle_receive_from(const boost::system::error_code& error, 
                            Handler handler, 
-                           size_t bytes_recvd) 
+                           [[maybe_unused]] size_t bytes_recvd) 
   {
     if (!error) {
       socket_.async_receive_from(
@@ -285,7 +284,7 @@ public:
     self_type & consume(Handler handler) {
        if( consumer_ ) {
            //intercept a call from receive, and call handler-consumer 
-           consumer_->receive_async([this,handler](const boost::asio::ip::udp::endpoint &from_endpoint, auto data) { //intercept a call for deserialization
+           consumer_->receive_async([handler](const boost::asio::ip::udp::endpoint &from_endpoint, auto data) { //intercept a call for deserialization
                handler(&from_endpoint, std::move(deserialize<T>(data)));
            });
        }

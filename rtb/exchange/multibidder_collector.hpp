@@ -32,7 +32,7 @@ class multibidder_collector {
         using BidResponse = openrtb::BidResponse<T>;
         using responses_type = std::vector<BidResponse>;
                 
-        multibidder_collector(int num_bidders) :
+        multibidder_collector(size_t num_bidders) :
             num_bidders{num_bidders}
         {}
         
@@ -87,11 +87,11 @@ class multibidder_collector {
             return responses;
         }
         
-        int get_num_bidders() const {
+        size_t get_num_bidders() const {
             return num_bidders;
         }
     private:
-        int num_bidders;
+        size_t num_bidders;
         responses_type responses;
         response_handler_type response_handler;
         add_handler_type add_handler;

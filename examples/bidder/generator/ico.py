@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import random
 
 max_campaigns = 100

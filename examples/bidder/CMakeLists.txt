@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.1)
-
 add_executable(
     http_bidder_test
     http_bidder_test.cpp
@@ -44,7 +42,7 @@ install(TARGETS http_bidder_test multi_bidder
 
 add_custom_target(
     generator
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/generator && python ad.py && python campaign_budget.py > ../data/campaign_budget
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/generator && python3 ad.py && python3 campaign_budget.py > ../data/campaign_budget
 )
 
 add_dependencies(http_bidder_test generator)
