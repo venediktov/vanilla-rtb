@@ -45,8 +45,8 @@ namespace boost {
 
 //This struct gets stored in the cache
 struct ICOCampaign {
-    uint32_t domain_id;
-    uint32_t campaign_id;
+    uint32_t domain_id{};
+    uint32_t campaign_id{};
      
     struct domain_id_tag{};
 

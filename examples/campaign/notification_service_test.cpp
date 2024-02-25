@@ -99,34 +99,32 @@ int main(int argc, char* argv[]) {
     dispatcher.crud_match(boost::regex(config.data().nurl_match))
         .get([&status,&cache,&config](http::server::reply & r, const http::crud::crud_match<boost::cmatch> & match) {
             using namespace vanilla::messaging;
-            boost::optional<uint32_t> campaign_id;
-            boost::optional<uint64_t> price;
+
             std::string price_str = match[1];
             std::string campaign_id_str = match[2];
-            if ( !campaign_id_str.empty() ) {
-                campaign_id = boost::lexical_cast<uint32_t>(campaign_id_str);
-            }
-            if ( !price_str.empty() ) {
-                price = boost::lexical_cast<uint64_t>(price_str);
-            }
-            if ( !campaign_id || !price ) {
+
+            if (campaign_id_str.empty() || price_str.empty()) {
                 LOG(error) << "failed to parse campaign_id or price from win notification :" << match[0];
                 r.stock_reply(http::server::reply::ok);
                 return;
             }
+
+            const auto campaign_id = boost::lexical_cast<uint32_t>(campaign_id_str);
+            const auto price = boost::lexical_cast<uint64_t>(price_str);
+
             CampaignBudgets budgets;
-            if ( !cache.retrieve(budgets, *campaign_id) ) {
-                LOG(error) << "failed to get campaign_id=" << *campaign_id << " from cache !";
+            if ( !cache.retrieve(budgets, campaign_id) ) {
+                LOG(error) << "failed to get campaign_id=" << campaign_id << " from cache !";
                 r.stock_reply(http::server::reply::ok);
                 return;
             }
-            LOG(info) << "received win notification campaign_id=" << *campaign_id << " win price=" << *price;
+            LOG(info) << "received win notification campaign_id=" << campaign_id << " win price=" << price;
             std::shared_ptr<CampaignBudget> budget_ptr = budgets.at(0);
-            budget_ptr->update(vanilla::types::price(*price));
+            budget_ptr->update(vanilla::types::price(price));
             status.day_budget_limit  = budget_ptr->day_budget_limit;
             status.total_spent_amout = budget_ptr->day_budget_spent;
             ++status.win_notice_count;
-            cache.update(*budget_ptr,*campaign_id);
+            cache.update(*budget_ptr,campaign_id);
             communicator<broadcast>()
             .outbound(config.data().budget_port)
             .distribute(*budget_ptr);

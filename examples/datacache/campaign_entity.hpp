@@ -39,7 +39,7 @@ namespace ipc { namespace data {
         campaign_entity( const Alloc &)
         {}
             
-        uint32_t campaign_id;
+        uint32_t campaign_id{};
         T data{};
         
         template<typename Key, typename Serializable=T>

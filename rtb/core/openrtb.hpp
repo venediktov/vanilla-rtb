@@ -268,7 +268,7 @@ namespace openrtb {
         std::vector<ContentCategory<T>> cat;        ///< IAB content categories for site/app
         std::vector<ContentCategory<T>> sectioncat; ///< IAB content categories for subsection
         std::vector<ContentCategory<T>> pagecat;    ///< IAB content categories for page/view
-        bool privacypolicy;           ///< Has a privacy policy
+        bool privacypolicy{};           ///< Has a privacy policy
         boost::optional<Publisher<T>> publisher;    ///< Publisher of the site or app
                                                  //boost::optional<Content> content;        ///< Content of the site or app
         std::vector<T> keywords;                    ///< Keywords describing app
@@ -442,7 +442,7 @@ namespace openrtb {
         T bidid;
         T cur;
         T customdata;
-        NoBidReason nbr; ///< reason for not bidding
+        NoBidReason nbr{NoBidReason::UNKNOWN_ERROR}; ///< reason for not bidding
         T ext; //jsonv::value ext; //Placeholder for bidder-specific extensions to OpenRTB
         
         void clear() {

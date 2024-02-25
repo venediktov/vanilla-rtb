@@ -20,37 +20,10 @@
 #include <array>
 #include <tuple>
 #include <type_traits>
-
 #include <string_view>
-
 #include <tuple>
 
 namespace auditor {
-
-#if __cplusplus == 201402L
-namespace details {
-
-/**
- * @arg Op folding operator
- * @arg Args folding arguments
- */
-template <typename Op, typename... Args> inline
-constexpr auto fold(Op&& op, Args&&... args)
-{
-    std::common_type_t<Args...> result {};
-    (void)std::initializer_list<int>{(result = op(result, std::forward<Args>(args)), 0)...};
-    return result;
-}
-static_assert(fold(std::plus<>{}, 1, 2, 3) == 6, "");
-
-template <typename... Args> inline
-constexpr auto foldsum(Args&&... args)
-{
-    return fold(std::plus<> {}, std::forward<Args>(args)...);
-}
-
-} // namespace details
-#endif
 
 struct typemap {
     template <typename Arg> inline
@@ -69,12 +42,8 @@ private:
 
     template <typename Arg, size_t... Is> inline
     static constexpr uint8_t index_of_(std::index_sequence<Is...>) {
-#if __cplusplus > 201402L
         static_assert((std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value + ...) == 1, ""); // unique mapping
         return static_cast<uint8_t>(((std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value * (Is + 1)) + ...) - 1);
-#else
-        return static_cast<uint8_t>(details::foldsum(std::is_same<Arg, std::tuple_element_t<Is, mappings_t>>::value * (Is + 1)...) - 1);
-#endif
     }
 }; // struct typemap
 
@@ -107,26 +76,15 @@ constexpr uint32_t blob_size(char const* arg) { return blob_size(std::string_vie
 template <int N> inline
 constexpr uint32_t blob_size(char(&arg)[N]) { return blob_size(std::string_view(arg, N - 1)); }
 
-#if __cplusplus > 201402L
 template<typename... Args> inline
 constexpr uint32_t record_size() { return (field_size<Args>() + ...); }
-#else
-template<typename... Args> inline
-constexpr uint32_t record_size() { return details::foldsum(field_size<Args>()...); }
-#endif
+
 static_assert(record_size<uint8_t, uint16_t, uint32_t>() == 10, "");
 
 template<typename... Args> inline
 constexpr uint32_t full_record_size(Args&&... args) {
     constexpr uint32_t fixed_part_size = record_size<Args...>();
-
-    const auto blobs_part_size =
-#if __cplusplus > 201402L
-        (blob_size(std::forward<Args>(args)) + ...);
-#else
-        details::foldsum(blob_size(std::forward<Args>(args))...);
-#endif
-
+    const auto blobs_part_size = (blob_size(std::forward<Args>(args)) + ...);
     return 1 /* Start-of-Heading */ + sizeof(fixed_part_size) + fixed_part_size + blobs_part_size;
 }
 
@@ -192,24 +150,16 @@ auto encode_record(char* buf, Args&&... args) {
 
     uint32_t rel_blob_offset = 0u;
 
-#if __cplusplus > 201402L
+
     char* rbeg = buf;
     ((buf += encode_field(buf, rel_blob_offset, std::forward<Args>(args))), ...);
-    uint32_t rec_size = buf - rbeg;
+    [[maybe_unused]] uint32_t rec_size = buf - rbeg;
 
     char* bbeg = buf;
     ((buf += encode_blob(buf, std::forward<Args>(args))), ...);
     uint32_t blobs_part_size = buf - bbeg;
     assert(blobs_part_size == (blob_size(std::forward<Args>(args)) + ...));
-#else
-    char* rbeg = buf;
-    (void)std::initializer_list<int>{((buf += encode_field(buf, rel_blob_offset, std::forward<Args>(args))), 0)...};
-    uint32_t rec_size = buf - rbeg;
-    
-    char* bbeg = buf;
-    (void)std::initializer_list<int>{((buf += encode_blob(buf, std::forward<Args>(args))), 0)...};
-    uint32_t blobs_part_size = buf - bbeg;
-#endif
+
     assert(rel_blob_offset == blobs_part_size);
     assert(rec_size == fixed_part_size);
 

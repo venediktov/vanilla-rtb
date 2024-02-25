@@ -24,13 +24,14 @@
 #include "../bidder_experimental/config.hpp"
 
 struct Domain {
-    std::string name;
-    uint32_t dom_id;
+    using dom_id_t = uint32_t;
+    static constexpr dom_id_t invalid_dom_id = -1u;
 
-    Domain(std::string url, uint32_t ref_id) : name{std::move(url)}, dom_id{ref_id}
-    {}
-        
-    Domain(): name{}
+    std::string name;
+    dom_id_t dom_id{invalid_dom_id};
+
+    Domain() = default;
+    Domain(std::string url, dom_id_t ref_id) : name{std::move(url)}, dom_id{ref_id}
     {}
         
     friend std::ostream &operator<<(std::ostream & os, const std::shared_ptr<Domain> &dom) {

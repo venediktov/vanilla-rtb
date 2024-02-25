@@ -89,39 +89,43 @@ int main(int argc, char *argv[]) {
 
     bid_handler_type bid_handler(std::chrono::milliseconds(config.data().timeout));
 
+    // NB: in production code you might want to use boost::small_vec with N=8..32
+    using campaign_vec_t = std::vector<ICOCampaign>;
+    using ad_vec_t = std::vector<Ad>;
+
     //Return from each lambda becomes input for next lambda in the tuple of functions
-    auto retrieve_domain_f = [&cacheLoader](const std::string& dom, auto&& ...) {
+    auto retrieve_domain_f = [&cacheLoader](const std::string& domain_str, auto&& ...) {
         Domain domain;
-        if(!cacheLoader.retrieve(domain,dom)) {
-            return boost::optional<uint32_t>();
-        }
-        return boost::optional<uint32_t>(domain.dom_id);
+ 
+        [[maybe_unused]] bool retrieved = cacheLoader.retrieve(domain, domain_str);
+        assert(retrieved == (domain.dom_id != Domain::invalid_domain_id));
+
+        return domain.dom_id;
     };
 
-    auto retrieve_ico_campaign_f = [&cacheLoader](boost::optional<uint32_t> dom_id, auto&& ...)  {
-        std::vector<ICOCampaign> ico_campains;
-        if (!cacheLoader.retrieve(ico_campains,*dom_id)) {
-            return boost::optional<decltype(ico_campains)>();
+    auto retrieve_ico_campaign_f = [&cacheLoader](Domain::dom_id_t dom_id, auto&& ...)  {
+        campaign_vec_t ico_campains;
+
+        if (dom_id != Domain::invalid_dom_id) {
+            [[maybe_unused]] bool retrieved = cacheLoader.retrieve(ico_campains, dom_id);
+            assert(retrieved || ico_compains.empty());
         }
-        return boost::optional<decltype(ico_campains)>(ico_campains);
+
+        return ico_campains;
     };
 
     vanilla::core::Banker<BudgetManager> banker;
-    auto retrieve_campaign_ads_f = [&](boost::optional<std::vector<ICOCampaign>> campaigns, [[maybe_unused]] auto && req, auto && imp)  {
-        std::vector<Ad> retrieved_cached_ads;
-        for (auto &campaign : *campaigns) {
-            if (!cacheLoader.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
-                continue;
+    auto retrieve_campaign_ads_f = [&](campaign_vec_t campaigns, [[maybe_unused]] auto && req, auto && imp)  {
+        ad_vec_t ads;
+        for (auto &campaign : campaigns) {
+            if (cacheLoader.retrieve(ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
+                auto budget_bid = banker.authorize(cacheLoader.get<CampaignCache<BidderConfig>>(), campaign.campaign_id);
+                for_each(begin(ads), end(ads), [budget_bid](Ad& ad) {
+                    ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
+                });
             }
-            auto budget_bid = banker.authorize(cacheLoader.get<CampaignCache<BidderConfig>>(), campaign.campaign_id);
-            std::transform(std::begin(retrieved_cached_ads),
-                           std::end(retrieved_cached_ads),
-                           std::begin(retrieved_cached_ads), [budget_bid](Ad & ad){
-                        ad.auth_bid_micros = std::min(budget_bid, ad.max_bid_micros);
-                        return ad;
-                    });
         }
-        return retrieved_cached_ads;
+        return ads;
     };
 
     bid_handler    
