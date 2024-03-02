@@ -17,11 +17,13 @@
 #define HTTP_SERVER_HPP
 
 #include <thread>
-#include <boost/asio.hpp>
 #include <string>
 #include <signal.h>
 #include <utility>
 #include <memory>
+#include <optional>
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include "connection.hpp"
 #include "connection_manager.hpp"
 #include "request_handler.hpp"
@@ -34,14 +36,39 @@ template<typename request_handler_type, template<class> class  connection_impl =
 class server
 {
 public:
+  using io_context_t = boost::asio::io_context;
+
   server(const server&) = delete;
   server& operator=(const server&) = delete;
+
+  template <typename Handler>
+  server(const std::string& address, const std::string& port, Handler&& handler):
+    server{nullptr, address, port, std::forward<Handler>(handler)}{}
+
   /// Construct the server to listen on the specified TCP address and port, and
   /// serve up files from the given directory.
   template<typename Handler>
-  explicit server(const std::string& address, const std::string& port,
+  server(io_context_t& io_context, const std::string& address, const std::string& port, Handler&& handler):
+    server{&io_context, address, port, std::forward<Handler>(handler)}{}
+ 
+  /// Run the server's io_service loop.
+  void run()
+  {
+    // The io_service::run() call will block until all asynchronous operations
+    // have finished. While the server is running, there is always at least one
+    // asynchronous operation outstanding: the asynchronous accept call waiting
+    // for new incoming connections.
+    io_service_.run();
+  }
+ 
+private:
+  /// Construct the server to listen on the specified TCP address and port, and
+  /// serve up files from the given directory.
+  template<typename Handler>
+  server(io_context_t* io_context_ptr, const std::string& address, const std::string& port,
       Handler&& handler)
-    : io_service_(),
+    : io_service_owned_{io_context_ptr ? std::nullopt : std::make_optional<io_context_t>()},
+    io_service_{io_context_ptr ? *io_context_ptr : *io_service_owned_},
     signals_(io_service_),
     acceptor_(io_service_),
     connection_manager_(),
@@ -69,19 +96,8 @@ public:
     acceptor_.listen();
  
     do_accept();
-}
- 
-  /// Run the server's io_service loop.
-  void run()
-  {
-    // The io_service::run() call will block until all asynchronous operations
-    // have finished. While the server is running, there is always at least one
-    // asynchronous operation outstanding: the asynchronous accept call waiting
-    // for new incoming connections.
-    io_service_.run();
   }
- 
-private:
+
   /// Perform an asynchronous accept operation.
   void do_accept()
   {
@@ -123,7 +139,8 @@ private:
   typedef std::shared_ptr<connection_type> connection_type_ptr;
  
   /// The io_service used to perform asynchronous operations.
-  boost::asio::io_service io_service_;
+  std::optional<io_context_t> io_service_owned_;
+  io_context_t& io_service_;
  
   /// The signal_set is used to register for process termination notifications.
   boost::asio::signal_set signals_;

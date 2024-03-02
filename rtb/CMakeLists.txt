@@ -38,6 +38,9 @@ endif()
 #add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps} ${vanilla_rtb_hpps} )
 add_library(vanilla_rtb ${DEFAULT_LIBRARY_TYPE} ${vanilla_rtb_cpps})
 
+# boost trivial logger not happy in release build on gcc-12
+target_compile_options(vanilla_rtb PRIVATE -Wno-error=restrict)
+
 ## Configuring vanilla-rtb
 
 target_link_libraries(vanilla_rtb jsonv parsers ${Boost_LIBRARIES})

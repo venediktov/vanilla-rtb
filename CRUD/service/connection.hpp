@@ -19,7 +19,7 @@
 #include <memory>
 #include <utility>
 #include <iterator>
-#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <boost/lexical_cast.hpp>
 #include "reply.hpp"
 #include "request.hpp"
@@ -27,7 +27,6 @@
  
 namespace http {
 namespace server {
- 
 template<class> class connection_manager;
  
 /// Represents a single connection from a client.
