@@ -37,18 +37,18 @@ std::string serialize( Serializable && data ) {
     std::stringstream ss(std::ios_base::out|std::ios_base::binary);
     boost::archive::binary_oarchive oarch(ss);
     oarch << std::forward<Serializable>(data);
-    return ss.str() ;
+    return std::move(ss).str();
 }
 
 template<>
 std::string 
-serialize<const std::string&>( const std::string & data ) {
+inline serialize<const std::string&>( const std::string & data ) {
     return data;
 }
 
 template<>
 std::string 
-serialize<std::string>( std::string && data ) {
+inline serialize<std::string>( std::string && data ) {
     return data;
 }
 
@@ -64,7 +64,7 @@ deserialize( const std::string & wire_data ) {
 
 template<>
 std::string 
-deserialize<std::string>( const std::string & wire_data ) {
+inline deserialize<std::string>( const std::string & wire_data ) {
     return wire_data;
 }
 
@@ -172,7 +172,7 @@ public:
 
   template<typename Serializable>
   void send_async( Serializable && data) {
-     out_data_ = std::move(serialize(std::forward<Serializable>(data)));
+     out_data_ = serialize(std::forward<Serializable>(data));
      socket_.async_send_to(
         boost::asio::buffer(out_data_), to_endpoint_,
         [](const boost::system::error_code&, std::size_t) {
@@ -180,7 +180,7 @@ public:
   }
 
   void send_async( const char *data, const std::size_t size) {
-     out_data_ = std::move(std::string(data,size));
+     out_data_.assign(data, size);
      socket_.async_send_to(
         boost::asio::buffer(out_data_), to_endpoint_,
         [](const boost::system::error_code&, std::size_t) {

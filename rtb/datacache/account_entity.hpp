@@ -60,7 +60,7 @@ namespace ipc { namespace data {
             std::stringstream ss;
             boost::archive::binary_oarchive oarch(ss);
             oarch << data ;
-            std::string blob_str = std::move(ss.str()) ;
+            std::string blob_str = std::move(ss).str() ;
             blob = char_string(blob_str.data(), blob_str.length(), _allocator) ;
             //Store keys
             const std::string &key_parent = key.template get<parent_account_tag>() ;

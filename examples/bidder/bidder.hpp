@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <iostream>
+#include <boost/uuid/random_generator.hpp>
 #include "ad_selector.hpp"
 #include "rtb/core/user_info.hpp"
 
