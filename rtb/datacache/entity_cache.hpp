@@ -254,7 +254,8 @@ public:
    }
 
    size_t get_size() const {
-        return _container_ptr->size();
+       bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
+       return _container_ptr->size();
    }
 private:
     void attach() const {
