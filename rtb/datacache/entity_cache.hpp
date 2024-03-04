@@ -119,7 +119,6 @@ public:
     void clear() {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
         _container_ptr->clear();
-        rows_count = 0;
     }
    
     template<typename Tag, typename Key, typename Serializable, typename Arg>
@@ -231,7 +230,6 @@ public:
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex);
         auto p = _container_ptr->template get<Tag>().equal_range(boost::make_tuple(std::forward<Args>(args)...));
         _container_ptr->erase(p.first, p.second);
-        --rows_count;
     }
     
     template<typename Tag, typename Arg>
@@ -239,7 +237,6 @@ public:
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex);
         auto p = _container_ptr->template get<Tag>().equal_range(std::forward<Arg>(arg));
         _container_ptr->erase(p.first, p.second);
-        --rows_count;
     }
 
    char_string create_ipc_key(const std::string &key)  const {
@@ -257,7 +254,7 @@ public:
    }
 
    size_t get_size() const {
-        return rows_count;
+        return _container_ptr->size();
    }
 private:
     void attach() const {
@@ -282,7 +279,6 @@ private:
         Memory::attach([this](){attach();});
         Data_t item(_segment_ptr->get_segment_manager());
         item.store(std::forward<Key>(key), std::forward<Serializable>(data));
-        ++rows_count;
         return _container_ptr->insert(item);
     }
  
@@ -298,7 +294,6 @@ private:
     std::string _store_name ;
     std::string _cache_name ;
     boost::interprocess::named_upgradable_mutex _named_mutex;
-    size_t rows_count;
 };
  
 }
