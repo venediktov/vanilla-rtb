@@ -162,6 +162,7 @@ class ICOCampaignEntity {
                     LOG(debug) << "Failed to insert ico_campaign=" << data;
                 }
             });
+            LOG(info) << "Items loaded " << this->cache.get_size();
         }
         
         bool retrieve(ICOCampaignCollection &ico_campaigns, uint32_t domain_id) {

@@ -105,7 +105,8 @@ public:
     using Data_t = typename Container_t::value_type;
        
     entity_cache(const std::string &name) : 
-        _segment_ptr(), _container_ptr(), _store_name(), _cache_name(name), _named_mutex(bip::open_or_create, (_cache_name + "_mutex").c_str()) {
+        _segment_ptr(), _container_ptr(), _store_name(), _cache_name(name), _named_mutex(bip::open_or_create,
+            (_cache_name + "_mutex").c_str()), rows_count{} {
         //TODO: add to ctor to switch between mmap and shm
         //TODO: maybe needs bip::scoped_lock to lock for other processes calling  grow_memory    
         std::string data_base_dir = "/tmp/CACHE" ;
@@ -117,7 +118,8 @@ public:
     
     void clear() {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
-        _container_ptr->clear() ;
+        _container_ptr->clear();
+        rows_count = 0;
     }
    
     template<typename Tag, typename Key, typename Serializable, typename Arg>
@@ -229,6 +231,7 @@ public:
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex);
         auto p = _container_ptr->template get<Tag>().equal_range(boost::make_tuple(std::forward<Args>(args)...));
         _container_ptr->erase(p.first, p.second);
+        --rows_count;
     }
     
     template<typename Tag, typename Arg>
@@ -236,6 +239,7 @@ public:
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex);
         auto p = _container_ptr->template get<Tag>().equal_range(std::forward<Arg>(arg));
         _container_ptr->erase(p.first, p.second);
+        --rows_count;
     }
 
    char_string create_ipc_key(const std::string &key)  const {
@@ -250,6 +254,10 @@ public:
            char_string tmp(key.data(), key.size(), _segment_ptr->get_segment_manager()) ;
            return tmp;
        }
+   }
+
+   size_t get_size() const {
+        return rows_count;
    }
 private:
     void attach() const {
@@ -274,6 +282,7 @@ private:
         Memory::attach([this](){attach();});
         Data_t item(_segment_ptr->get_segment_manager());
         item.store(std::forward<Key>(key), std::forward<Serializable>(data));
+        ++rows_count;
         return _container_ptr->insert(item);
     }
  
@@ -289,6 +298,7 @@ private:
     std::string _store_name ;
     std::string _cache_name ;
     boost::interprocess::named_upgradable_mutex _named_mutex;
+    size_t rows_count;
 };
  
 }
