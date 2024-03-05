@@ -106,7 +106,7 @@ public:
        
     entity_cache(const std::string &name) : 
         _segment_ptr(), _container_ptr(), _store_name(), _cache_name(name), _named_mutex(bip::open_or_create,
-            (_cache_name + "_mutex").c_str()), rows_count{} {
+            (_cache_name + "_mutex").c_str()) {
         //TODO: add to ctor to switch between mmap and shm
         //TODO: maybe needs bip::scoped_lock to lock for other processes calling  grow_memory    
         std::string data_base_dir = "/tmp/CACHE" ;
