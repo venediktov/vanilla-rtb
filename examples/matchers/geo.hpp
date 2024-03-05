@@ -92,6 +92,7 @@ class GeoDataEntity {
                 }
                 
             });
+            LOG(info) << "Items loaded " << this->cache.get_size();
         }
 
         bool retrieve(DataVect &vect, const std::string &city, const std::string &country) {

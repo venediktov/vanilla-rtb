@@ -131,6 +131,7 @@ class GeoCampaignEntity {
                     LOG(debug) << "Failed to insert geo_campaign=" << data;
                 }
             });
+            LOG(info) << "Items loaded " << this->cache.get_size();
         }
         
         bool retrieve(GeoCampaignCollection &geo_campaigns, uint32_t geo_id) {

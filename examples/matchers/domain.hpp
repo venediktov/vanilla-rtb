@@ -148,6 +148,7 @@ class DomainEntity {
                 }
                 
             });
+            LOG(info) << "Items loaded " << this->cache.get_size();
         }
 
         bool retrieve(Domain &domain, const std::string &url) {

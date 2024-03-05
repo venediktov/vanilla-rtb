@@ -113,7 +113,8 @@ class AdDataEntity {
             
             std::for_each(std::istream_iterator<Ad>(in), std::istream_iterator<Ad>(), [&](const Ad &ad){
                 cache.insert(Keys{ad.campaign_id, ad.width, ad.height, ad.ad_id}, ad);
-            });            
+            });
+            LOG(info) << "Items loaded " << this->cache.get_size();
         }
         template <typename ...Args>
         bool retrieve(DataVect &ads, Args && ...args) {
