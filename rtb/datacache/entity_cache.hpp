@@ -294,7 +294,7 @@ private:
     mutable Container_t  *_container_ptr ;
     std::string _store_name ;
     std::string _cache_name ;
-    boost::interprocess::named_upgradable_mutex _named_mutex;
+    mutable boost::interprocess::named_upgradable_mutex _named_mutex;
 };
  
 }
