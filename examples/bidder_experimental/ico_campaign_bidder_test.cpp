@@ -10,6 +10,7 @@
 #include "rtb/exchange/exchange_handler.hpp"
 #include "rtb/exchange/exchange_server.hpp"
 #include "rtb/DSL/generic_dsl.hpp"
+#include "rtb/DSL/extractors.hpp"
 #include "rtb/DSL/any_mapper.hpp"
 #include "rtb/DSL/rapid_mapper.hpp"
 #include "rtb/config/config.hpp"

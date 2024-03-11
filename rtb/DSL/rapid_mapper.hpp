@@ -20,10 +20,12 @@
 #ifndef RTB_DSL_RAPID_MAPPER_HPP
 #define RTB_DSL_RAPID_MAPPER_HPP
 
-#include "extractors.hpp"
 #include "rapid_serializer.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
+
+template<typename T>
+struct extractors;
 
 namespace DSL {
         

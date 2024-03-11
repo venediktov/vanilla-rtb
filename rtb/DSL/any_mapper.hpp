@@ -21,10 +21,11 @@
 #define RTB_DSL_ANY_MAPPER_HPP
 
 #include <boost/any.hpp>
-#include "extractors.hpp"
 #include "rapid_serializer.hpp"
 #include "rapidjson/writer.h"
 
+template<typename T>
+struct extractors;
 
 namespace DSL {
         
