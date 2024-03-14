@@ -140,7 +140,7 @@ namespace openrtb {
         DAAST_1_0,
         DAAST_1_0_WRAPPER
     };
-    
+
     enum class VideoPlacement {
         UNKNOWN = 0,
         IN_STREAM, /// In-Stream
@@ -161,11 +161,11 @@ namespace openrtb {
                    /// cannot be scrolled out of view). Note that a full-screen interstitial (e.g., in mobile) can be
                    /// distinguished from a floating/slider unit by the imp.instl field
     };
-    
+
     enum class VideoLinearity {
-        
+
     };
-    
+
     enum class PlaybackMethod: uint8_t {
         UNKNOWN = 0,
         ON_PAGE_SOUND_ON,       /// Initiates on Page Load with Sound On
@@ -175,28 +175,28 @@ namespace openrtb {
         ON_VIEWPORT_SOUND_ON,   /// Initiates on Entering Viewport with Sound On
         ON_VIEWPORT_SOUND_OFF   /// Initiates on Entering Viewport with Sound Off by Default
     };
-    
+
     enum class PlaybackCessationModes: uint8_t{
         UNKNOWN = 0,
         COMPLEETION, // On Video Completion or when Terminated by User
         VIEWPORT, // On Leaving Viewport or when Terminated by User
         FLOATING // On Leaving Viewport Continues as a Floating/Slider Unit until Video Completion or when Terminated by User
     };
-    
+
     enum class DeliveryMethod {
         UNKNOWN = 0,
         STREAMING,
         PROGRESSIVE,
         DOWNLOAD
     };
-    
+
     enum class CompanionType {
         UNKNOWN = 0,
-        STATIC, 
-        HTML, 
+        STATIC,
+        HTML,
         IFRAME
     };
-    
+
     template<typename T>
     struct Video {
         std::vector<MimeType<T>> mimes;                 ///< Whitelist of content MIME types
@@ -207,10 +207,10 @@ namespace openrtb {
         boost::optional<uint16_t> w;                    /// Width of the video player in device independent pixels (DIPS).
         boost::optional<uint16_t> h;                    /// Height of the video player in device independent pixels (DIPS).
         boost::optional<uint32_t> startdelay;           /// Indicates the start delay in seconds for pre-roll, mid-roll, or
-                                                        /// post-roll ad placements. 
-        VideoPlacement placement;                       /// Placement type for the impression. 
+                                                        /// post-roll ad placements.
+        VideoPlacement placement;                       /// Placement type for the impression.
         VideoLinearity linearity;                       /// Indicates if the impression must be linear, nonlinear, etc. If
-                                                        /// none specified, assume all are allowed. 
+                                                        /// none specified, assume all are allowed.
         boost::optional<uint8_t> skip;                  /// Indicates if the player will allow the video to be skipped,
         boost::optional<uint32_t> skipmin;              /// Videos of total duration greater than this number of seconds
                                                         /// can be skippable; only applicable if the ad is skippable.
@@ -238,8 +238,8 @@ namespace openrtb {
                                                         /// element of this array in preparation for this change.
         PlaybackCessationModes playbackend;             /// The event that causes playback to end.
         DeliveryMethod delivery;                         /// Supported delivery methods (e.g., streaming, progressive). If
-                                                        /// none specified, assume all are supported. 
-        AdPosition pos;                                 /// Ad position on screen. 
+                                                        /// none specified, assume all are supported.
+        AdPosition pos;                                 /// Ad position on screen.
         CompanionType companiontype;                    /// Supported VAST companion ad types.
                                                         /// Recommended if companion Banner objects are included via
                                                         /// the companionad array. If one of these banners will be
@@ -255,7 +255,7 @@ namespace openrtb {
     struct Publisher {
         T id;                      ///< Unique ID representing the publisher
         T name; // vanilla::unicode_string name;        ///< Publisher name
-        std::vector<ContentCategory<T>> cat;    ///< Content categories     
+        std::vector<ContentCategory<T>> cat;    ///< Content categories
         T domain; //vanilla::unicode_string domain;      ///< Domain name of publisher
         T ext; //jsonv::value ext;                     ///< Extensions go here, new in OpenRTB 2.1
     };
@@ -364,7 +364,7 @@ namespace openrtb {
         T macmd5;                           ///< MAC address of the device; hashed via MD5.
         T ext;
     };
-    
+
     template<typename T>
     struct UserDataSegment {
         T id;                                ///< ID of the data segment specific to the data provider.
@@ -393,11 +393,11 @@ namespace openrtb {
         boost::optional<Geo<T>> geo;
         std::vector<UserData<T>> data;     ///< Additional user data
         T ext;             //jsonv::value ext;           ///< Placeholder for exchange-specific extensions to OpenRTB.
-        
+
     };
 
     struct Regulations {};
-    
+
     template<typename T>
     struct Native {
         T request;
@@ -453,7 +453,7 @@ namespace openrtb {
     template<typename T>
     struct BidRequest {
         using request_type = BidRequest<T>;
-        
+
         ~BidRequest() {}
         T id;                                          ///< Bid request ID
         std::vector<Impression<T>> imp;                ///< List of impressions
@@ -505,9 +505,9 @@ namespace openrtb {
                                             ///< exchange the tactic through which their bid was submitted.
         std::vector<ContentCategory<T>> cat;///< Content categories
         std::vector<CreativeAttribute> attr;///< Creative attributes
-        int api;                            ///< API required by the markup if applicable.
-        int protocol;                       ///< Video response protocol of the markup if applicable
-        int qagmediarating;                 ///< Creative media rating per IQG guidelines.
+        int api{};                          ///< API required by the markup if applicable.
+        int protocol{};                     ///< Video response protocol of the markup if applicable
+        int qagmediarating{};               ///< Creative media rating per IQG guidelines.
         T language;                         ///< Language of the creative
         T dealid;                           ///< unique id for the deal associated with bid
                                             ///< if its in bid request, required in bid response
@@ -517,7 +517,7 @@ namespace openrtb {
                                             ///< Required for Flex Ads.
         int hratio{};                       ///< Relative height of the creative when expressing size as a ratio.
                                             ///< Required for Flex Ads.
-        int exp;                            ///< Advisory as to the number of seconds the bidder is willing to
+        int exp{};                          ///< Advisory as to the number of seconds the bidder is willing to
                                             ///< wait between the auction and the actual impression.
         T ext; //jsonv::value ext;          ///< Extended bid fields
     };
