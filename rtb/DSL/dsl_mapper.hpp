@@ -42,6 +42,7 @@ namespace DSL {
         using User = openrtb::User<T>;
         using Geo = openrtb::Geo<T>;
         using Site = openrtb::Site<T>;
+        using Context = openrtb::Content<T>;
         using Publisher = openrtb::Publisher<T>;
         using BidRequest = openrtb::BidRequest<T>;
         //BidResponse
@@ -88,7 +89,8 @@ namespace DSL {
                     .member("city", &Geo::city)
                     .member("country", &Geo::country)
                 .template type<Site>()
-                .member("id", &Site::id)
+                .template type<Context>()
+                    .member("id", &Context::id)
                 .template type<Publisher>()
                 .template type<BidRequest>()
                 .member("id", &BidRequest::id)

@@ -107,9 +107,23 @@ namespace openrtb {
     };
 
     template<typename T>
+    struct Format {
+        int w{};                            ///< Width in device independent pixels (DIPS)
+        int h{};                            ///< Height in device independent pixels (DIPS).
+        int wratio{};                       ///< Relative width when expressing size as a ratio.
+        int hratio{};                       ///< Relative height when expressing size as a ratio.
+        int wmin{};                         ///< The minimum width in device independent pixels (DIPS) at
+                                            ///< which the ad will be displayed the size is expressed as a ratio.
+        T ext;                              ///< Placeholder for exchange-specific extensions to OpenRTB.
+    };
+
+    template<typename T>
     struct Banner {
         ~Banner() {}
 
+        std::vector<Format<T>> format;      ///< Array of format objects (Section 3.2.10) representing the
+                                            ///< banner sizes permitted. If none are specified, then use of the
+                                            ///< h and w attributes is highly recommended.
         uint16_t w{};                     ///< Width of ad
         uint16_t h{};                     ///< Height of ad
         boost::optional<int> wmax;                  ///< max width of ad (OpenRTB 2.3)

@@ -116,12 +116,17 @@ namespace boost {
         void serialize(Archive &, [[maybe_unused]] openrtb::Site<T> & value, [[maybe_unused]] const unsigned int version) {
         }
 
-        template<class Archive>
-        void serialize(Archive &, [[maybe_unused]] openrtb::App & value, [[maybe_unused]] const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive &ar, openrtb::Context<T> & value, [[maybe_unused]] const unsigned int version) {
+            ar & value.id;
         }
 
-        template<class Archive>
-        void serialize(Archive &, [[maybe_unused]] openrtb::Device & value, [[maybe_unused]] const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive &, [[maybe_unused]] openrtb::App<T> & value, [[maybe_unused]] const unsigned int version) {
+        }
+
+        template<class Archive, class T>
+        void serialize(Archive &, [[maybe_unused]] openrtb::Device<T> & value, [[maybe_unused]] const unsigned int version) {
         }
 
         template<class Archive, class T>
