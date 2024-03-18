@@ -9,6 +9,7 @@
 #include "CRUD/handlers/crud_dispatcher.hpp"
 #include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/DSL/extractors.hpp"
+#include "rtb/DSL/rapid_serializer.hpp"
 #include "rtb/DSL/any_mapper.hpp"
 #include "rtb/DSL/rapid_mapper.hpp"
 #include "rtb/config/config.hpp"

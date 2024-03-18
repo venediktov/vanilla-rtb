@@ -20,12 +20,14 @@
 #ifndef RTB_DSL_RAPID_MAPPER_HPP
 #define RTB_DSL_RAPID_MAPPER_HPP
 
-#include "rapid_serializer.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 
 template<typename T>
 struct extractors;
+
+template<typename T>
+struct serializer;
 
 namespace DSL {
         
