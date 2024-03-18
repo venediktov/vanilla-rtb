@@ -554,16 +554,8 @@ namespace openrtb {
         T customdata;
         NoBidReason nbr{NoBidReason::UNKNOWN_ERROR}; ///< reason for not bidding
         T ext; //jsonv::value ext; //Placeholder for bidder-specific extensions to OpenRTB
-        
-        void clear() {
-            id.clear();
-            seatbid.clear();
-            bidid.clear();
-            cur.clear();
-            customdata.clear();
-            nbr = NoBidReason::UNKNOWN_ERROR;
-            ext.clear();
-        }
+
+        void clear() { *this = {}; }
     };
 
 }
