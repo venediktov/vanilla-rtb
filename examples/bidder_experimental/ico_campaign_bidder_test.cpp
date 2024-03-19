@@ -11,6 +11,7 @@
 #include "rtb/exchange/exchange_server.hpp"
 #include "rtb/DSL/generic_dsl.hpp"
 #include "rtb/DSL/extractors.hpp"
+#include "rtb/DSL/rapid_serializer.hpp"
 #include "rtb/DSL/any_mapper.hpp"
 #include "rtb/DSL/rapid_mapper.hpp"
 #include "rtb/config/config.hpp"
@@ -99,7 +100,7 @@ int main(int argc, char *argv[]) {
         Domain domain;
  
         [[maybe_unused]] bool retrieved = cacheLoader.retrieve(domain, domain_str);
-        assert(retrieved == (domain.dom_id != Domain::invalid_domain_id));
+        assert(retrieved == (domain.dom_id != Domain::invalid_dom_id));
 
         return domain.dom_id;
     };
@@ -109,7 +110,7 @@ int main(int argc, char *argv[]) {
 
         if (dom_id != Domain::invalid_dom_id) {
             [[maybe_unused]] bool retrieved = cacheLoader.retrieve(ico_campains, dom_id);
-            assert(retrieved || ico_compains.empty());
+            assert(retrieved || ico_campains.empty());
         }
 
         return ico_campains;
