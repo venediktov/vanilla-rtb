@@ -28,6 +28,10 @@ if (Boost_LIBRARIES)
     target_link_libraries( crud_service ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
+target_include_directories(crud_service PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
+
 install(TARGETS crud_service
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
