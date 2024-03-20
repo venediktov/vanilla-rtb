@@ -147,7 +147,8 @@ int main(int argc, char *argv[]) {
             );
     };
 
-
+    static_assert(common::custom_bid_processor<decltype(nurl_add_f), BidRequest, openrtb::Impression<std::string>, Ad, openrtb::Bid<std::string>>);
+    
     bid_handler    
         .logger([]([[maybe_unused]] const std::string &data) {
             //LOG(debug) << "bid request=" << data ;

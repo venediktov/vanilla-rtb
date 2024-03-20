@@ -44,10 +44,26 @@ concept string_like_concept = std::convertible_to<T, std::string_view>;
 template <class T, std::size_t N>
 concept char_array_concept = std::is_same_v<char[N], T>;
 
+//BidRequest
+template <typename T>
+concept is_bid_request = requires ( T value ) {
+    value.imp;
+    typename T::request_type;
+};
+
+//BidResponse
+template <typename T>
+concept is_bid_response = requires(T value) {
+    value.bidid;
+    typename T::data_type;
+};
+
+
 template <typename T, typename ...Args>
 concept custom_bid_processor =
     requires(T  processor, Args ...args) {
-        { processor.operator()(args...) } ;
+        sizeof...(args) == 4;
+        { processor.operator()(args...) } -> std::same_as<void>;
     };
 
 
