@@ -44,6 +44,13 @@ concept string_like_concept = std::convertible_to<T, std::string_view>;
 template <class T, std::size_t N>
 concept char_array_concept = std::is_same_v<char[N], T>;
 
+template <typename T, typename ...Args>
+concept custom_bid_processor =
+    requires(T  processor, Args ...args) {
+        { processor.operator()(args...) } ;
+    };
+
+
 } // namespace common
 } // namespace vanilla
 

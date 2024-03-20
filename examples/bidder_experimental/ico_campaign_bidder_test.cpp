@@ -28,8 +28,8 @@
 #include "examples/campaign/campaign_cache.hpp"
 
 #include "rtb/core/bidder.hpp"
+#include "common/string_utils.hpp"
 #include "rtb/core/ad_selector.hpp"
-
 
 extern void init_framework_logging(const std::string &) ;
 
@@ -130,6 +130,24 @@ int main(int argc, char *argv[]) {
         return ads;
     };
 
+    std::string_view nurl_prefix = "http://localhost:12081/win/details?";
+    std::string_view  nurl_second_price_macro = "${AUCTION_PRICE:}";
+
+    auto nurl_add_f = [&](auto && request, auto && imp, auto && ad, auto && bid) {
+        bid.nurl =
+            common::string_concat(
+                nurl_prefix,
+                std::string_view("price="), std::to_string(bid.price),
+                std::string_view("&impid="), imp.id,
+                std::string_view("&request_id="), request.id,
+                std::string_view("&currency=USD"),
+                std::string_view("&bidid="), bid.id,
+                std::string_view("&campaign_id="), std::to_string(ad.campaign_id),
+                std::string_view("&second_price="), nurl_second_price_macro
+            );
+    };
+
+
     bid_handler    
         .logger([]([[maybe_unused]] const std::string &data) {
             //LOG(debug) << "bid request=" << data ;
@@ -138,7 +156,7 @@ int main(int argc, char *argv[]) {
             LOG(debug) << "bid request error " << data ;
         })
         .auction_async([&](const BidRequest &request) {
-            thread_local vanilla::Bidder<DSLT, Selector> bidder{Selector{}};
+            thread_local vanilla::Bidder<DSLT, Selector, decltype(nurl_add_f)> bidder{Selector{}, nurl_add_f};
             return bidder.bid(request,
                               //chained matchers
                               request.site.get().ref,

@@ -27,6 +27,7 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include "user_info.hpp"
+#include "common/concepts.hpp"
 
 namespace vanilla {
 
@@ -44,13 +45,16 @@ namespace vanilla {
         }
     };
 
-    template<typename DSL, typename Selector>
+    template<typename DSL, typename Selector, typename ...Processor>
     class Bidder {
         using BidRequest  = typename DSL::deserialized_type;
         using BidResponse = typename DSL::serialized_type;
-
+        using Processors = std::tuple<Processor...>;
     public:
-        Bidder(Selector selector) : selector{std::move(selector)}, uuid_generator{}
+        explicit Bidder(Selector selector, Processor ...processor) :
+              selector{std::move(selector)},
+              processors{processor...},
+              uuid_generator{}
         {}
         template <typename Request , typename Tuple, std::size_t... Idx, typename ...Info>
         const BidResponse& bid(const Request &vanilla_request, Tuple&&  tuple, std::index_sequence<Idx...>, Info && ...) {
@@ -93,6 +97,11 @@ namespace vanilla {
             bid.h = ad.height;
             bid.adm = ad.code;
             bid.adid = std::to_string(ad.ad_id); //for T = std::string , for T = string_view must use thread_local storage
+
+            if constexpr ( sizeof...(Processor) > 0) {
+                std::apply([&](auto&... Ps){(Ps(request, imp, std::forward<Ad>(ad), bid), ...);}, processors);
+            }
+
             response.seatbid.back().bid.emplace_back(std::move(bid));
         }
 
@@ -107,6 +116,7 @@ namespace vanilla {
             }
         }
         Selector selector;
+        Processors processors;
         boost::uuids::random_generator uuid_generator;
         BidResponse response;
     };
