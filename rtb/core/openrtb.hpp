@@ -322,6 +322,18 @@ namespace openrtb {
         USER = 3        ///< User provided (e.g., registration data)
     };
 
+    enum class DeviceType : int8_t {
+        UNDEFINED = -1,       ///< Not explicitly specified
+
+        MOBILE_TABLET = 1,    ///< Version 2.0
+        PC = 2,               ///< Version 2.0
+        CONNECTED_TV = 3,     ///< Version 2.0
+        PHONE = 4,            ///< Phone New for Version 2.2
+        TABLET = 5,           ///< Tablet New for Version 2.2
+        CONNECTED_DEVICE = 6, ///< Connected Device New for Version 2.2
+        SET_TOBOX = 7         ///< Set Top Box New for Version 2.2
+    };
+
     template<typename T>
     struct Geo {
         boost::optional<float> lat{};       ///< Latitude from -90.0 to +90.0, where negative is south.
@@ -352,7 +364,7 @@ namespace openrtb {
                                             ///< be limited per commercial guideline
         T ip;
         T ipv6;
-        T devicetype;
+        DeviceType devicetype{DeviceType::UNDEFINED};
         T make;
         T model;
         T os;
