@@ -352,6 +352,7 @@ namespace openrtb {
                                             ///< be limited per commercial guideline
         T ip;
         T ipv6;
+        T devicetype;
         T make;
         T model;
         T os;
@@ -360,7 +361,7 @@ namespace openrtb {
         boost::optional<int> h;             ///< Physical height of the screen in pixels.
         boost::optional<int> w;             ///< Physical width of the screen in pixels.
         boost::optional<int> ppi;           ///< Screen size as pixels per linear inch.
-        boost::optional<int> ks;            ///< Support for JavaScript, where 0 = no, 1 = yes.
+        boost::optional<int> js;            ///< Support for JavaScript, where 0 = no, 1 = yes.
         boost::optional<int> geofetch;      ///< Indicates if the geolocation API will be available to JavaScript
                                             ///< code running in the banner, where 0 = no, 1 = yes.
         T flashver;                         ///< Version of Flash supported by the browser.
