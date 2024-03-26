@@ -24,7 +24,7 @@ class AdSelector {
         using AdSelectionAlg = std::function<AdPtr(const std::vector<Ad>&)>;
         using self_type = AdSelector<Config>;
         
-        AdSelector(BidderCaches<Config> &bidder_caches):
+        explicit AdSelector(BidderCaches<Config> &bidder_caches):
             bidder_caches{bidder_caches}
         {
             retrieved_cached_ads.reserve(500);
@@ -69,7 +69,7 @@ class AdSelector {
         
         bool getGeoCampaigns(uint32_t geo_id) {
             geo_campaigns.clear();
-            if (!bidder_caches.geo_campaign_entity.retrieve(geo_campaigns, geo_id)) {
+            if (!bidder_caches.retrieve(geo_campaigns, geo_id)) {
                 LOG(debug) << "GeoAd retrieve failed " << geo_id;
                 return false;
             }
@@ -91,7 +91,7 @@ class AdSelector {
             const std::string city = boost::algorithm::to_lower_copy(std::string(city_view.data(), city_view.size()));
             const std::string country = boost::algorithm::to_lower_copy(std::string(country_view.data(), country_view.size()));
 
-            if (!bidder_caches.geo_data_entity.retrieve(geo, city, country)) {
+            if (!bidder_caches.retrieve(geo, city, country)) {
                 LOG(debug) << "retrieve failed " << city << " " << country;
                 return false;
             } 
@@ -103,7 +103,7 @@ class AdSelector {
             retrieved_cached_ads.clear();
             for (auto &campaign : campaigns) {
                 auto offset = retrieved_cached_ads.size();
-                if (!bidder_caches.ad_data_entity.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
+                if (!bidder_caches.retrieve(retrieved_cached_ads, campaign.campaign_id, imp.banner.get().w, imp.banner.get().h)) {
                     continue;
                 }
                 auto budget_bid = authorize(campaign.campaign_id);
@@ -138,7 +138,7 @@ class AdSelector {
         std::vector<GeoCampaign> geo_campaigns;
         std::vector<Ad> retrieved_cached_ads;
         AdSelectionAlg selection_alg;
-        vanilla::core::Banker<vanilla::BudgetManager> banker;
+        vanilla::core::Banker<vanilla::BudgetManager> banker{};
 };
 }
 

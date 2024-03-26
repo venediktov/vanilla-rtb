@@ -35,8 +35,7 @@ requires(not char_array_concept<Sn, sizeof(Sn)> and ...)
 constexpr auto string_concat(Sn const&... s)
 **/
 
-namespace vanilla {
-namespace common {
+namespace vanilla::common {
 
 template <class T>
 concept string_like_concept = std::convertible_to<T, std::string_view>;
@@ -44,31 +43,31 @@ concept string_like_concept = std::convertible_to<T, std::string_view>;
 template <class T, std::size_t N>
 concept char_array_concept = std::is_same_v<char[N], T>;
 
-//BidRequest
+// BidRequest
 template <typename T>
-concept is_bid_request = requires ( T value ) {
+concept is_bid_request = requires(T value) {
     value.imp;
     typename T::request_type;
 };
 
-//BidResponse
+// BidResponse
 template <typename T>
 concept is_bid_response = requires(T value) {
     value.bidid;
     typename T::data_type;
 };
 
+template <typename T, typename... Args>
+concept custom_bid_processor = requires(T processor, Args... args) {
+    sizeof...(args) == 4;
+    { processor.operator()(args...) } -> std::same_as<void>;
+};
 
-template <typename T, typename ...Args>
-concept custom_bid_processor =
-    requires(T  processor, Args ...args) {
-        sizeof...(args) == 4;
-        { processor.operator()(args...) } -> std::same_as<void>;
-    };
+template <typename T>
+concept loadable_cache_v = requires(T& cache) {
+    { cache.load() } -> std::same_as<void>;
+};
 
-
-} // namespace common
-} // namespace vanilla
+} // namespace vanilla::common
 
 #endif /* VANILLA_COMMON_CONCEPTS_HPP */
-
