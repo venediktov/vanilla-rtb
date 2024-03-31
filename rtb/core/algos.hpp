@@ -27,7 +27,7 @@ namespace vanilla { namespace algorithm {
         template<typename Ad>
         static auto calculate_max_bid(const std::vector<Ad>& ads) {
             if(ads.size() == 0) {
-                return std::make_unique<Ad>();
+                return std::unique_ptr<Ad>{};
             }
             const typename std::vector<Ad>::const_iterator result =
                 std::max_element(ads.cbegin(), ads.cend(), [](const Ad &first, const Ad &second) -> bool {
