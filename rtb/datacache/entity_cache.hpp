@@ -34,6 +34,7 @@
 #include <boost/version.hpp>
 #include <boost/core/demangle.hpp>
 #include "rtb/core/core.hpp"
+#include "rtb/common/concepts.hpp"
 
 namespace {
     namespace bip = boost::interprocess ;
@@ -161,7 +162,24 @@ public:
         }
         return is_success;
     }
- 
+
+    template<typename Tag, typename Functor, typename Arg>
+    bool update( Functor && func, Arg&& arg) {
+        bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
+        auto &index = _container_ptr->template get<Tag>();
+        auto p = index.equal_range(std::forward<Arg>(arg));
+        return modify(index, p.first, p.second, std::forward<Functor>(func));
+    }
+
+    template<typename Tag, typename Functor, typename ...Args>
+    bool update( Functor && func, Args&& ...args) {
+        bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
+        bool is_success {false};
+        auto &index = _container_ptr->template get<Tag>();
+        auto p = index.equal_range(boost::make_tuple(std::forward<Args>(args)...));
+        return modify(index, p.first, p.second, std::forward<Functor>(func));
+    }
+
     template<typename Key, typename Serializable>
     auto insert( Key && key, Serializable &&data) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
@@ -288,6 +306,23 @@ private:
         Data_t item(_segment_ptr->get_segment_manager());
         item.store(std::forward<Key>(key), std::forward<Serializable>(data));
         return index.modify(itr,item) ;
+    }
+
+    template<typename Index, typename Iterator , typename Functor, typename ...Args>
+    auto modify ( Index & index, Iterator first , Iterator last, Functor && func) {
+        bool is_success {false};
+        while ( first != last ) {
+            try {
+                is_success |= index.modify(first++, std::forward<Functor>(func));
+            } catch (const bad_alloc_exception_t &e) {
+                LOG(debug) << boost::core::demangle(typeid(*this).name())
+                           << " data by functor was not updated , MEMORY AVAILABLE="
+                           <<  _segment_ptr->get_free_memory() ;
+                grow_memory(MEMORY_SIZE);
+                is_success |= index.modify(first++, func);
+            }
+        }
+        return is_success;
     }
  
     mutable boost::scoped_ptr<segment_t> _segment_ptr;
