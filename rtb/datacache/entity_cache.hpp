@@ -174,7 +174,6 @@ public:
     template<typename Tag, typename Functor, typename ...Args>
     bool update( Functor && func, Args&& ...args) {
         bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
-        bool is_success {false};
         auto &index = _container_ptr->template get<Tag>();
         auto p = index.equal_range(boost::make_tuple(std::forward<Args>(args)...));
         return modify(index, p.first, p.second, std::forward<Functor>(func));
