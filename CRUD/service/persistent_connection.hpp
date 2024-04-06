@@ -114,7 +114,7 @@ private:
   /// Perform an asynchronous write operation.
   void do_write()
   {
-    reply_.headers.emplace_back("Connection:" , "keep-alive");
+    reply_.headers.emplace_back("Connection" , "keep-alive");
     boost::asio::async_write(socket_, reply_.to_buffers(),
         [this](boost::system::error_code, std::size_t)
         {
