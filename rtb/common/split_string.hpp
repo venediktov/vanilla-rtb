@@ -30,7 +30,7 @@ void split_string( std::vector<StringView> &ret,
                    const std::string &s, 
                    const char *delims) {
     char const* begin = s.c_str();
-    char const* end = strpbrk(begin + 1, delims);
+    char const* end = strpbrk((*begin == *delims) ? begin : begin + 1, delims);
     for (; end != NULL; end = strpbrk(begin, delims)) {
         ret.emplace_back(begin, std::distance(begin,end));
         begin = ++end;
