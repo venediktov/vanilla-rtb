@@ -69,10 +69,10 @@ private:
       Handler&& handler)
     : io_service_owned_{io_context_ptr ? std::nullopt : std::make_optional<io_context_t>()},
     io_service_{io_context_ptr ? *io_context_ptr : *io_service_owned_},
-    signals_(io_service_),
-    acceptor_(io_service_),
+    signals_(make_strand(io_service_)),
+    acceptor_(make_strand(io_service_)),
     connection_manager_(),
-    socket_(io_service_),
+    socket_(make_strand(io_service_)),
     request_handler_(std::forward<Handler>(handler))
   {
     // Register to handle the signals that indicate when the server should exit.
