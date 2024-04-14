@@ -133,9 +133,9 @@ private:
           auto received_data_size = std::distance(data, buffer_.data() + bytes_transferred);
           auto content_length_value = boost::lexical_cast<long>(itr->value);
           request_.data = std::string(data, content_length_value);
-          auto end_data_ptr = request_.data.data() + received_data_size;
           if (received_data_size < content_length_value) {
               auto left_over_size = content_length_value - received_data_size;
+              auto end_data_ptr = request_.data.data() + received_data_size;
               auto left_over_buffer = boost::asio::buffer(end_data_ptr, left_over_size);
               boost::asio::read(socket_, left_over_buffer);
           }
