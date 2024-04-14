@@ -17,6 +17,7 @@
 *
 */
 
+#pragma once
 #ifndef HTTP_PERSISTENT_CONNECTION_HPP
 #define HTTP_PERSISTENT_CONNECTION_HPP
 
@@ -78,19 +79,12 @@ private:
           if (!ec)
           {
             request_parser::result_type result;
-            char * data;
+            char * data = nullptr;
             std::tie(result, data) = request_parser_.parse(
                 request_, buffer_.data(), buffer_.data() + bytes_transferred);
-            auto itr = std::find_if( request_.headers.begin(), 
-                                     request_.headers.end(), 
-                                     [](const header &h) { return h.name == "content-length" ; }
-            ) ;
-           
-            if ( itr != request_.headers.end()) {
-                request_.data = std::string(data, boost::lexical_cast<long>(itr->value)) ;
-            }
-            if (result == request_parser::good)
-            {
+
+            if (result == request_parser::good) {
+              read_data_if(data, bytes_transferred);
               request_handler_.handle_request(request_, reply_);
               do_write();
             }
@@ -127,7 +121,27 @@ private:
             do_read();
         });
   }
- 
+
+  void read_data_if(char *data, std::size_t bytes_transferred) {
+
+      auto itr = std::find_if( request_.headers.begin(),
+                               request_.headers.end(),
+                               [](const header &h) { return h.name == "content-length" ; }
+      ) ;
+
+      if (data && itr != request_.headers.end()) {
+          auto received_data_size = std::distance(data, buffer_.data() + bytes_transferred);
+          auto content_length_value = boost::lexical_cast<long>(itr->value);
+          request_.data = std::string(data, content_length_value);
+          auto end_data_ptr = request_.data.data() + received_data_size;
+          if (received_data_size < content_length_value) {
+              auto left_over_size = content_length_value - received_data_size;
+              auto left_over_buffer = boost::asio::buffer(end_data_ptr, left_over_size);
+              boost::asio::read(socket_, left_over_buffer);
+          }
+      }
+  }
+
   /// Socket for the persistent_connection.
   boost::asio::ip::tcp::socket socket_;
  
