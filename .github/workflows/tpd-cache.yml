@@ -54,13 +54,13 @@ jobs:
           cd "${{github.workspace}}/download"
           wget -q -\
                "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
-          mkdir -p "${{github.workspace}}/build/boost"
-          mkdir -p "${{github.workspace}}/tpd/boost"
           tar --extract\
               --file "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"\
               --strip-components=1\
               --directory "${{github.workspace}}/build/boost"
           cd "${{github.workspace}}/build/boost"
+          ls -l
+          mkdir -p "${{github.workspace}}/tpd/boost"
           ./bootstrap.sh --with-toolset=gcc --prefix="${{github.workspace}}/tpd/boost"
           ./b2 --prefix="${{github.workspace}}/tpd/boost"\
                -j$(($(nproc) * 2)) cxxflags='-std=c++23'\
