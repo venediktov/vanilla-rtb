@@ -51,21 +51,24 @@ jobs:
 
           boost_ver=1.84.0
           boost_ver_tgz=${boost_ver//./_}
+
           cd "${{github.workspace}}/download"
-          wget -q -\
+          wget -q -O "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"
                "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
+
+          cd "${{github.workspace}}/build/boost"
           tar --extract\
               --file "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"\
-              --strip-components=1\
-              --directory "${{github.workspace}}/build/boost"
-          cd "${{github.workspace}}/build/boost"
-          ls -l
+              --strip-components=1
+          ls -l "${{github.workspace}}/build/boost"
+
           mkdir -p "${{github.workspace}}/tpd/boost"
           ./bootstrap.sh --with-toolset=gcc --prefix="${{github.workspace}}/tpd/boost"
           ./b2 --prefix="${{github.workspace}}/tpd/boost"\
                -j$(($(nproc) * 2)) cxxflags='-std=c++23'\
                hardcode-dll-paths=true dll-path="'\$ORIGIN/../lib'"\
                variant=release install
+          ls -l "${{github.workspace}}/tpd/boost"
 
       - name: Cache TPDs
         if: (inputs.force || steps.cache.outputs.cache-hit != 'true') 
