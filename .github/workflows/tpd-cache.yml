@@ -57,7 +57,7 @@ jobs:
           mkdir -p "${{github.workspace}}/build/boost"
           mkdir -p "${{github.workspace}}/tpd/boost"
           tar --extract\
-              --file "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"
+              --file "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"\
               --strip-components=1\
               --directory "${{github.workspace}}/build/boost"
           cd "${{github.workspace}}/build/boost"
