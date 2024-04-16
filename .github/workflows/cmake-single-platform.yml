@@ -58,7 +58,7 @@ jobs:
               -DCMAKE_BUILD_TYPE=${{matrix.build-type}}\
               -DCMAKE_C_COMPILER=${{matrix.c-compiler}}\
               -DCMAKE_CXX_COMPILER=${{matrix.cxx-compiler}}\
-              -DCMAKE_PREFIX_PATH="${{github.workspace}}/tpd/boost;"
+              -DCMAKE_PREFIX_PATH="${{github.workspace}}/tpd/boost;"\
               -G Ninja
 
     - name: Build
