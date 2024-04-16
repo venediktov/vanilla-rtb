@@ -56,6 +56,7 @@ jobs:
           wget -q -O "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"\
                "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
 
+          mkdir -p "${{github.workspace}}/build/boost"
           cd "${{github.workspace}}/build/boost"
           tar --extract\
               --file "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"\
