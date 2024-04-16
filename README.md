@@ -14,7 +14,7 @@
 [4]: http://www.github.com/vanilla-rtb
 
 # vanilla-rtb
-[![CI](https://github.com/venediktov/vanilla-rtb/actions/workflows/cmake-single-patform.yml/badge.svg)](https://github.com/mrbald/baar/actions/workflows/cmake-single-patform.yml)
+[![CI](https://github.com/venediktov/vanilla-rtb/actions/workflows/ci.yml/badge.svg)](https://github.com/venediktov/vanilla-rtb/actions/workflows/ci.yml)
 
 Real Time Bidding (RTB) - Demand Side Platform framework
 
