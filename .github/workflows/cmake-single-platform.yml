@@ -1,0 +1,72 @@
+# This starter workflow is for a CMake project running on a single platform. There is a different starter workflow if you need cross-platform coverage.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-multi-platform.yml
+name: CMake on a single platform
+
+on:
+  push:
+    branches: [ "master", "cxx23" ]
+  pull_request:
+    branches: [ "master", "cxx23" ]
+
+jobs:
+  tpd-cache:
+    uses: venediktov/vanilla-rtb/.github/workflows/tpd-cache.yml@cxx23
+    with:
+      force: false
+      cache-key: tpd-cache-0001
+
+  build:
+    needs: [tpd-cache]
+    # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
+    # You can convert this to a matrix build if you need cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: [GCC]
+        build-type: [Debug, Release]
+        include:
+          - toolchain: GCC
+            apt-package: gcc-12
+            c-compiler: gcc-12
+            cxx-compiler: g++-12
+          # Clang 15 does not like the standard library
+          # - toolchain: Clang
+          #   apt-package: clang-15
+          #   c-compiler: clang-15
+          #   cxx-compiler: clang++-15
+
+    steps:
+    - name: Install Apt TPDs
+      run: |
+        sudo apt-get install -y libbenchmark-dev libpcap-dev ninja-build cmake ${{ matrix.apt-package }}
+
+    - uses: actions/checkout@v4
+      with: { submodules: recursive }
+
+    - name: Restore TPDs
+      uses: actions/cache/restore@v4
+      id: cache
+      with:
+        path: tpd
+        key: tpd-cache-0001
+
+    - name: Configure CMake
+      run: |
+        cmake -S "${{github.workspace}}"\
+              -B "${{github.workspace}}/build"\
+              -DCMAKE_BUILD_TYPE=${{matrix.build-type}}\
+              -DCMAKE_C_COMPILER=${{matrix.c-compiler}}\
+              -DCMAKE_CXX_COMPILER=${{matrix.cxx-compiler}}\
+              -DCMAKE_PREFIX_PATH="${{github.workspace}}/tpd/boost;"
+              -G Ninja
+
+    - name: Build
+      run: |
+        cmake --build ${{github.workspace}}/build\
+              --config ${{matrix.build-type}}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: |
+        ctest -C ${{ matrix.build-type }}

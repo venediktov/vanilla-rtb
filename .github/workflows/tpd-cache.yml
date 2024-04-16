@@ -1,0 +1,74 @@
+name: Update Cached TPDs
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force cache rebuild'
+        type: boolean
+        default: false
+        required: false
+  
+      cache-key:
+        description: 'Cache key'
+        type: string
+        default: 'tpd-cache-0000'
+        required: false
+
+  workflow_call:
+    inputs:
+      force:
+        description: 'Force cache rebuild'
+        type: boolean
+        default: false
+        required: false
+
+      cache-key:
+        description: 'Cache key'
+        type: string
+        default: 'tpd-cache-0000'
+        required: false
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Restore TPDs
+        if: (!inputs.force)
+        uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: tpd
+          key: ${{inputs.cache-key}}
+  
+      - name: Build TPDs
+        if: (inputs.force || steps.cache.outputs.cache-hit != 'true')
+        run: |
+          mkdir -p "${{github.workspace}}/download"
+          mkdir -p "${{github.workspace}}/build"
+          mkdir -p "${{github.workspace}}/tpd"
+
+          boost_ver=1.84.0
+          boost_ver_tgz=${boost_ver//./_}
+          cd "${{github.workspace}}/download"
+          wget "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
+          mkdir -p "${{github.workspace}}/build/boost"
+          mkdir -p "${{github.workspace}}/tpd/boost"
+          tar xf --strip-components=1\
+                 --directory "${{github.workspace}}/build/boost"\
+                 "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"
+
+          cd "${{github.workspace}}/build/boost"
+          ./bootstrap.sh --with-toolset=gcc --prefix="${{github.workspace}}/tpd/boost"
+          ./b2 --prefix="${{github.workspace}}/tpd/boost"\
+               -j$(($(nproc) * 2)) cxxflags='-std=c++23'\
+               hardcode-dll-paths=true dll-path="'\$ORIGIN/../lib'"\
+               variant=release install
+
+      - name: Cache TPDs
+        if: (inputs.force || steps.cache.outputs.cache-hit != 'true') 
+        uses: actions/cache/save@v4
+        with:
+          path: tpd
+          key: ${{inputs.cache-key}}
