@@ -14,7 +14,6 @@
 [4]: http://www.github.com/vanilla-rtb
 
 # vanilla-rtb
-[![CI](https://github.com/venediktov/vanilla-rtb/actions/workflows/ci.yml/badge.svg)](https://github.com/venediktov/vanilla-rtb/actions/workflows/ci.yml)
 
 Real Time Bidding (RTB) - Demand Side Platform framework
 
@@ -46,7 +45,7 @@ and custom targetings and bidder executable generators [https://github.com/vanil
 [runs on cloud with docker - see instructions](../../tree/master/docker/)
 
 [![Join the chat at https://gitter.im/vanilla-rtb/Lobby](https://badges.gitter.im/vanilla-rtb/Lobby.svg)](https://gitter.im/vanilla-rtb/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) 
-[![build ](https://travis-ci.org/venediktov/vanilla-rtb.svg?branch=master)](https://travis-ci.org/venediktov/vanilla-rtb)
+[![CI](https://github.com/venediktov/vanilla-rtb/actions/workflows/ci.yml/badge.svg)](https://github.com/venediktov/vanilla-rtb/actions/workflows/ci.yml)
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](http://perso.crans.org/besson/LICENSE.html)
 [![Installing Dependencies](https://img.shields.io/badge/Dependencies-wiki-green.svg)](https://github.com/venediktov/vanilla-rtb/wiki)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/venediktov/vanilla-rtb/issues)
