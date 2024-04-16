@@ -52,13 +52,14 @@ jobs:
           boost_ver=1.84.0
           boost_ver_tgz=${boost_ver//./_}
           cd "${{github.workspace}}/download"
-          wget "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
+          wget -q -\
+               "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
           mkdir -p "${{github.workspace}}/build/boost"
           mkdir -p "${{github.workspace}}/tpd/boost"
-          tar xf --strip-components=1\
-                 --directory "${{github.workspace}}/build/boost"\
-                 "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"
-
+          tar --extract\
+              --file "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"
+              --strip-components=1\
+              --directory "${{github.workspace}}/build/boost"
           cd "${{github.workspace}}/build/boost"
           ./bootstrap.sh --with-toolset=gcc --prefix="${{github.workspace}}/tpd/boost"
           ./b2 --prefix="${{github.workspace}}/tpd/boost"\
