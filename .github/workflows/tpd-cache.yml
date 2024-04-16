@@ -53,7 +53,7 @@ jobs:
           boost_ver_tgz=${boost_ver//./_}
 
           cd "${{github.workspace}}/download"
-          wget -q -O "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"
+          wget -q -O "${{github.workspace}}/download/boost_${boost_ver_tgz}.tar.gz"\
                "https://boostorg.jfrog.io/artifactory/main/release/${boost_ver}/source/boost_${boost_ver_tgz}.tar.gz"
 
           cd "${{github.workspace}}/build/boost"
