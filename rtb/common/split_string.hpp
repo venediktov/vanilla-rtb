@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <iterator>
+#include <cstring>
 
 namespace vanilla { namespace common {
     
