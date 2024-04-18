@@ -251,7 +251,7 @@ namespace openrtb {
                                                         /// specification. It is strongly advised to use only the first
                                                         /// element of this array in preparation for this change.
         PlaybackCessationModes playbackend;             /// The event that causes playback to end.
-        DeliveryMethod delivery;                         /// Supported delivery methods (e.g., streaming, progressive). If
+        std::vector<DeliveryMethod> delivery;           /// Supported delivery methods (e.g., streaming, progressive). If
                                                         /// none specified, assume all are supported.
         AdPosition pos;                                 /// Ad position on screen.
         CompanionType companiontype;                    /// Supported VAST companion ad types.
