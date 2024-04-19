@@ -61,6 +61,9 @@ struct reply
 
   /// Get a stock reply.
   static reply stock_reply(status_type status, const char* mime = mime_types::HTML);
+  
+  /// Build a custom reply.
+  static reply custom_reply(status_type status, const char* mime, std::string_view payload);
 
   /// flush function to be used by reply & operator<<(reply &r , const reply::flush &) 
   template<typename FlushT>

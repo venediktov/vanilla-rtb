@@ -247,11 +247,22 @@ reply reply::stock_reply(reply::status_type status, const char* mime)
   rep.status = status;
   if ( status != reply::no_content) {
     rep.content = stock_replies::to_string(status);
-    rep.headers.resize(2);
-    rep.headers[0].name = "Content-Length";
-    rep.headers[0].value = std::to_string(rep.content.size());
-    rep.headers[1].name = "Content-Type";
-    rep.headers[1].value = mime;
+    rep.headers.reserve(2);
+    rep.headers.emplace_back("Content-Length", std::to_string(rep.content.size()));
+    rep.headers.emplace_back("Content-Type", mime);
+  }
+  return rep;
+}
+
+reply reply::custom_reply(reply::status_type status, const char* mime, std::string_view payload)
+{
+  reply rep;
+  rep.status = status;
+  if ( status != reply::no_content) {
+    rep.content = payload;
+    rep.headers.reserve(2);
+    rep.headers.emplace_back("Content-Length", std::to_string(rep.content.size()));
+    rep.headers.emplace_back("Content-Type", mime);
   }
   return rep;
 }

@@ -32,7 +32,8 @@ struct mapping
   { "jpg", "image/jpeg" },
   { "png", "image/png" },
   { "json", "application/json"},
-  { "css", "text/css"}
+  { "css", "text/css"},
+  { "txt", "text/plain"}
 };
 
 
@@ -64,6 +65,7 @@ constexpr const char* JPG  = mime_types::extension_to_type("jpg");
 constexpr const char* PNG  = mime_types::extension_to_type("png");
 constexpr const char* JSON = mime_types::extension_to_type("json");
 constexpr const char* CSS  = mime_types::extension_to_type("css");
+constexpr const char* TXT  = mime_types::extension_to_type("txt");
 
 /// Convert a file extension into a MIME type.
 std::string extension_to_type(const std::string& extension);
