@@ -52,6 +52,7 @@ static auto chain_function(BidRequest &&req, Impression &&imp, Arg &&arg,
 
 } // namespace detail
 
+// TODO: move to concepts
 template <typename T>
 concept is_vanilla_standard_ad = requires(T value) {
     value.auth_bid_micros;
