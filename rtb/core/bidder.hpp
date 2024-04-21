@@ -92,7 +92,10 @@ namespace vanilla {
             bid.id = boost::uuids::to_string(bidid); // TODO check documentation
             // Is it the same as response.bidid?
             bid.impid = imp.id;
-            bid.price = ad.auth_bid_micros ? *ad.auth_bid_micros / 1000000.0 : ad.max_bid_micros / 1000000.0 ; // Not micros?
+            if constexpr (sizeof...(Processor) <= 0) {
+                bid.price =
+                    ad.auth_bid_price ? *ad.auth_bid_price / 1000000.0 : ad.max_bid_micros / 1000000.0;
+            }
             bid.w = ad.width;
             bid.h = ad.height;
             bid.adm = ad.code;

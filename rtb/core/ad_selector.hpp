@@ -52,6 +52,12 @@ static auto chain_function(BidRequest &&req, Impression &&imp, Arg &&arg,
 
 } // namespace detail
 
+template <typename T>
+concept is_vanilla_standard_ad = requires(T value) {
+    value.auth_bid_micros;
+    value.max_bid_micros;
+};
+
 template<typename BudgetManager, typename Ad>
 class ad_selector {
     public:
@@ -66,10 +72,16 @@ class ad_selector {
         template<typename BidRequest, typename Impression, typename HeadArg , typename... Funcs>
         auto select(BidRequest&& req, Impression&& imp, HeadArg&& head, Funcs... funcs) {
             auto ads = detail::chain_function( std::forward<BidRequest>(req), std::forward<Impression>(imp), std::forward<HeadArg>(head), funcs...);
-            if(selection_algo) {
+            if (selection_algo) {
                 return selection_algo(ads);
+            } else {
+                if constexpr ( is_vanilla_standard_ad<Ad>) {
+                    return algorithm::calculate_max_bid(ads);
+                } else {
+                    // TODO: add compile time warning for using dummy algo
+                    return std::unique_ptr<Ad>{};
+                }
             }
-            return algorithm::calculate_max_bid(ads);
         }
 
         template<typename BudgetCache , typename CampaignId>
