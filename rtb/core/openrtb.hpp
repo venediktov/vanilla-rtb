@@ -1,6 +1,7 @@
 #pragma once
 
-#include "core/unicode_string.hpp"
+#include "unicode_string.hpp"
+
 #include <boost/optional.hpp>
 #include <string>
 #include <list>

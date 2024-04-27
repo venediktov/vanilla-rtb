@@ -14,11 +14,13 @@
 
 template<typename Stream>
 struct perf_timer {
+    using perf_clock = std::chrono::high_resolution_clock;
+
     perf_timer(std::shared_ptr<Stream> &osp, std::string name = "") : 
-        begin{std::chrono::steady_clock::now()}, end{begin}, osp{osp}, name{std::move(name)} 
+        begin{perf_clock::now()}, end{begin}, osp{osp}, name{std::move(name)} 
     {}
     ~perf_timer() {
-      end = std::chrono::steady_clock::now() ;
+      end = perf_clock::now() ;
       if(name.length()) {
         *osp << name << " : ";
       }
@@ -36,8 +38,8 @@ struct perf_timer {
          << "|"; 
     }
 private:
-  decltype(std::chrono::steady_clock::now()) begin;
-  decltype(std::chrono::steady_clock::now()) end;
+  perf_clock::time_point begin;
+  perf_clock::time_point end;
   std::shared_ptr<Stream> osp;
   std::string name;
 };
