@@ -126,11 +126,11 @@ private:
         });
   }
 
-  boost::system::error_code read_data_if(char *data, std::size_t bytes_transferred) {
+  boost::system::error_code read_data_if(char * const data, std::size_t bytes_transferred) {
     static constexpr auto is_content_length = [](const header &h) noexcept { return h.name == "content-length" ; };
 
     boost::system::error_code ec{};
-    if (data) {
+    if (data != nullptr) {
         auto itr = find_if(begin(request_.headers), end(request_.headers), is_content_length);
 
         if (itr != end(request_.headers)) {
