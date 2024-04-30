@@ -255,7 +255,7 @@ namespace openrtb {
         std::vector<DeliveryMethod> delivery;           /// Supported delivery methods (e.g., streaming, progressive). If
                                                         /// none specified, assume all are supported.
         AdPosition pos;                                 /// Ad position on screen.
-        CompanionType companiontype;                    /// Supported VAST companion ad types.
+        std::vector<CompanionType>  companiontype;      /// Supported VAST companion ad types.
                                                         /// Recommended if companion Banner objects are included via
                                                         /// the companionad array. If one of these banners will be
                                                         /// rendered as an end-card, this can be specified using the vcm
