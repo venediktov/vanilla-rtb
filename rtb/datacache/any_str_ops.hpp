@@ -28,12 +28,13 @@ namespace boost {
 #endif
 
 #include <string>
+#include <string_view>
 
 namespace ufw {
 
     /**
      * Functor for containers transparent across `std::string`,
-     * `boost::container::string`, `boost::string_view`, and `char const*`.
+     * `boost::container::string`, `boost::string_view`, `std::string_view` and `char const*`.
      */
     template<typename Alloc, typename Op>
     struct any_str_op {
@@ -48,11 +49,13 @@ namespace ufw {
         using shm_str_t = typename boost::container::basic_string<char_t, char_traits_t, Alloc>;
         using std_str_t = std::basic_string<char_t, char_traits_t, std::allocator<char_t>>;
         using str_view_t = boost::basic_string_view<char_t, char_traits_t>;
+        using std_str_view_t = std::basic_string_view<char_t, char_traits_t>;
 
         static str_view_t view(char_t const* x) { return {x}; }
         static str_view_t view(shm_str_t const& x) { return {x.data(), x.size()}; }
         static str_view_t view(std_str_t const& x) { return {x}; }
         static str_view_t view(str_view_t x) { return x; }
+        static str_view_t view(std_str_view_t const& x) { return {x.data(), x.size()}; }
     };
 
     template <typename Alloc>
