@@ -21,6 +21,7 @@
 #define __DATACACHE_ENTITY_CACHE_HPP__
 
 #include <algorithm>
+#include <type_traits>
 #include <boost/interprocess/exceptions.hpp>
 #include <boost/interprocess/allocators/allocator.hpp>
 #include <boost/interprocess/containers/string.hpp>
@@ -276,7 +277,9 @@ public:
    }
 private:
     void attach() const {
-    _segment_ptr.reset(new segment_t(bip::open_only,_store_name.c_str()) ) ;
+    if constexpr ( !std::is_same_v<segment_t, boost::interprocess::managed_heap_memory> ) {
+        _segment_ptr.reset(new segment_t(bip::open_only,_store_name.c_str()) ) ;
+    }
     _container_ptr = _segment_ptr->template find_or_construct<Container_t>(_cache_name.c_str())
         (typename Container_t::ctor_args_list(), typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
     }
