@@ -27,7 +27,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-namespace mpclmi { namespace ipc {
+namespace mpclmi::ipc {
    
 struct Shared {
     typedef boost::interprocess::managed_shared_memory   segment_t;
@@ -49,8 +49,7 @@ struct Shared {
         mem_ptr.reset() ;
         segment_t::grow(path.c_str(), size) ;
         mem_ptr.reset(open_segment(path)) ;
-        return ;
-    }
+   }
     static std::string convert_base_dir([[maybe_unused]] const std::string &base_dir) {
         return "" ;
     }
@@ -81,8 +80,7 @@ struct Mapped {
         mem_ptr.reset() ;
         segment_t::grow(path.c_str(), size) ;
         mem_ptr.reset(open_segment(path)) ;
-        return ;
-    }
+   }
     static std::string convert_base_dir(const std::string &base_dir) {
         return base_dir + "/";
     }
@@ -108,17 +106,16 @@ struct Heap {
     template <typename MemPtr>
     static void grow( MemPtr &mem_ptr, [[maybe_unused]] const std::string &path, size_t size) {
         mem_ptr->grow(size) ;
-        return ;
-    }
+   }
     static std::string convert_base_dir([[maybe_unused]] const std::string &base_dir) {
         return "" ;
     }
 
     template<typename Function>
-    static void attach( Function && ) {}
+    static void attach( Function && f) {
+        f() ;
+    }
 };
 
-}}
+}
 #endif	/* __IPC_MEMORY_TYPES_HPP__ */
-
-
