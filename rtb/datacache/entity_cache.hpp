@@ -286,7 +286,9 @@ private:
 
     void grow_memory(size_t size) const {
         try {
-          _segment_ptr.reset() ;
+          if constexpr ( !std::is_same_v<segment_t, boost::interprocess::managed_heap_memory> ) {
+              _segment_ptr.reset() ;
+          }
           Memory::grow(_segment_ptr, _store_name.c_str(), size) ;
         } catch ( const  bad_alloc_exception_t &e ) {
             LOG(debug) << boost::core::demangle(typeid(*this).name())       
