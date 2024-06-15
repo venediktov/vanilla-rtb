@@ -272,7 +272,7 @@ public:
    }
 
    size_t get_size() const {
-       bip::scoped_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
+       bip::sharable_lock<bip::named_upgradable_mutex> guard(_named_mutex) ;
        return _container_ptr->size();
    }
 private:
