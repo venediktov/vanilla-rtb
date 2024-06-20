@@ -31,12 +31,14 @@
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_parser.hpp"
- 
-namespace http {
-namespace server {
-      
+
+namespace http::server {
+
 template<class> class connection_manager;
- 
+
+/// Result of data read.
+enum data_read_result { complete, indeterminate };
+
 /// Represents a single connection from a client.
 template <typename request_handler_type>
 class persistent_connection
@@ -85,12 +87,11 @@ private:
 
             if (result == request_parser::good) [[likely]]
             {
-              ec = read_data_if(data, bytes_transferred);
-              if (!ec) [[likely]]
-              {
+              auto status = handle_request_if(data, bytes_transferred);
+              if (status == data_read_result::complete) {
                 request_handler_.handle_request(request_, reply_);
+                do_write();
               }
-              do_write();
             }
             else if (result == request_parser::bad)
             {
@@ -126,26 +127,34 @@ private:
         });
   }
 
-  boost::system::error_code read_data_if(char * const data, std::size_t bytes_transferred) {
+  data_read_result handle_request_if(char * const data, std::size_t bytes_transferred) {
     static constexpr auto is_content_length = [](const header &h) noexcept { return h.name == "content-length" ; };
 
-    boost::system::error_code ec{};
+    data_read_result completion_status{data_read_result::complete};
     if (data != nullptr) {
         auto itr = find_if(begin(request_.headers), end(request_.headers), is_content_length);
 
         if (itr != end(request_.headers)) {
             auto received_data_size = std::distance(data, buffer_.data() + bytes_transferred);
             auto content_length_value = boost::lexical_cast<long>(itr->value);
-            request_.data = std::string(data, content_length_value);
+            request_.data = std::string(data, received_data_size);
             if (received_data_size < content_length_value) {
+                completion_status = data_read_result::indeterminate;
+                request_.data.resize(content_length_value);
                 auto left_over_size = content_length_value - received_data_size;
                 auto end_data_ptr = request_.data.data() + received_data_size;
                 auto left_over_buffer = boost::asio::buffer(end_data_ptr, left_over_size);
-                boost::asio::read(socket_, left_over_buffer, ec);
+                boost::asio::async_read(socket_, left_over_buffer, boost::asio::transfer_exactly(left_over_size),
+                                        [this](boost::system::error_code ec, std::size_t) {
+                                            if (!ec) [[likely]] {
+                                                request_handler_.handle_request(request_, reply_);
+                                            }
+                                            do_write();
+                                        });
             }
         }
     }
-    return ec;
+    return completion_status;
   }
 
   /// Socket for the persistent_connection.
@@ -170,9 +179,5 @@ private:
   reply reply_;
   
 };
- 
- 
-} // namespace server
-} // namespace http
- 
+} // namespace http::server
 #endif // HTTP_PERSISTENT_CONNECTION_HPP
