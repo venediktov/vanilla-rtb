@@ -74,8 +74,9 @@ private:
   /// Perform an asynchronous read operation.
   void do_read()
   {
+    auto self{this->shared_from_this()}; //make sure connection is alive while lambda is in progress
     socket_.async_read_some(boost::asio::buffer(buffer_),
-        [this](boost::system::error_code ec, std::size_t bytes_transferred)
+        [this, self](boost::system::error_code ec, std::size_t bytes_transferred)
         {
             
           if (!ec) [[likely]]
@@ -113,17 +114,21 @@ private:
   /// Perform an asynchronous write operation.
   void do_write()
   {
+    auto self{this->shared_from_this()}; //make sure connection is alive while lambda is in progress
     reply_.headers.emplace_back("Connection" , "keep-alive");
     boost::asio::async_write(socket_, reply_.to_buffers(),
-        [this](boost::system::error_code, std::size_t)
+        [this, self](boost::system::error_code ec, std::size_t)
         {
-          // TODO: VL: why is error_code not checked?
             request_parser_.reset();
             reply_.headers.resize(0);
             reply_.status = reply::status_type::ok;
             reply_.content="";
-            request_ = request(); 
-            do_read();
+            request_ = request();
+            if(!ec) [[likely]] {
+                do_read();
+            } else if (ec != boost::asio::error::operation_aborted) {
+                connection_manager_.stop(this->shared_from_this());
+            }
         });
   }
 
@@ -144,12 +149,15 @@ private:
                 auto left_over_size = content_length_value - received_data_size;
                 auto end_data_ptr = request_.data.data() + received_data_size;
                 auto left_over_buffer = boost::asio::buffer(end_data_ptr, left_over_size);
+                auto self{this->shared_from_this()}; //make sure connection is alive while lambda is in progress
                 boost::asio::async_read(socket_, left_over_buffer, boost::asio::transfer_exactly(left_over_size),
-                                        [this](boost::system::error_code ec, std::size_t) {
+                                        [this, self](boost::system::error_code ec, std::size_t) {
                                             if (!ec) [[likely]] {
                                                 request_handler_.handle_request(request_, reply_);
+                                                do_write();
+                                            } else if (ec != boost::asio::error::operation_aborted) {
+                                                connection_manager_.stop(this->shared_from_this());
                                             }
-                                            do_write();
                                         });
             }
         }
