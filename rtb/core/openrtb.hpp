@@ -424,7 +424,10 @@ namespace openrtb {
 
     };
 
-    struct Regulations {};
+    template<typename T>
+    struct Regulations {
+        int coppa{};
+    };
 
     template<typename T>
     struct Native {
@@ -502,7 +505,7 @@ namespace openrtb {
         std::vector<T> badv;                            ///< Blocked advertiser domains
         std::vector<T> bapp;                            ///< Block list of applications by their platform-specific exchangeindependent application identifiers
         boost::optional<Source<T>> source;              ///< A Sorce object
-        boost::optional<Regulations> regs;              ///< Regulations Object list (OpenRTB 2.2)
+        boost::optional<Regulations<T>> regs;           ///< Regulations Object list (OpenRTB 2.2)
         T ext; //jsonv::value ext;                      ///< Protocol extensions
         T unparseable; //jsonv::value unparseable;      ///< Unparseable fields get put here
         
