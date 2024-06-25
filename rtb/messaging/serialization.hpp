@@ -169,7 +169,7 @@ namespace boost {
         }
 
         template<class Archive, class T>
-        void serialize(Archive & ar, [[maybe_unused]] openrtb::Regulations<T> & value, [[maybe_unused]] const unsigned int version) {
+        void serialize(Archive & ar, openrtb::Regulations<T> & value, [[maybe_unused]] const unsigned int version) {
             ar & value.coppa;
         }
 
