@@ -168,8 +168,8 @@ namespace boost {
         void serialize(Archive &, [[maybe_unused]] vanilla::unicode_string & value, [[maybe_unused]] const unsigned int version) { //ar & value;
         }
 
-        template<class Archive>
-        void serialize(Archive &, [[maybe_unused]] openrtb::Regulations & value, [[maybe_unused]] const unsigned int version) {
+        template<class Archive, class T>
+        void serialize(Archive &, [[maybe_unused]] openrtb::Regulations<T> & value, [[maybe_unused]] const unsigned int version) {
         }
 
         /******* BidResponse *************************************************************/
