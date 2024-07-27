@@ -31,7 +31,9 @@
 
 namespace vanilla { namespace messaging {
 
-    
+using data_segment = std::pair<char const*, size_t>;
+using data_segments_vector = std::vector<data_segment>;
+
 template<typename Serializable>
 std::string serialize( Serializable && data ) {
     std::stringstream ss(std::ios_base::out|std::ios_base::binary);
@@ -169,7 +171,6 @@ class sender : ConnectionPolicy
 {
 public:
   using data_type = std::array<char, MAX_DATA_SIZE> ;
-
   template<typename ...IPAddress>
   sender(boost::asio::io_service& io_service, const unsigned short port, IPAddress && ...addresses) :
     socket_{io_service},
@@ -191,6 +192,17 @@ public:
         boost::asio::buffer(out_data_), to_endpoint_,
         [](const boost::system::error_code&, std::size_t) {
      });
+  }
+
+  void send_async(data_segments_vector const & data) {
+      size_t total_size{};
+      std::for_each(data.begin(), data.end(), [&total_size](auto &it) { total_size += it.second;});
+      out_data_.reserve(total_size);
+      std::for_each(data.begin(), data.end(), [&](auto &it) { out_data_.append(it.first, it.second);});
+      socket_.async_send_to(
+          boost::asio::buffer(out_data_), to_endpoint_,
+          [](const boost::system::error_code&, std::size_t) {}
+      );
   }
   
   template<typename Handler>
@@ -270,6 +282,13 @@ public:
     self_type & distribute(const char *data, std::size_t size) {
         if(distributor_) {
             distributor_->send_async(data,size);
+        }
+        return *this;
+    }
+
+    self_type & distribute_segments(data_segments_vector const & data) {
+        if(distributor_) {
+            distributor_->send_async(data);
         }
         return *this;
     }
