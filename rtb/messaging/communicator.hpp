@@ -99,6 +99,12 @@ struct broadcast {
         socket.set_option(boost::asio::socket_base::broadcast(true));
         return boost::asio::ip::udp::endpoint(boost::asio::ip::address_v4::broadcast(), port);
     }
+    template<typename SocketType, typename IPAddress>
+    auto sender_endpoint(SocketType && socket, const unsigned short port, IPAddress && address) {
+        socket.open(boost::asio::ip::udp::v4());
+        socket.set_option(boost::asio::socket_base::broadcast(true));
+        return boost::asio::ip::udp::endpoint(std::forward<IPAddress>(address), port);
+    }
 };
 
  
