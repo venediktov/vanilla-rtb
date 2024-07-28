@@ -28,6 +28,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <rtb/common/concepts.hpp>
 
 namespace vanilla { namespace messaging {
 
@@ -176,7 +177,7 @@ public:
     to_endpoint_{ConnectionPolicy::sender_endpoint(socket_, port , std::forward<IPAddress>(addresses)...)}
   {}
 
-  template<typename Serializable>
+  template<vanilla::common::boost_serializable_v Serializable>
   void send_async( Serializable && data) {
      out_data_ = serialize(std::forward<Serializable>(data));
      socket_.async_send_to(
@@ -192,7 +193,15 @@ public:
         [](const boost::system::error_code&, std::size_t) {
      });
   }
-  
+
+  template <vanilla::common::const_buffer_sequence T>
+  void send_async(T const& buffers) {
+      socket_.async_send_to(
+          buffers, to_endpoint_,
+          [](boost::system::error_code const&, std::size_t) {
+          });
+  }
+
   template<typename Handler>
   void receive_async(Handler handler) {
       socket_.async_receive_from(
@@ -259,7 +268,7 @@ public:
     }
 
     
-    template<typename Serializable>
+    template<vanilla::common::boost_serializable_v Serializable>
     self_type & distribute(Serializable && data) {
         if(distributor_) {
             distributor_->send_async(std::forward<Serializable>(data));
@@ -270,6 +279,14 @@ public:
     self_type & distribute(const char *data, std::size_t size) {
         if(distributor_) {
             distributor_->send_async(data,size);
+        }
+        return *this;
+    }
+
+    template <vanilla::common::const_buffer_sequence T>
+    self_type & distribute(T const& buffers) {
+        if(distributor_) {
+            distributor_->send_async(buffers);
         }
         return *this;
     }
