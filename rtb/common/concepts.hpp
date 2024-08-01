@@ -22,7 +22,6 @@
 #ifndef VANILLA_COMMON_CONCEPTS_HPP
 #define VANILLA_COMMON_CONCEPTS_HPP
 
-#include <boost/archive/binary_oarchive.hpp>
 #include <concepts>
 #include <string_view>
 #include <type_traits>
@@ -67,19 +66,6 @@ concept custom_bid_processor = requires(T processor, Args... args) {
 template <typename T>
 concept loadable_cache_v = requires(T& cache) {
     { cache.load() } -> std::same_as<void>;
-};
-
-template <typename T>
-concept const_buffer_sequence = requires(T value) {
-    typename  T::const_iterator;
-    value.begin();
-    value.end();
-    value.data();
-};
-
-template <typename T>
-concept boost_serializable_v = requires(T value,  boost::archive::binary_oarchive  ar) {
-    ar & value;
 };
 
 } // namespace vanilla::common
