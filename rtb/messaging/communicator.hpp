@@ -177,7 +177,7 @@ public:
     to_endpoint_{ConnectionPolicy::sender_endpoint(socket_, port , std::forward<IPAddress>(addresses)...)}
   {}
 
-  template<vanilla::common::boost_serializable_v Serializable>
+  template<typename Serializable>
   void send_async( Serializable && data) {
      out_data_ = serialize(std::forward<Serializable>(data));
      socket_.async_send_to(
@@ -194,12 +194,9 @@ public:
      });
   }
 
-  template <vanilla::common::const_buffer_sequence T>
-  void send_async(T const& buffers) {
-      socket_.async_send_to(
-          buffers, to_endpoint_,
-          [](boost::system::error_code const&, std::size_t) {
-          });
+  template <std::invocable<boost::asio::ip::udp::socket &,   boost::asio::ip::udp::endpoint const&> Callback>
+  void send_async(Callback && callback) {
+      std::forward<Callback>(callback)(socket_, to_endpoint_);
   }
 
   template<typename Handler>
@@ -268,7 +265,7 @@ public:
     }
 
     
-    template<vanilla::common::boost_serializable_v Serializable>
+    template<typename Serializable>
     self_type & distribute(Serializable && data) {
         if(distributor_) {
             distributor_->send_async(std::forward<Serializable>(data));
@@ -283,10 +280,10 @@ public:
         return *this;
     }
 
-    template <vanilla::common::const_buffer_sequence T>
-    self_type & distribute(T const& buffers) {
+    template <std::invocable<boost::asio::ip::udp::socket &,   boost::asio::ip::udp::endpoint const&> Callback>
+    self_type & distribute(Callback && callback) {
         if(distributor_) {
-            distributor_->send_async(buffers);
+            distributor_->send_async(std::forward<Callback>(callback));
         }
         return *this;
     }
