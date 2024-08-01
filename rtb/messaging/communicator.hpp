@@ -28,6 +28,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <rtb/common/concepts.hpp>
 
 namespace vanilla { namespace messaging {
 
@@ -192,7 +193,12 @@ public:
         [](const boost::system::error_code&, std::size_t) {
      });
   }
-  
+
+  template <std::invocable<boost::asio::ip::udp::socket &,   boost::asio::ip::udp::endpoint const&> Callback>
+  void send_async(Callback && callback) {
+      std::forward<Callback>(callback)(socket_, to_endpoint_);
+  }
+
   template<typename Handler>
   void receive_async(Handler handler) {
       socket_.async_receive_from(
@@ -270,6 +276,14 @@ public:
     self_type & distribute(const char *data, std::size_t size) {
         if(distributor_) {
             distributor_->send_async(data,size);
+        }
+        return *this;
+    }
+
+    template <std::invocable<boost::asio::ip::udp::socket &,   boost::asio::ip::udp::endpoint const&> Callback>
+    self_type & distribute(Callback && callback) {
+        if(distributor_) {
+            distributor_->send_async(std::forward<Callback>(callback));
         }
         return *this;
     }
