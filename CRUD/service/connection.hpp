@@ -24,9 +24,9 @@
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_parser.hpp"
- 
-namespace http {
-namespace server {
+#include "data_read_result.hpp"
+
+namespace http::server {
 template<class> class connection_manager;
  
 /// Represents a single connection from a client.
@@ -66,25 +66,23 @@ private:
   {
     auto self(this->shared_from_this());
     socket_.async_read_some(boost::asio::buffer(buffer_),
-        [this](boost::system::error_code ec, std::size_t bytes_transferred)
+        [this, self](boost::system::error_code ec, std::size_t bytes_transferred)
         {
-          if (!ec)
+            
+          if (!ec) [[likely]]
           {
             request_parser::result_type result;
-            char * data;
+            char * data = nullptr;
             std::tie(result, data) = request_parser_.parse(
                 request_, buffer_.data(), buffer_.data() + bytes_transferred);
-            auto itr = std::find_if( request_.headers.begin(), 
-                                     request_.headers.end(), 
-                                     [](const header &h) { return h.name == "content-length" ; }
-            ) ;
-            if ( itr != request_.headers.end()) {
-                request_.data = std::string(data, boost::lexical_cast<long>(itr->value)) ;
-            }
-            if (result == request_parser::good)
+
+            if (result == request_parser::good) [[likely]]
             {
-              request_handler_.handle_request(request_, reply_);
-              do_write();
+              auto status = handle_request_if(data, bytes_transferred);
+              if (status == data_read_result::complete) {
+                request_handler_.handle_request(request_, reply_);
+                do_write();
+              }
             }
             else if (result == request_parser::bad)
             {
@@ -124,8 +122,41 @@ private:
           }
         });
   }
- 
-  /// Socket for the connection.
+
+  data_read_result handle_request_if(char * const data, std::size_t bytes_transferred) {
+    static constexpr auto is_content_length = [](const header &h) noexcept { return h.name == "content-length" ; };
+
+    data_read_result completion_status{data_read_result::complete};
+    if (data != nullptr) {
+        auto itr = find_if(begin(request_.headers), end(request_.headers), is_content_length);
+
+        if (itr != end(request_.headers)) {
+            auto received_data_size = std::distance(data, buffer_.data() + bytes_transferred);
+            auto content_length_value = boost::lexical_cast<long>(itr->value);
+            request_.data = std::string(data, received_data_size);
+            if (received_data_size < content_length_value) {
+                completion_status = data_read_result::indeterminate;
+                request_.data.resize(content_length_value);
+                auto left_over_size = content_length_value - received_data_size;
+                auto end_data_ptr = request_.data.data() + received_data_size;
+                auto left_over_buffer = boost::asio::buffer(end_data_ptr, left_over_size);
+                auto self{this->shared_from_this()}; //make sure connection is alive while lambda is in progress
+                boost::asio::async_read(socket_, left_over_buffer, boost::asio::transfer_exactly(left_over_size),
+                                        [this, self](boost::system::error_code ec, std::size_t) {
+                                            if (!ec) [[likely]] {
+                                                request_handler_.handle_request(request_, reply_);
+                                                do_write();
+                                            } else if (ec != boost::asio::error::operation_aborted) {
+                                                connection_manager_.stop(this->shared_from_this());
+                                            }
+                                        });
+            }
+        }
+    }
+    return completion_status;
+  }
+
+  /// Socket for the persistent_connection.
   boost::asio::ip::tcp::socket socket_;
  
   /// The manager for this connection.
@@ -148,8 +179,8 @@ private:
 };
  
  
-} // namespace server
-} // namespace http
+} // namespace http::server
+
  
 #endif // HTTP_CONNECTION_HPP
  
