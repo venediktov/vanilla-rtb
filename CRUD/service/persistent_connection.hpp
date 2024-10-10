@@ -31,13 +31,11 @@
 #include "reply.hpp"
 #include "request.hpp"
 #include "request_parser.hpp"
+#include "data_read_result.hpp"
 
 namespace http::server {
 
 template<class> class connection_manager;
-
-/// Result of data read.
-enum data_read_result { complete, indeterminate };
 
 /// Represents a single connection from a client.
 template <typename request_handler_type>
