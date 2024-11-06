@@ -1,5 +1,5 @@
 /*
- * File:   crud_dispathcher.hpp
+ * File:   crud_dispatcher.hpp
 * Author: vvenedict@gmail.com
 *
 *      dispatcher<response,request> d;
@@ -40,8 +40,8 @@
  * Created on September 29, 2015, 5:59 PM
 */
  
-#ifndef __HTTP_CRUD_DISPATHCHER_HPP__
-#define                __HTTP_CRUD_DISPATHCHER_HPP__
+#ifndef HTTP_CRUD_DISPATCHER_HPP
+#define HTTP_CRUD_DISPATCHER_HPP
  
 #include "crud_matcher.hpp"
 #include <boost/regex.hpp>
@@ -53,18 +53,19 @@
 #include <boost/container/flat_map.hpp>
 #endif
  
-namespace http { namespace crud {
-    template<typename Request, typename Response, typename Match=boost::cmatch, typename Expression=boost::regex>
-    class crud_dispatcher {
-        typedef crud_matcher<Response, Expression, Match> crud_matcher_type ;
-        typedef std::shared_ptr<crud_matcher_type> crud_matcher_type_p ;
+namespace http::crud {
+template <typename Request, typename Response, typename Match = boost::cmatch, typename Expression = boost::regex,
+          typename CrudMatcher = crud_matcher<Response, Expression, Match>>
+class crud_dispatcher {
+        using  crud_matcher_type = CrudMatcher;
+        using  crud_matcher_type_p = std::shared_ptr<crud_matcher_type>;
     public :
         crud_dispatcher() : _base_path() {}
-        crud_dispatcher(const std::string &base_path) : _base_path(base_path) {}
+        explicit crud_dispatcher(const std::string &base_path) : _base_path(base_path) {}
         crud_matcher_type & crud_match(const Expression &expression) {
             crud_matcher_type_p & p = _crud_matchers[expression] ;
             if(!p) {
-                p = std::make_shared<crud_matcher_type>(expression) ;
+                p = std::make_shared<crud_matcher_type>() ;
             }
             return *p;
         }
@@ -98,8 +99,7 @@ namespace http { namespace crud {
 #endif
     };
    
-}}
- 
- 
-#endif   /* __HTTP_CRUD_DISPATCHER__ */
+}
+
+#endif   /* HTTP_CRUD_DISPATCHER_HPP */
  
