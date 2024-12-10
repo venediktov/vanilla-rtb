@@ -121,17 +121,17 @@ struct BudgetManager {
 
 template <typename Config = CampaignManagerConfig,
           typename Memory = typename mpclmi::ipc::Shared,
-          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container, 67108864, CampaignBudget>::char_allocator >
+          typename Alloc = typename datacache::entity_cache<Memory, ipc::data::campaign_container, CampaignBudget>::char_allocator >
 class CampaignCache {
-        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_container, 67108864, CampaignBudget> ; 
+        using Cache = datacache::entity_cache<Memory, ipc::data::campaign_container, CampaignBudget> ;
         using Keys = vanilla::tagged_tuple< 
             typename ipc::data::campaign_entity<Alloc,CampaignBudget>::campaign_id_tag,   uint32_t
         >;
         using CampaignTag = typename ipc::data::campaign_entity<Alloc,CampaignBudget>::campaign_id_tag;
         using insert_handler_type = std::function<bool (const CampaignBudget *budget, uint32_t campaign_id)>;
         using remove_handler_type = std::function<bool (uint32_t campaign_id)>;
-    public:
-    public:
+
+public:
         using DataCollection = std::vector<std::shared_ptr <CampaignBudget> >;
         CampaignCache(const Config &config):
             config{config}, cache(config.data().ipc_name)

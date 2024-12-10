@@ -38,7 +38,7 @@ code = """<script>alert(" ad %d!");</script>"""
 
 with open("../data/geo_campaign", "w") as file:
     for geo_id, city, country in geo:
-        max_targetings = random.randint(1, max_campaigns/10)
+        max_targetings = random.randint(1, int(max_campaigns/10))
         start_pos = random.randint(1, max_campaigns-max_targetings)
         for i in range(start_pos, start_pos+max_targetings+1):
             file.write("%d\t%d\n" % (geo_id, i))
