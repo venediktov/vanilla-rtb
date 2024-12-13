@@ -38,10 +38,31 @@
 #include "rtb/core/core.hpp"
 #include "rtb/common/concepts.hpp"
 
-namespace {
-    namespace bip = boost::interprocess ;
+#include <boost/throw_exception.hpp>
+#include <boost/exception/info.hpp>
+#include <boost/stacktrace.hpp>
+#include <stdexcept>
+
+// Define an error_info tag for stacktrace
+
+typedef boost::error_info<struct tag_stacktrace, boost::stacktrace::stacktrace> traced;
+
+/** To print stack trace use *boost::get_error_info<traced>(e) after catching e */
+
+template <typename E>
+[[noreturn]] void throw_with_stacktrace(E const& e) {
+    throw boost::enable_error_info(e)
+        << traced(boost::stacktrace::stacktrace());
 }
- 
+
+#define VAV_REQUIRE(cond)                                                                                              \
+    do {                                                                                                               \
+        if (!(cond)) [[unlikely]]                                                                                      \
+            throw_with_stacktrace(std::runtime_error("VAV_REQUIRE assertion failed: " #cond));                         \
+    } while (false)
+
+namespace bip = boost::interprocess;
+
 namespace datacache {
    
 template<typename Index , typename Arg>
@@ -100,15 +121,16 @@ template<typename Memory, template <class,class...> class Container, typename ..
 class entity_cache
 {
 public:
-    using bad_alloc_exception_t  =  boost::interprocess::bad_alloc ;
-    using segment_manager_t = typename Memory::segment_manager_t ;
-    using segment_t = typename Memory::segment_t ;
-    using segment_ptr_t =  boost::scoped_ptr<segment_t>  ;
-    using char_allocator = boost::interprocess::allocator<char, segment_manager_t>  ;
-    using char_string = boost::interprocess::basic_string<char, std::char_traits<char>, char_allocator>   ;
-    using Container_t = Container<char_allocator,T...> ;
+    using bad_alloc_exception_t  =  boost::interprocess::bad_alloc;
+    using segment_manager_t = typename Memory::segment_manager_t;
+    using segment_t = typename Memory::segment_t;
+    using segment_ptr_t =  boost::scoped_ptr<segment_t>;
+    using char_allocator = boost::interprocess::allocator<char, segment_manager_t>;
+    using char_string = boost::interprocess::basic_string<char, std::char_traits<char>, char_allocator>;
+    using Container_t = Container<char_allocator,T...>;
     using Data_t = typename Container_t::value_type;
 
+    /** Can set memory_grow_increment=0 to prevent cache from growing */
     explicit entity_cache(std::string name, size_t const memory_size = ENTITY_CACHE_DEFAULT_MEMORY_SIZE,
                           size_t const memory_grow_increment = ENTITY_CACHE_DEFAULT_MEMORY_GROW_INCREMENT)
         : _segment_ptr(), _container_ptr(), _store_name(), _cache_name(std::move(name)),
@@ -267,22 +289,26 @@ private:
             LOG(debug) << boost::core::demangle(typeid(*this).name()) << " " << op_name
                        << " failed , MEMORY AVAILABLE=" << _segment_ptr->get_free_memory();
 #endif
-            if (grow_memory(_memory_grow_increment)) [[likely]] {
-                return op();
+            if (_memory_grow_increment && !grow_memory(_memory_grow_increment)) [[unlikely]] {
+                throw;
             }
-            throw;
+
+            return op();
         }
     }
 
     void attach() const {
-    if constexpr ( !std::is_same_v<segment_t, boost::interprocess::managed_heap_memory> ) {
-        _segment_ptr.reset(new segment_t(bip::open_only,_store_name.c_str()) ) ;
-    }
-    _container_ptr = _segment_ptr->template find_or_construct<Container_t>(_cache_name.c_str())
-        (typename Container_t::ctor_args_list(), typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
+        if constexpr (!std::is_same_v<segment_t, boost::interprocess::managed_heap_memory>) {
+            _segment_ptr.reset(new segment_t(bip::open_only, _store_name.c_str()));
+        }
+        _container_ptr = _segment_ptr->template find_or_construct<Container_t>(_cache_name.c_str())(
+            typename Container_t::ctor_args_list(),
+            typename Container_t::allocator_type(_segment_ptr->get_segment_manager()));
     }
 
     bool grow_memory(size_t size) const {
+        VAV_REQUIRE(_memory_grow_increment > 0);
+
         bool success = false;
         try {
             if constexpr (!std::is_same_v<segment_t, boost::interprocess::managed_heap_memory>) {
@@ -300,7 +326,10 @@ private:
  
     template<typename Key, typename Serializable>
     auto insert_data(Key && key, Serializable &&data) {
-        Memory::attach([this](){attach();});
+        if (_memory_grow_increment > 0) {
+            Memory::attach([this]{ attach(); });
+        }
+
         Data_t item(_segment_ptr->get_segment_manager());
         item.store(std::forward<Key>(key), std::forward<Serializable>(data));
         return _container_ptr->insert(item);
@@ -325,11 +354,11 @@ private:
     }
  
     mutable boost::scoped_ptr<segment_t> _segment_ptr;
-    mutable Container_t  *_container_ptr ;
-    std::string _store_name ;
-    std::string _cache_name ;
+    mutable Container_t* _container_ptr{nullptr};
+    std::string _store_name;
+    std::string _cache_name;
     mutable boost::interprocess::named_upgradable_mutex _named_mutex;
-    size_t _memory_grow_increment;
+    size_t _memory_grow_increment{0};
 };
  
 }
