@@ -34,6 +34,10 @@ namespace http::crud {
             _handlers["PUT"] = handler;
             return *this;
         }
+        crud_matcher_base  & option(request_handler_type handler) {
+            _handlers["OPTION"] = handler;
+            return *this;
+        }
         template<typename Request, typename Matched>
         void handle_request(const Request& request, Response& response, Matched const& what) {
             auto &handler = _handlers[request.method];
