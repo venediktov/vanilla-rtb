@@ -38,9 +38,11 @@
 #include "rtb/core/core.hpp"
 #include "rtb/common/concepts.hpp"
 
-#include <boost/throw_exception.hpp>
+#include <boost/chrono/duration.hpp>
 #include <boost/exception/info.hpp>
 #include <boost/stacktrace.hpp>
+#include <boost/thread/lock_options.hpp>
+#include <boost/throw_exception.hpp>
 #include <stdexcept>
 
 // Define an error_info tag for stacktrace
@@ -139,6 +141,10 @@ public:
         // TODO: add to ctor to switch between mmap and shm
         // TODO: maybe needs bip::scoped_lock to lock for other processes calling  grow_memory
         std::string data_base_dir = "/tmp/CACHE";
+
+        auto guard = bip::scoped_lock{_named_mutex, bip::defer_lock};
+        VAV_REQUIRE(guard.try_lock_for(boost::chrono::seconds(10)));
+
         _store_name = Memory::convert_base_dir(data_base_dir) + _cache_name;
         _segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), memory_size));
         _container_ptr = _segment_ptr->template find_or_construct<Container_t>(_cache_name.c_str())(
