@@ -34,8 +34,8 @@ namespace http::crud {
             _handlers["PUT"] = handler;
             return *this;
         }
-        crud_matcher_base  & option(request_handler_type handler) {
-            _handlers["OPTION"] = handler;
+        crud_matcher_base  & options(request_handler_type handler) {
+            _handlers["OPTIONS"] = handler;
             return *this;
         }
         template<typename Request, typename Matched>
