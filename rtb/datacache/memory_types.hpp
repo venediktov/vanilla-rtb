@@ -30,10 +30,10 @@
 namespace mpclmi::ipc {
 
 /** A variation of the Shared:
- * - simpler memory allocation algorithm suitable for segments storing a single node-based cotainer
+ * - simpler memory allocation algorithm suitable for segments storing a single node-based container
  * - memory allocation is not thread safe, relying on external synchronization typical for entity_cache-based containers
  */
-struct SharedVL {
+struct SharedSeqFitNoLock {
     using char_type = char;
     using mutex_family_type = boost::interprocess::null_mutex_family;
     using memory_algorithm_type = boost::interprocess::simple_seq_fit<mutex_family_type>;

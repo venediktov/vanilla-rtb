@@ -119,6 +119,7 @@ struct retriever<Tag,std::vector<std::shared_ptr<Serializable>>> {
 
 inline constexpr size_t ENTITY_CACHE_DEFAULT_MEMORY_SIZE = 67108864 /* 64 MB*/;
 inline constexpr size_t ENTITY_CACHE_DEFAULT_MEMORY_GROW_INCREMENT = 67108864 /* 64 MB*/;
+inline constexpr uint64_t ENTITY_CACHE_DEFAULT_LOCK_TIMEOUT_S = 10;
 template<typename Memory, template <class,class...> class Container, typename ...T>
 class entity_cache
 {
@@ -134,7 +135,8 @@ public:
 
     /** Can set memory_grow_increment=0 to prevent cache from growing */
     explicit entity_cache(std::string name, size_t const memory_size = ENTITY_CACHE_DEFAULT_MEMORY_SIZE,
-                          size_t const memory_grow_increment = ENTITY_CACHE_DEFAULT_MEMORY_GROW_INCREMENT)
+                          size_t const memory_grow_increment = ENTITY_CACHE_DEFAULT_MEMORY_GROW_INCREMENT,
+                          uint32_t lock_timeout_s = ENTITY_CACHE_DEFAULT_LOCK_TIMEOUT_S)
         : _segment_ptr(), _container_ptr(), _store_name(), _cache_name(std::move(name)),
           _named_mutex(bip::open_or_create, (_cache_name + "_mutex").c_str()),
           _memory_grow_increment{memory_grow_increment} {
@@ -143,7 +145,7 @@ public:
         std::string data_base_dir = "/tmp/CACHE";
 
         auto guard = bip::scoped_lock{_named_mutex, bip::defer_lock};
-        VAV_REQUIRE(guard.try_lock_for(boost::chrono::seconds(10)));
+        VAV_REQUIRE(guard.try_lock_for(boost::chrono::seconds(lock_timeout_s)));
 
         _store_name = Memory::convert_base_dir(data_base_dir) + _cache_name;
         _segment_ptr.reset(Memory::open_or_create_segment(_store_name.c_str(), memory_size));
