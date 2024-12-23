@@ -33,10 +33,10 @@ namespace mpclmi::ipc {
  * - simpler memory allocation algorithm suitable for segments storing a single node-based container
  * - memory allocation is not thread safe, relying on external synchronization typical for entity_cache-based containers
  */
-struct SharedSeqFitNoLock {
+struct SharedNoLock {
     using char_type = char;
     using mutex_family_type = boost::interprocess::null_mutex_family;
-    using memory_algorithm_type = boost::interprocess::simple_seq_fit<mutex_family_type>;
+    using memory_algorithm_type = boost::interprocess::rbtree_best_fit<mutex_family_type>;
     template <typename T> using index_type = boost::interprocess::iset_index<T>;
     using segment_t = boost::interprocess::basic_managed_shared_memory<char_type, memory_algorithm_type, index_type>;
     using segment_manager_t = boost::interprocess::segment_manager<char, memory_algorithm_type, index_type>;
