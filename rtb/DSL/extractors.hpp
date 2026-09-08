@@ -23,6 +23,7 @@
 #include "rtb/core/openrtb.hpp"
 #include "rtb/core/core.hpp"
 #include <boost/optional.hpp>
+#include <boost/version.hpp>
 #include <algorithm>
 
 #if BOOST_VERSION <= 106000
@@ -359,4 +360,3 @@ extractors<boost::optional<openrtb::Banner<T>>>::extract( rapidjson::Value & val
 
     return boost::make_optional(banner);
 }
-

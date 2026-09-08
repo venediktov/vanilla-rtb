@@ -24,7 +24,7 @@
 namespace vanilla { namespace messaging {
 
 struct shared_io_service {
-    shared_io_service() : io_service_ptr{new boost::asio::io_service}
+    shared_io_service() : io_service_ptr{new boost::asio::io_context}
     {}
     void run() {
         io_service_ptr->run();
@@ -32,14 +32,13 @@ struct shared_io_service {
     void stop() {
         io_service_ptr->stop();
     }
-    operator boost::asio::io_service& () const {
+    operator boost::asio::io_context& () const {
         return *io_service_ptr;
     }
 private:
-   std::shared_ptr<boost::asio::io_service> io_service_ptr;
+   std::shared_ptr<boost::asio::io_context> io_service_ptr;
 };
 
 }}
 
 #endif /* __VANILLA_MESSAGING_SHARED_IO_SERVICE__ */
-

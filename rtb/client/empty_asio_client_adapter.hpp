@@ -20,16 +20,16 @@
 
 #include <functional>
 #include <string>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 
 namespace vanilla {    
     class empty_asio_client_adapter {
     public:
-        using connection_ok_handler_type = std::function<void(boost::asio::io_service&)>;
-        using connection_fail_handler_type = std::function<void(const std::string&, boost::asio::io_service&)>;
-        using get_handler_type = std::function<void(boost::asio::io_service&, const std::string&)>;
+        using connection_ok_handler_type = std::function<void(boost::asio::io_context&)>;
+        using connection_fail_handler_type = std::function<void(const std::string&, boost::asio::io_context&)>;
+        using get_handler_type = std::function<void(boost::asio::io_context&, const std::string&)>;
     
-        empty_asio_client_adapter(boost::asio::io_service &io):
+        empty_asio_client_adapter(boost::asio::io_context &io):
             io{io}
         {}
         void connect([[maybe_unused]] const std::string &host, [[maybe_unused]] uint16_t port, const connection_ok_handler_type &connection_ok_handler, const connection_fail_handler_type &) {        
@@ -47,10 +47,9 @@ namespace vanilla {
             return true;
         }
     private:
-        boost::asio::io_service &io;
+        boost::asio::io_context &io;
     };
     
 }
 
 #endif /* EMPTY_ASIO_CLIENT_ADAPTER_HPP */
-

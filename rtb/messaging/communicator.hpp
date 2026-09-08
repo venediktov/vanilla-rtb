@@ -24,6 +24,7 @@
 //
 
 #include <string>
+#include <chrono>
 #include <boost/asio.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -116,7 +117,7 @@ public:
   using data_type = std::array<char, MAX_DATA_SIZE> ;
 
   template<typename ...IPAddress>
-  receiver(boost::asio::io_service& io_service, const unsigned short port, IPAddress && ...addresses) :
+  receiver(boost::asio::io_context& io_service, const unsigned short port, IPAddress && ...addresses) :
     socket_{io_service} {
     ConnectionPolicy::receiver_set_option(socket_, port , std::forward<IPAddress>(addresses)...);
   }
@@ -172,7 +173,7 @@ public:
   using data_type = std::array<char, MAX_DATA_SIZE> ;
 
   template<typename ...IPAddress>
-  sender(boost::asio::io_service& io_service, const unsigned short port, IPAddress && ...addresses) :
+  sender(boost::asio::io_context& io_service, const unsigned short port, IPAddress && ...addresses) :
     socket_{io_service},
     to_endpoint_{ConnectionPolicy::sender_endpoint(socket_, port , std::forward<IPAddress>(addresses)...)}
   {}
@@ -241,7 +242,7 @@ template<typename ConnectionPolicy>
 class communicator {
     using consumer_type   = std::shared_ptr<receiver<ConnectionPolicy>>;
     using distributor_type = std::shared_ptr<sender<ConnectionPolicy>>;
-    using io_service_type = boost::asio::io_service;
+    using io_service_type = boost::asio::io_context;
 public:
     using self_type = communicator<ConnectionPolicy> ;
     communicator() : timer_{io_service_}
@@ -321,25 +322,25 @@ public:
               io_service_.stop(); 
            });
        });
-       timer_.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
+       timer_.expires_after(std::chrono::milliseconds(timeout.count()));
        timer_.async_wait([this](const boost::system::error_code & error) {
             if (error != boost::asio::error::operation_aborted) {
                 io_service_.stop();
            }
        });
        //TODO: can be  optimized return before timer if all data is collected from all responders
-       io_service_.reset();
+       io_service_.restart();
        io_service_.run();
     }
 
     void dispatch() {
-        io_service_.reset();
+        io_service_.restart();
         io_service_.run();
     }
     
 private:
     io_service_type io_service_;
-    boost::asio::deadline_timer timer_;
+    boost::asio::system_timer timer_;
     distributor_type distributor_;
     consumer_type   consumer_;
 };

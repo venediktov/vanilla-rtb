@@ -32,8 +32,8 @@
 
 namespace vanilla::exchange {
 
-thread_local boost::asio::io_service io_service;
-thread_local boost::asio::deadline_timer timer{io_service};
+thread_local boost::asio::io_context io_service;
+thread_local boost::asio::system_timer timer{io_service};
 
 template <typename DSL, typename... Info> class exchange_handler {
     using auction_request_type = decltype(DSL().extract_request(std::string()));
@@ -129,16 +129,17 @@ template <typename DSL, typename... Info> class exchange_handler {
             auction_response = auction_async_handler(bid_request);
             io_service.stop();
         };
-        io_service.post(submit_async);
-        timer.expires_from_now(boost::posix_time::milliseconds(timeout.count()));
+        boost::asio::post(io_service, submit_async);
+        timer.expires_after(timeout);
         timer.async_wait([](boost::system::error_code const& error) {
             if (error != boost::asio::error::operation_aborted) {
                 io_service.stop();
             }
         });
-        io_service.reset();
+        io_service.restart();
         io_service.run();
-        if (auction_response && timer.expires_from_now().total_milliseconds() > 0) {
+        if (auction_response &&
+            std::chrono::duration_cast<std::chrono::milliseconds>(timer.expiry() - std::chrono::system_clock::now()).count() > 0) {
             if (if_response_handler) {
                 auto custom_reply = if_response_handler(*auction_response);
                 if (custom_reply) {

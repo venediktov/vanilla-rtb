@@ -19,7 +19,7 @@
 #define ASIO_KEY_VALUE_CLIENT_HPP
 
 #include <functional>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 
 namespace vanilla {
     namespace client {
@@ -39,11 +39,11 @@ namespace vanilla {
             }
 
             void request(const std::string &key, std::string &data) {
-                client.get(key, data, [](boost::asio::io_service& io, [[maybe_unused]] const std::string & data) {
+                client.get(key, data, [](boost::asio::io_context& io, [[maybe_unused]] const std::string & data) {
                     io.stop();
                 });
 
-                io.reset();
+                io.restart();
                 io.run();
 
                 if(response_handler) {
@@ -53,14 +53,14 @@ namespace vanilla {
 
             void connect(const std::string &host, uint16_t port) {
                 client.connect(host, port,
-                    [](boost::asio::io_service & io) {
+                    [](boost::asio::io_context & io) {
                         io.stop();
                     },
-                    []([[maybe_unused]] const std::string& err, boost::asio::io_service & io) {
+                    []([[maybe_unused]] const std::string& err, boost::asio::io_context & io) {
                         io.stop();
                     }
                 );
-                io.reset();
+                io.restart();
                 io.run();
             }
 
@@ -69,7 +69,7 @@ namespace vanilla {
             }
 
         private:
-            boost::asio::io_service io;
+            boost::asio::io_context io;
             Wrapper client;
             response_handler_type response_handler;
         };
@@ -77,4 +77,3 @@ namespace vanilla {
 }
 
 #endif /* ASIO_KEY_VALUE_CLIENT_HPP */
-

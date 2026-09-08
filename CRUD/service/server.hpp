@@ -88,7 +88,7 @@ private:
  
     // Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
     boost::asio::ip::tcp::resolver resolver(io_service_);
-    boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve({address, port});
+    boost::asio::ip::tcp::endpoint endpoint = resolver.resolve(address, port).begin()->endpoint();
     acceptor_.open(endpoint.protocol());
     acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
     acceptor_.set_option( boost::asio::socket_base::keep_alive(true));

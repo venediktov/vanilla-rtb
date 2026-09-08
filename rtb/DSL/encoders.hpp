@@ -12,6 +12,7 @@
 #include "parsers/jsmn.h"
 #include "jsonv/all.hpp"
 #include <boost/lexical_cast.hpp>
+#include <boost/version.hpp>
 
 /***** FOR BOOST ANY IMPLEMENTATION *****/
 #include <boost/any.hpp>
@@ -135,4 +136,3 @@ int encode(const char *js, jsmntok_t *t, size_t count, boost::any &value) {
 
 } //namespace
 #endif /* JSONV_STORE_HPP */
-
